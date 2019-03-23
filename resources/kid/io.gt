@@ -1,0 +1,16 @@
+proc main()
+    int x;
+    int A_38;
+    bool mood;
+begin
+    write "Give us a number, please: ";
+    read x;
+    write "And another: ";
+    read A_38;
+    write "Happy and you know it (true/false): ";
+    read mood;
+    write mood;
+    write "\nYour first number was ";
+    write x;
+    write "/n";
+end
