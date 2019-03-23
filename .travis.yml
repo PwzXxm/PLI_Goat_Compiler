@@ -12,5 +12,8 @@ git:
 notifications:
   email: false
 
+install:
+  - cabal install alex
+
 script:
   - make
