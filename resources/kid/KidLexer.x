@@ -1,8 +1,8 @@
 {
-module Main where
+module Tokens_posn (Token(..), AlexPosn(..), alexScanTokens, token_posn) where
 }
 
-%wrapper "basic"
+%wrapper "posn"
 
 $digit       = 0-9
 @alpha       = [a-zA-Z]
@@ -16,36 +16,36 @@ rules :-
 
   $white+    ;    -- skip white space
   @comment   ;    -- skip comments
-  @digits    { \s -> INT_CONST (read s :: Int) }
-  @float     { \s -> FLOAT_CONST (read s :: Float) }
-  true       { \s -> BOOL_CONST True }
-  false      { \s -> BOOL_CONST False }
-  bool       { \s -> BOOL }
-  int        { \s -> INT }
-  float      { \s -> FLOAT }
-  proc       { \s -> PROC }
-  begin      { \s -> BEGIN }
-  end        { \s -> END }
-  read       { \s -> READ }
-  write      { \s -> WRITE }
-  else       { \s -> ELSE }
-  if         { \s -> IF }
-  fi         { \s -> FI }
-  do         { \s -> DO }
-  od         { \s -> OD }
-  val        { \s -> VAL }
-  while      { \s -> WHILE}
-  ref        { \s -> REF}
-  then       { \s -> THEN}
-  :=         { \s -> ASSIGN }
-  \(         { \s -> LPAREN }
-  \)         { \s -> RPAREN }
-  \+         { \s -> PLUS }
-  \-         { \s -> MINUS }
-  \*         { \s -> MUL }
-  \;         { \s -> SEMI }
-  @ident     { \s -> IDENT s }
-  @stringlit { \s -> LIT s }
+  @digits    { tok (\p s -> INT_CONST p (read s :: Int)) }
+  @float     { tok (\p s -> FLOAT_CONST p (read s :: Float)) }
+  true       { tok (\p s -> BOOL_CONST p True) }
+  false      { tok (\p s -> BOOL_CONST p False) }
+  bool       { tok (\p s -> BOOL p) }
+  int        { tok (\p s -> INT p) }
+  float      { tok (\p s -> FLOAT p) }
+  proc       { tok (\p s -> PROC p) }
+  begin      { tok (\p s -> BEGIN p) }
+  end        { tok (\p s -> END p) }
+  read       { tok (\p s -> READ p) }
+  write      { tok (\p s -> WRITE p) }
+  else       { tok (\p s -> ELSE p) }
+  if         { tok (\p s -> IF p) }
+  fi         { tok (\p s -> FI p) }
+  do         { tok (\p s -> DO p) }
+  od         { tok (\p s -> OD p) }
+  val        { tok (\p s -> VAL p) }
+  while      { tok (\p s -> WHILE p) }
+  ref        { tok (\p s -> REF p) }
+  then       { tok (\p s -> THEN p) }
+  :=         { tok (\p s -> ASSIGN p) }
+  \(         { tok (\p s -> LPAREN p) }
+  \)         { tok (\p s -> RPAREN p) }
+  \+         { tok (\p s -> PLUS p) }
+  \-         { tok (\p s -> MINUS p) }
+  \*         { tok (\p s -> MUL p) }
+  \;         { tok (\p s -> SEMI p) }
+  @ident     { tok (\p s -> IDENT p s) }
+  @stringlit { tok (\p s -> LIT p s) }
 
 {
 data Token
@@ -55,9 +55,31 @@ data Token
   | LPAREN | RPAREN | PLUS | MINUS | MUL | SEMI 
     deriving (Eq, Show)
 
-main
-  = do
-      s <- getContents
-      print (alexScanTokens s)
+token_posn (INT_CONST p _) = p
+token_posn (FLOAT_CONST p _) = p 
+token_posn (BOOL_CONST p _) = p 
+token_posn (BOOL p) = p 
+token_posn (INT p) = p 
+token_posn (FLOAT p) = p 
+token_posn (PROC p) = p 
+token_posn (BEGIN p) = p 
+token_posn (END p) = p 
+token_posn (WRITE p) = p 
+token_posn (ELSE p) = p 
+token_posn (IF p) = p 
+token_posn (FI p) = p 
+token_posn (DO p) = p 
+token_posn (OD p) = p 
+token_posn (WHILE p) = p 
+token_posn (REF p) = p 
+token_posn (THEN p) = p 
+token_posn (LPAREN p) = p 
+token_posn (RPAREN p) = p 
+token_posn (PLUS p) = p 
+token_posn (MINUS p) = p 
+token_posn (MUL p) = p 
+token_posn (SEMI p) = p 
+token_posn (IDENT p _) = p 
+token_posn (LIT p _) = p 
 }
 
