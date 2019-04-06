@@ -34,7 +34,7 @@ pMain :: Parser GoatProgram
 pMain
   = do
     reserved PROC
-    return Program
+    return (Program [])
     --   p <- pProg
     --   return p
 
