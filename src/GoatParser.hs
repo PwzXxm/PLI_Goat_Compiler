@@ -18,6 +18,11 @@ reserved :: Tok -> Parser ()
 reserved tok
   = gToken (\t -> if t == tok then Just () else Nothing)
 
+identifier :: Parser String
+identifier
+  = gToken (\t -> case t of 
+                    IDENT id -> Just id
+                    other -> Nothing)
 
 gToken :: (Tok -> Maybe a) -> Parser a
 gToken test
@@ -28,15 +33,21 @@ gToken test
       posToken  (pos, tok) = newPos "" 0 0
       testToken (pos, tok) = test tok
 
-  
 
+pProc :: Parser Proc
+pProc
+  = do
+      reserved PROC
+      id <- identifier
+      return (Proc id [] [] [])
+
+
+-- TODO: need to check EOF
 pMain :: Parser GoatProgram
 pMain
   = do
-    reserved PROC
-    return (Program [])
-    --   p <- pProg
-    --   return p
+      procs <- many1 pProc
+      return (Program procs)
 
 
 testdata1 = [(0,PROC), (0,IDENT "main"),(0,LPAREN),(0,RPAREN),(0,INT),(0,IDENT "a"),(0,SEMI),(0,INT),(0,IDENT "b"),(0,SEMI),(0,BEGIN),(0,IDENT "a"),(0,ASSIGN),(0,INT_CONST 2),(0,MUL),(0,LPAREN),(0,INT_CONST 1),(0,PLUS),(0,INT_CONST 10),(0,RPAREN),(0,PLUS),(0,INT_CONST 2),(0,PLUS),(0,INT_CONST 2),(0,MUL),(0,INT_CONST 2),(0,PLUS),(0,INT_CONST 14),(0,SEMI),(0,IDENT "b"),(0,ASSIGN),(0,MINUS),(0,IDENT "a"),(0,PLUS),(0,IDENT "a"),(0,SEMI),(0,END)]
