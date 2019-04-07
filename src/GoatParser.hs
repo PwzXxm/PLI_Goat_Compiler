@@ -34,12 +34,35 @@ gToken test
       testToken (pos, tok) = test tok
 
 
+pBaseType :: Parser BaseType
+pBaseType
+  = do
+      reserved BOOL
+      return BoolType
+    <|>
+    do 
+      reserved INT
+      return IntType
+
+pDecl :: Parser Decl
+pDecl
+  = do
+      basetype <- pBaseType
+      ident <- identifier
+      reserved SEMI
+      return (Decl ident basetype)
+
 pProc :: Parser Proc
 pProc
   = do
       reserved PROC
       id <- identifier
-      return (Proc id [] [] [])
+      reserved LPAREN
+      reserved RPAREN
+      decls <- many pDecl
+      reserved BEGIN
+
+      return (Proc id [] decls [])
 
 
 -- TODO: need to check EOF
