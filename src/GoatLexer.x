@@ -52,14 +52,12 @@ rules :-
   @stringlit { \p s -> (p, LIT s) }
 
 {
-type AlexToken = (AlexPos, Tok)
+type AlexToken = (AlexPosn, Tok)
 
-mapFunc :: AlexToken -> Token
-mapFunc ((AlexPn_ line col), tok) = ((SourcePos _ line col), tok)
+mapFunc :: String -> AlexToken -> Token
+mapFunc filename ((AlexPn _ line col), tok) = ((newPos filename line col), tok)
 
-runGoatLexer :: String -> [Token]
-runGoatLexer s
-  = do
-    s <- getContents
-    return map mapFunc (alexScanTokens s)
+runGoatLexer :: String -> String -> [Token]
+runGoatLexer filename s 
+  = map (mapFunc filename) (alexScanTokens s)
 }
