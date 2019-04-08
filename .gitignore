@@ -3,10 +3,8 @@
 # Edit at https://www.gitignore.io/?templates=macos,windows,haskell
 
 # Build
-build/*
-
-# alex compiled file
-src/GoatLexer.hs
+/build/*
+/goat
 
 ### Haskell ###
 dist
