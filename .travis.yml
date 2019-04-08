@@ -7,6 +7,9 @@ ghc:
 git:
   depth: 1
 
+branches:
+  only:
+    - master
 
 # Don't email me
 notifications:
