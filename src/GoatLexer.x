@@ -50,16 +50,16 @@ rules :-
   \*         { \p s -> (p, MUL) }
   \/         { \p s -> (p, DIV) }
   \<         { \p s -> (p, LESS) }
-  \=\<       { \p s -> (p, LESSEQUAL) }
+  \=\<        { \p s -> (p, LESSEQUAL) }
   \>         { \p s -> (p, GREATER) }
-  \>\=       { \p s -> (p. GREATEQUAL) }
+  \>\=       { \p s -> (p, GREATEQUAL) }
   \=         { \p s -> (p, EQUAL) }
-  \!\=         \p s -> (p, UNEQUAL) }
+  \!\=       { \p s -> (p, UNEQUAL) }
   \[         { \p s -> (p, LSQUARE) }
   \]         { \p s -> (p, RSQUARE) }
   \|\|       { \p s -> (p, OR) }
   \&\&       { \p s -> (p, AND) }
-  \!         { \p s -> (p, UNARY)}
+  \!         { \p s -> (p, UNARY) }
   \;         { \p s -> (p, SEMI) }
   @ident     { \p s -> (p, IDENT s) }
   @stringlit { \p s -> (p, LIT s) }

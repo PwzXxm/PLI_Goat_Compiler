@@ -11,3 +11,4 @@ data Tok
   | LPAREN | RPAREN | PLUS | MINUS | MUL | DIV | LESS | LESSEQUAL | GREATER 
   | GREATEQUAL | EQUAL | UNEQUAL | LSQUARE | RSQUARE | OR | AND | UNARY | SEMI 
   deriving (Eq, Show)
+  
