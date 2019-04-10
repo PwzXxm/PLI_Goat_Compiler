@@ -3,6 +3,7 @@ module GoatParser where
 import GoatAST
 import GoatToken
 import GoatLexer
+import GoatFormatter
 
 import Data.Char
 import Text.Parsec
@@ -24,6 +25,10 @@ identifier
 intConst :: Parser Int
 intConst
   = gToken (\t -> case t of {INT_CONST v -> Just v; other -> Nothing})
+
+-- boolConst :: Parser Bool
+-- boolConst
+--   = gToken (\t -> case t of {FLOAT_CONST v -> Just v; other -> Nothing})
 
 gToken :: (Tok -> Maybe a) -> Parser a
 gToken test
@@ -51,6 +56,14 @@ pDecl
       shape <- pShape
       reserved SEMI
       return (Decl ident basetype shape)
+
+-- Expr
+
+pExpr :: Parser Expr
+pExpr
+  = do choice []
+
+-- Expr End
 
 pShape, pShapeVar, pShapeArr, pShapeMat :: Parser Shape
 pShape
@@ -150,7 +163,17 @@ pMain
 
 test
   = do
-      input <- readFile "test.in"
-      let tokens = runGoatLexer "test.in" input
+      input <- readFile "../build/test.in"
+      let tokens = runGoatLexer "../build/test.in" input
       let res = runParser pMain () "" tokens
       return res
+
+testf
+  = do
+      input <- readFile "../build/test.in"
+      let tokens = runGoatLexer "../build/test.in" input
+      let res = runParser pMain () "" tokens
+      case res of
+        Right ast -> runGoatFormatter ast
+        Left  err -> print err
+      
