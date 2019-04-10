@@ -18,7 +18,9 @@ programFormatter (Proc id paras decls stmts)
       parasFormatter paras
       putStr ")\n"
       declsFormatter decls
-      -- stmtsFormatter stmts
+      putStr "begin\n"
+      stmtsFormatter stmts
+      putStr "end\n"
 
 
 parasFormatter :: [Para] -> IO ()
@@ -50,9 +52,25 @@ declsFormatter ((Decl id btype shape):xs)
       putStr "\n"
       declsFormatter xs
       
-      
+stmtsFormatter :: [Stmt] -> IO ()
+stmtsFormatter [] = return ()
+stmtsFormatter (x:xs)
+  = do
+      stmtFormatter 1 x
+      putStr "\n"
+      stmtsFormatter xs
 
--- stmtsFormatter :: [Stmt] -> IO ()
+stmtFormatter :: Int -> Stmt -> IO ()
+stmtFormatter inde (Read var)
+  = do
+      indeFormatter inde
+      putStr "read "
+      varFormatter var
+stmtFormatter inde (Write expr)
+  = do
+      indeFormatter inde
+      putStr "write "
+      exprFormatter expr
 
 indiFormatter :: Indi -> IO ()
 indiFormatter InVar = putStr "var"
@@ -76,3 +94,52 @@ shapeFormatter (ShapeMat a b)
     putStr ", "
     putStr (show b)
     putStr "]"
+
+varFormatter :: Var -> IO ()
+varFormatter (Var id idx)
+  = do
+      putStr id
+      idxFormatter idx
+
+idxFormatter :: Idx -> IO ()
+idxFormatter IdxVar = return ()
+idxFormatter (IdxArr expr)
+  = do
+      putStr "["
+      exprFormatter expr
+      putStr "]"
+idxFormatter (IdxMat e1 e2)
+  = do
+      putStr "["
+      exprFormatter e1
+      putStr "]["
+      exprFormatter e2
+      putStr "]"
+
+exprFormatter :: Expr -> IO ()
+exprFormatter (BoolConst bool) = putStr (show bool)
+exprFormatter (IntConst int) = putStr (show int)
+exprFormatter (StrConst string) = putStr (show string)
+exprFormatter (Id id) = putStr id
+exprFormatter (Add e1 e2)
+  = do
+      exprFormatter e1
+      putStr " + "
+      exprFormatter e2
+exprFormatter (Mul e1 e2)
+  = do
+      exprFormatter e1
+      putStr " * "
+      exprFormatter e2
+exprFormatter (UnaryMinus expr)
+  = do
+      putStr "-"
+      exprFormatter expr
+
+
+indeFormatter :: Int -> IO ()
+indeFormatter 0 = return ()
+indeFormatter a
+  = do
+    putStr "    "
+    indeFormatter (a-1)
