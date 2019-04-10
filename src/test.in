@@ -1,0 +1,16 @@
+proc main(val int c, ref int d)
+    int a[5];
+    int b[5, 99];
+begin
+    read a;
+    read b;
+end
+
+
+proc aaaa(val int c, ref int d)
+    int a[5];
+    int b[5, 99];
+begin
+    read a;
+    read b;
+end
