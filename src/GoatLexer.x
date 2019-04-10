@@ -59,7 +59,7 @@ rules :-
   \]         { \p s -> (p, RSQUARE) }
   \|\|       { \p s -> (p, OR) }
   \&\&       { \p s -> (p, AND) }
-  \!         { \p s -> (p, UNARY) }
+  \!         { \p s -> (p, UNARYNOT) }
   \;         { \p s -> (p, SEMI) }
   \,         { \p s -> (p, COMMA) }
   @ident     { \p s -> (p, IDENT s) }

@@ -26,9 +26,17 @@ intConst :: Parser Int
 intConst
   = gToken (\t -> case t of {INT_CONST v -> Just v; other -> Nothing})
 
--- boolConst :: Parser Bool
--- boolConst
---   = gToken (\t -> case t of {FLOAT_CONST v -> Just v; other -> Nothing})
+boolConst :: Parser Bool
+boolConst
+  = gToken (\t -> case t of {BOOL_CONST v -> Just v; other -> Nothing})
+
+floatConst :: Parser Float
+floatConst
+  = gToken (\t -> case t of {FLOAT_CONST v -> Just v; other -> Nothing})
+
+strLitConst :: Parser String
+strLitConst
+  = gToken (\t -> case t of {LIT v -> Just v; other -> Nothing})
 
 gToken :: (Tok -> Maybe a) -> Parser a
 gToken test
@@ -61,9 +69,134 @@ pDecl
 
 pExpr :: Parser Expr
 pExpr
+  -- = choice [pStrLit, (chainl1 pTerm pAdd), (chainl1 pTerm pSub), pRelationalOps]
+  = choice [pStrLit, (chainl1 pFactor pAddSub)]
+
+-- pTerm :: parser Expr
+-- pTerm = choice [(chainl1 pFactor pMul), (chainl1 pFactor pDiv)]
+-- 
+pFactor :: Parser Expr
+-- pFactor = choice [pUnaryMinus, paras pExpr, pBoolConst, pIntConst, pFloatConst ]
+pFactor = choice [pBoolConst, pIntConst, pFloatConst]
+
+pBoolConst, pIntConst, pFloatConst, pStrLit :: Parser Expr
+pBoolConst
+  = do
+      b <- boolConst
+      return (BoolConst b)
+
+pIntConst
   = do
       i <- intConst
       return (IntConst i)
+
+pFloatConst
+  = do
+      f <- floatConst
+      return (FloatConst f)
+
+pStrLit
+  = do
+      s <- strLitConst
+      return (StrConst s)
+ 
+--pAdd, pSub, pMul, pDiv, pAnd, pOr :: Parser (Expr -> Expr -> Expr)
+pAddSub :: Parser (Expr -> Expr -> Expr)
+
+pAddSub
+  = do
+      reserved MINUS
+      return (BinaryOp Op_sub)
+    <|>
+    do
+      reserved PLUS
+      return (BinaryOp Op_add)
+
+-- pMul
+--   = do
+--       reserved MUL
+--       return BinaryOps (Mul)
+-- 
+-- pDiv
+--   = do
+--       reserved DIV
+--       return Div
+-- 
+-- pAnd
+--   = do
+--       reserved AND
+--       return And
+-- 
+-- pOr
+--   = do
+--       reserved OR
+--       return Or
+-- 
+-- pRelationalOps :: Parser (Expr -> Expr -> Expr)
+-- pRelationalOps
+--   = choice [pEq, pNe, pLt, pLe, pGt, pGe]
+-- 
+-- pEq, pNe, pLt, pLe, pGt, pGe :: Parser Expr
+-- pEq
+--   = do
+--       f1 <- pFactor
+--       reserved EQUAL
+--       f2 <- pFactor
+--       return (BinaryOp Op_eq f1 f2)
+-- 
+-- pNe
+--   = do
+--       f1 <- pFactor
+--       reserved UNEQUAL
+--       f2 <- pFactor
+--       return (BinaryOp Op_ne f1 f2)
+-- 
+-- pLt
+--   = do
+--       f1 <- pFactor
+--       reserved LESS
+--       f2 <- pFactor
+--       return (BinaryOp Op_lt f1 f2)
+-- 
+-- pLe
+--   = do
+--       f1 <- pFactor
+--       reserved LESSEQUAL
+--       f2 <- pFactor
+--       return (BinaryOp Op_le f1 f2)
+-- 
+-- pGt
+--   = do
+--       f1 <- pFactor
+--       reserved GREATER
+--       f2 <- pFactor
+--       return (BinaryOp Op_gt f1 f2)
+-- 
+-- pGe
+--   = do
+--       f1 <- pFactor
+--       reserved GREATEQUAL
+--       f2 <- pFactor
+--       return (BinaryOp Op_ge f1 f2)
+-- 
+-- pUnaryMinus, pUnaryNot :: Parser Expr
+-- pUnaryMinus
+--   = do
+--       reserved MINUS
+--       f <- pFactor
+--       return (UnaryMinus f)
+-- 
+-- pUnaryNot
+--   = do
+--       reserved UNARYNOT
+--       f <- pFactor
+--       return (UnaryNot f)
+
+-- pEvar :: Parsec Expr
+-- pEvar
+--   = do
+--       v <- pVar
+--       return (Evar v)
 
 -- Expr End
 

@@ -43,18 +43,7 @@ data Expr
   | FloatConst Float
   | StrConst String
   | Evar Var
-  | Add Expr Expr -- Binary Operator
-  | Sub Expr Expr
-  | Mul Expr Expr
-  | Div Expr Expr
-  | Eq  Expr Expr
-  | Ne  Expr Expr
-  | Lt  Expr Expr
-  | Le  Expr Expr
-  | Gt  Expr Expr
-  | Ge  Expr Expr
-  | And Expr Expr
-  | Or  Expr Expr
+  | BinaryOp Binop Expr Expr -- Binary Operator
   | UnaryMinus Expr -- Unary operator
   | UnaryNot Expr
     deriving (Show, Eq)
