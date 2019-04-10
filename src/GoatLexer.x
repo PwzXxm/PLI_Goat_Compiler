@@ -61,6 +61,7 @@ rules :-
   \&\&       { \p s -> (p, AND) }
   \!         { \p s -> (p, UNARY) }
   \;         { \p s -> (p, SEMI) }
+  \,         { \p s -> (p, COMMA) }
   @ident     { \p s -> (p, IDENT s) }
   @stringlit { \p s -> (p, LIT s) }
 

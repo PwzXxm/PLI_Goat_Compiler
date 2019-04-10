@@ -13,9 +13,6 @@ import System.Exit
 type Parser a
    = Parsec [Token] () a
 
--- runGoatPaser :: ???
--- runGoatPaser = runParser pMain 0 ""
-
 reserved :: Tok -> Parser ()
 reserved tok
   = gToken (\t -> if t == tok then Just () else Nothing)
@@ -26,13 +23,18 @@ identifier
                     IDENT id -> Just id
                     other -> Nothing)
 
+intConst :: Parser Int
+intConst
+  = gToken (\t -> case t of 
+                    INT_CONST v -> Just v
+                    other -> Nothing)
+
 gToken :: (Tok -> Maybe a) -> Parser a
 gToken test
   = token showToken posToken testToken
     where
       showToken (pos, tok) = show tok
-      -- TODO: get the actual pos
-      posToken  (pos, tok) = newPos "" 0 0
+      posToken  (pos, tok) = pos
       testToken (pos, tok) = test tok
 
 
@@ -51,8 +53,37 @@ pDecl
   = do
       basetype <- pBaseType
       ident <- identifier
+      shape <- pShape
       reserved SEMI
-      return (Decl ident basetype ShapeVar)
+      return (Decl ident basetype shape)
+
+pShape, pShapeVar, pShapeArr, pShapeMat :: Parser Shape
+pShape
+  = do choice [pShapeMat, pShapeArr, pShapeVar]
+
+pShapeMat
+  = try (do
+      reserved LSQUARE
+      s0 <- intConst
+      reserved COMMA
+      s1 <- intConst
+      reserved RSQUARE
+      return (ShapeMat s0 s1)
+  )
+
+pShapeArr
+  = try (do
+      reserved LSQUARE
+      s <- intConst
+      reserved RSQUARE
+      return (ShapeArr s)
+  )
+
+pShapeVar
+  = do
+      return ShapeVar
+
+
 
 pProc :: Parser Proc
 pProc
@@ -64,6 +95,7 @@ pProc
       decls <- many pDecl
       reserved BEGIN
       stmts <- many1 pStmt
+      reserved END
 
       return (Proc id [] decls stmts)
 
@@ -97,13 +129,12 @@ pVar
       return (Var ident IdxVar)
 
 
-
-      
 -- TODO: need to check EOF
 pMain :: Parser GoatProgram
 pMain
   = do
       procs <- many1 pProc
+      eof
       return (Program procs)
 
 
