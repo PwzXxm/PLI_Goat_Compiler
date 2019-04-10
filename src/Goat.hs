@@ -2,6 +2,7 @@ module Main where
 
 import GoatParser
 import GoatLexer
+import GoatFormatter
 
 import Data.Char
 import Text.Parsec

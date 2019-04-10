@@ -3,6 +3,7 @@ module GoatParser where
 import GoatAST
 import GoatToken
 import GoatLexer
+import GoatFormatter
 
 import Data.Char
 import Text.Parsec
@@ -154,3 +155,13 @@ test
       let tokens = runGoatLexer "test.in" input
       let res = runParser pMain () "" tokens
       return res
+
+testf
+  = do
+      input <- readFile "test.in"
+      let tokens = runGoatLexer "test.in" input
+      let res = runParser pMain () "" tokens
+      case res of
+        Right ast -> runGoatFormatter ast
+        Left  err -> print err
+      
