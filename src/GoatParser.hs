@@ -26,6 +26,10 @@ intConst :: Parser Int
 intConst
   = gToken (\t -> case t of {INT_CONST v -> Just v; other -> Nothing})
 
+-- boolConst :: Parser Bool
+-- boolConst
+--   = gToken (\t -> case t of {FLOAT_CONST v -> Just v; other -> Nothing})
+
 gToken :: (Tok -> Maybe a) -> Parser a
 gToken test
   = token showToken posToken testToken
@@ -53,6 +57,16 @@ pDecl
       reserved SEMI
       return (Decl ident basetype shape)
 
+-- Expr
+
+pExpr :: Parser Expr
+pExpr
+  = do
+      i <- intConst
+      return (IntConst i)
+
+-- Expr End
+
 pShape, pShapeVar, pShapeArr, pShapeMat :: Parser Shape
 pShape
   = do choice [pShapeMat, pShapeArr, pShapeVar]
@@ -79,6 +93,31 @@ pShapeVar
   = do
       return ShapeVar
 
+pIdx, pIdxVar, pIdxArr, pIdxMat :: Parser Idx
+pIdx
+  = do choice [pIdxMat, pIdxArr, pIdxVar]
+
+pIdxMat
+  = try (do
+      reserved LSQUARE
+      e0 <- pExpr
+      reserved COMMA
+      e1 <- pExpr
+      reserved RSQUARE
+      return (IdxMat e0 e1)
+  )
+
+pIdxArr
+  = try (do
+      reserved LSQUARE
+      e <- pExpr
+      reserved RSQUARE
+      return (IdxArr e)
+  )
+
+pIdxVar
+  = do
+      return IdxVar
 
 pParaIndi :: Parser Indi
 pParaIndi
@@ -112,7 +151,7 @@ pProc
       reserved END
       return (Proc id paras decls stmts)
 
-
+-- Stmt
 
 pStmt, pStmtAtom, pStmtComp :: Parser Stmt
 pStmt 
@@ -120,25 +159,80 @@ pStmt
 
 pStmtAtom
   = do
-      r <- choice [pRead]
+      r <- choice [pRead, pWrite, pCall, pAsg]
       reserved SEMI
       return r
 
-pRead :: Parser Stmt
+pRead, pWrite, pCall, pAsg :: Parser Stmt
 pRead
   = do
       reserved READ
       var <- pVar
       return (Read var)
 
+pWrite
+  = do
+      reserved WRITE
+      e <- pExpr
+      return (Write e)
+
+pCall
+  = do
+      reserved CALL
+      id <- identifier
+      reserved LPAREN
+      exprs <- sepBy pExpr (reserved COMMA)
+      reserved RPAREN
+      return (Call id exprs)
+
+pAsg
+  = do
+      v <- pVar
+      reserved ASSIGN
+      e <- pExpr
+      return (Assign v e)
+
 pStmtComp
-  = choice []
+  = choice [pIf, pWhile]
+
+pIf, pWhile :: Parser Stmt
+pIf
+  = do
+      reserved IF
+      e <- pExpr
+      reserved THEN
+      stmts <- many1 pStmt
+      -- else 
+      estmts <- (
+        do
+          reserved FI
+          return []
+        <|>
+        do
+          reserved ELSE
+          s <- many1 pStmt
+          reserved FI
+          return s)
+
+      return (If e stmts estmts)
+
+pWhile
+  = do
+      reserved WHILE
+      e <- pExpr
+      reserved DO
+      stmts <- many1 pStmt
+      reserved OD
+      return (While e stmts)
+
+-- Stmt End
 
 pVar :: Parser Var
 pVar
   = do
       ident <- identifier
-      return (Var ident IdxVar)
+      idx <- pIdx
+      return (Var ident idx)
 
 
 pMain :: Parser GoatProgram
@@ -151,15 +245,15 @@ pMain
 
 test
   = do
-      input <- readFile "test.in"
-      let tokens = runGoatLexer "test.in" input
+      input <- readFile "../build/test.in"
+      let tokens = runGoatLexer "../build/test.in" input
       let res = runParser pMain () "" tokens
       return res
 
 testf
   = do
-      input <- readFile "test.in"
-      let tokens = runGoatLexer "test.in" input
+      input <- readFile "../build/test.in"
+      let tokens = runGoatLexer "../build/test.in" input
       let res = runParser pMain () "" tokens
       case res of
         Right ast -> runGoatFormatter ast

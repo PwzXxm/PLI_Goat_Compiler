@@ -3,7 +3,7 @@ module GoatAST where
 type Ident = String
 
 data BaseType 
-  = BoolType | IntType 
+  = BoolType | IntType | FloatType
     deriving (Show, Eq)
 
 data Shape
@@ -23,17 +23,40 @@ data Var
     deriving (Show, Eq)
 
 data Binop 
-  = Op_add | Op_mul 
+  = Op_add
+  | Op_sub
+  | Op_mul 
+  | Op_div
+  | Op_eq
+  | Op_ne
+  | Op_lt
+  | Op_le
+  | Op_gt
+  | Op_ge
+  | Op_and
+  | Op_or
     deriving (Show, Eq)
 
 data Expr
   = BoolConst Bool
   | IntConst Int
+  | FloatConst Float
   | StrConst String
-  | Id Ident
-  | Add Expr Expr
+  | Evar Var
+  | Add Expr Expr -- Binary Operator
+  | Sub Expr Expr
   | Mul Expr Expr
-  | UnaryMinus Expr
+  | Div Expr Expr
+  | Eq  Expr Expr
+  | Ne  Expr Expr
+  | Lt  Expr Expr
+  | Le  Expr Expr
+  | Gt  Expr Expr
+  | Ge  Expr Expr
+  | And Expr Expr
+  | Or  Expr Expr
+  | UnaryMinus Expr -- Unary operator
+  | UnaryNot Expr
     deriving (Show, Eq)
 
 data Stmt 
@@ -41,8 +64,7 @@ data Stmt
   | Read Var
   | Write Expr
   | Call Ident [Expr]
-  | If Expr [Stmt]
-  | IfElse Expr [Stmt] [Stmt]
+  | If Expr [Stmt] [Stmt]
   | While Expr [Stmt]
     deriving (Show, Eq)
 
