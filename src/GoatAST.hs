@@ -6,8 +6,20 @@ data BaseType
   = BoolType | IntType 
     deriving (Show, Eq)
 
-data Lvalue 
-  = LId Ident
+data Shape
+  = ShapeVar
+  | ShapeArr Int
+  | ShapeMat Int Int
+    deriving (Show, Eq)
+
+data Idx
+  = IdxVar
+  | IdxArr Expr
+  | IdxMat Expr Expr
+    deriving (Show, Eq)
+
+data Var
+  = Var Ident Idx
     deriving (Show, Eq)
 
 data Binop 
@@ -25,8 +37,8 @@ data Expr
     deriving (Show, Eq)
 
 data Stmt 
-  = Assign Lvalue Expr
-  | Read Lvalue
+  = Assign Var Expr
+  | Read Var
   | Write Expr
   | Call Ident [Expr]
   | If Expr [Stmt]
@@ -35,11 +47,11 @@ data Stmt
     deriving (Show, Eq)
 
 data Decl 
-  = Decl Ident BaseType
+  = Decl Ident BaseType Shape
     deriving (Show, Eq)
 
 data Indi 
-  = Var | Ref
+  = InVar | InRef
     deriving (Show, Eq)
 
 data Para
