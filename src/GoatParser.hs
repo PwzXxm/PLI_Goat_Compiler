@@ -1,6 +1,8 @@
 module GoatParser where
 
 import GoatAST
+import GoatToken
+import GoatLexer
 
 import Data.Char
 import Text.Parsec
@@ -11,46 +13,144 @@ import System.Exit
 type Parser a
    = Parsec [Token] () a
 
--- runGoatPaser :: ???
--- runGoatPaser = runParser pMain 0 ""
-
 reserved :: Tok -> Parser ()
 reserved tok
   = gToken (\t -> if t == tok then Just () else Nothing)
 
+identifier :: Parser String
+identifier
+  = gToken (\t -> case t of {IDENT id -> Just id; other -> Nothing})
+
+intConst :: Parser Int
+intConst
+  = gToken (\t -> case t of {INT_CONST v -> Just v; other -> Nothing})
 
 gToken :: (Tok -> Maybe a) -> Parser a
 gToken test
   = token showToken posToken testToken
     where
       showToken (pos, tok) = show tok
-      -- TODO: get the actual pos
-      posToken  (pos, tok) = newPos "" 0 0
+      posToken  (pos, tok) = pos
       testToken (pos, tok) = test tok
 
-  
+pBaseType :: Parser BaseType
+pBaseType
+  = do
+      reserved BOOL
+      return BoolType
+    <|>
+    do 
+      reserved INT
+      return IntType
+
+pDecl :: Parser Decl
+pDecl
+  = do
+      basetype <- pBaseType
+      ident <- identifier
+      shape <- pShape
+      reserved SEMI
+      return (Decl ident basetype shape)
+
+pShape, pShapeVar, pShapeArr, pShapeMat :: Parser Shape
+pShape
+  = do choice [pShapeMat, pShapeArr, pShapeVar]
+
+pShapeMat
+  = try (do
+      reserved LSQUARE
+      s0 <- intConst
+      reserved COMMA
+      s1 <- intConst
+      reserved RSQUARE
+      return (ShapeMat s0 s1)
+  )
+
+pShapeArr
+  = try (do
+      reserved LSQUARE
+      s <- intConst
+      reserved RSQUARE
+      return (ShapeArr s)
+  )
+
+pShapeVar
+  = do
+      return ShapeVar
+
+
+pParaIndi :: Parser Indi
+pParaIndi
+  = do
+      reserved VAL
+      return InVar
+    <|>
+    do 
+      reserved REF
+      return InRef
+
+pPara :: Parser Para
+pPara
+  = do
+      indi <- pParaIndi
+      t <- pBaseType
+      id <- identifier
+      return (Para id t indi)
+
+pProc :: Parser Proc
+pProc
+  = do
+      reserved PROC
+      id <- identifier
+      reserved LPAREN
+      paras <- sepBy pPara (reserved COMMA)
+      reserved RPAREN
+      decls <- many pDecl
+      reserved BEGIN
+      stmts <- many1 pStmt
+      reserved END
+      return (Proc id paras decls stmts)
+
+
+
+pStmt, pStmtAtom, pStmtComp :: Parser Stmt
+pStmt 
+  = choice [pStmtAtom, pStmtComp]
+
+pStmtAtom
+  = do
+      r <- choice [pRead]
+      reserved SEMI
+      return r
+
+pRead :: Parser Stmt
+pRead
+  = do
+      reserved READ
+      var <- pVar
+      return (Read var)
+
+pStmtComp
+  = choice []
+
+pVar :: Parser Var
+pVar
+  = do
+      ident <- identifier
+      return (Var ident IdxVar)
+
 
 pMain :: Parser GoatProgram
 pMain
   = do
-    reserved PROC
-    return Program
-    --   p <- pProg
-    --   return p
+      procs <- many1 pProc
+      eof
+      return (Program procs)
 
 
-testdata1 = [(0,PROC), (0,IDENT "main"),(0,LPAREN),(0,RPAREN),(0,INT),(0,IDENT "a"),(0,SEMI),(0,INT),(0,IDENT "b"),(0,SEMI),(0,BEGIN),(0,IDENT "a"),(0,ASSIGN),(0,INT_CONST 2),(0,MUL),(0,LPAREN),(0,INT_CONST 1),(0,PLUS),(0,INT_CONST 10),(0,RPAREN),(0,PLUS),(0,INT_CONST 2),(0,PLUS),(0,INT_CONST 2),(0,MUL),(0,INT_CONST 2),(0,PLUS),(0,INT_CONST 14),(0,SEMI),(0,IDENT "b"),(0,ASSIGN),(0,MINUS),(0,IDENT "a"),(0,PLUS),(0,IDENT "a"),(0,SEMI),(0,END)]
-testdata2 = [(0,RPAREN),(0,INT),(0,IDENT "a")]
-test1 = runParser pMain () "" testdata1
-test2 = runParser pMain () "" testdata2
-
-
--- temp
--- type Token = (SourcePos, Tok)
-type Token = (Int, Tok)
-
-data Tok
-  = BOOL | INT | PROC | BEGIN | END | READ | WRITE | ASSIGN 
-  | INT_CONST Int | BOOL_CONST Bool | IDENT String | LIT String
-  | LPAREN | RPAREN | PLUS | MINUS | MUL | SEMI 
-    deriving (Eq, Show)
+test
+  = do
+      input <- readFile "test.in"
+      let tokens = runGoatLexer "test.in" input
+      let res = runParser pMain () "" tokens
+      return res

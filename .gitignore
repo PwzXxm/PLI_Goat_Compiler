@@ -3,7 +3,8 @@
 # Edit at https://www.gitignore.io/?templates=macos,windows,haskell
 
 # Build
-build/*
+/build/*
+/Goat
 
 ### Haskell ###
 dist
