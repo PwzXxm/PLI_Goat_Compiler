@@ -55,7 +55,7 @@ data Indi
     deriving (Show, Eq)
 
 data Para
-  = Para Indi Decl
+  = Para Ident BaseType Indi
     deriving (Show, Eq)
 
 data Proc

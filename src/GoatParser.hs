@@ -84,6 +84,23 @@ pShapeVar
       return ShapeVar
 
 
+pParaIndi :: Parser Indi
+pParaIndi
+  = do
+      reserved VAL
+      return InVar
+    <|>
+    do 
+      reserved REF
+      return InRef
+
+pPara :: Parser Para
+pPara
+  = do
+      indi <- pParaIndi
+      t <- pBaseType
+      id <- identifier
+      return (Para id t indi)
 
 pProc :: Parser Proc
 pProc
@@ -91,13 +108,13 @@ pProc
       reserved PROC
       id <- identifier
       reserved LPAREN
+      paras <- sepBy pPara (reserved COMMA)
       reserved RPAREN
       decls <- many pDecl
       reserved BEGIN
       stmts <- many1 pStmt
       reserved END
-
-      return (Proc id [] decls stmts)
+      return (Proc id paras decls stmts)
 
 
 -- pStmt, pRead, pWrite, pAsg :: Parser Stmt
@@ -111,15 +128,6 @@ pRead
       var <- pVar
       reserved SEMI
       return (Read var)
-
-
--- pAsg
---   = do
---       lvalue <- pLvalue
---       reserved ASSIGN
---       rvalue <- pExp
---       return (Assign lvalue (IntConst 1))
-
 
 
 pVar :: Parser Var
@@ -137,11 +145,6 @@ pMain
       eof
       return (Program procs)
 
-
--- testdata1 = [(0,PROC), (0,IDENT "main"),(0,LPAREN),(0,RPAREN),(0,INT),(0,IDENT "a"),(0,SEMI),(0,INT),(0,IDENT "b"),(0,SEMI),(0,BEGIN),(0,IDENT "a"),(0,ASSIGN),(0,INT_CONST 2),(0,MUL),(0,LPAREN),(0,INT_CONST 1),(0,PLUS),(0,INT_CONST 10),(0,RPAREN),(0,PLUS),(0,INT_CONST 2),(0,PLUS),(0,INT_CONST 2),(0,MUL),(0,INT_CONST 2),(0,PLUS),(0,INT_CONST 14),(0,SEMI),(0,IDENT "b"),(0,ASSIGN),(0,MINUS),(0,IDENT "a"),(0,PLUS),(0,IDENT "a"),(0,SEMI),(0,END)]
--- testdata2 = [(0,RPAREN),(0,INT),(0,IDENT "a")]
--- test1 = runParser pMain () "" testdata1
--- test2 = runParser pMain () "" testdata2
 
 test
   = do
