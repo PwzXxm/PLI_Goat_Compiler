@@ -193,9 +193,9 @@ pAsg
       return (Assign v e)
 
 pStmtComp
-  = choice [pIf]
+  = choice [pIf, pWhile]
 
-pIf :: Parser Stmt
+pIf, pWhile :: Parser Stmt
 pIf
   = do
       reserved IF
@@ -215,6 +215,15 @@ pIf
           return s)
 
       return (If e stmts estmts)
+
+pWhile
+  = do
+      reserved WHILE
+      e <- pExpr
+      reserved DO
+      stmts <- many1 pStmt
+      reserved OD
+      return (While e stmts)
 
 -- Stmt End
 
