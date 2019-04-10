@@ -19,15 +19,11 @@ reserved tok
 
 identifier :: Parser String
 identifier
-  = gToken (\t -> case t of 
-                    IDENT id -> Just id
-                    other -> Nothing)
+  = gToken (\t -> case t of {IDENT id -> Just id; other -> Nothing})
 
 intConst :: Parser Int
 intConst
-  = gToken (\t -> case t of 
-                    INT_CONST v -> Just v
-                    other -> Nothing)
+  = gToken (\t -> case t of {INT_CONST v -> Just v; other -> Nothing})
 
 gToken :: (Tok -> Maybe a) -> Parser a
 gToken test
@@ -36,7 +32,6 @@ gToken test
       showToken (pos, tok) = show tok
       posToken  (pos, tok) = pos
       testToken (pos, tok) = test tok
-
 
 pBaseType :: Parser BaseType
 pBaseType
@@ -117,18 +112,26 @@ pProc
       return (Proc id paras decls stmts)
 
 
--- pStmt, pRead, pWrite, pAsg :: Parser Stmt
-pStmt, pRead :: Parser Stmt
-pStmt 
-  = choice [pRead]
 
+pStmt, pStmtAtom, pStmtComp :: Parser Stmt
+pStmt 
+  = choice [pStmtAtom, pStmtComp]
+
+pStmtAtom
+  = do
+      r <- choice [pRead]
+      reserved SEMI
+      return r
+
+pRead :: Parser Stmt
 pRead
   = do
       reserved READ
       var <- pVar
-      reserved SEMI
       return (Read var)
 
+pStmtComp
+  = choice []
 
 pVar :: Parser Var
 pVar
@@ -137,7 +140,6 @@ pVar
       return (Var ident IdxVar)
 
 
--- TODO: need to check EOF
 pMain :: Parser GoatProgram
 pMain
   = do
@@ -152,4 +154,3 @@ test
       let tokens = runGoatLexer "test.in" input
       let res = runParser pMain () "" tokens
       return res
-
