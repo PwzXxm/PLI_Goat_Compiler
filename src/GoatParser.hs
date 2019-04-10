@@ -61,7 +61,9 @@ pDecl
 
 pExpr :: Parser Expr
 pExpr
-  = do choice []
+  = do
+      i <- intConst
+      return (IntConst i)
 
 -- Expr End
 
