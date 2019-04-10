@@ -64,8 +64,7 @@ data Stmt
   | Read Var
   | Write Expr
   | Call Ident [Expr]
-  | If Expr [Stmt]
-  | IfElse Expr [Stmt] [Stmt]
+  | If Expr [Stmt] [Stmt]
   | While Expr [Stmt]
     deriving (Show, Eq)
 
