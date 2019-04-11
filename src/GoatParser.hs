@@ -66,18 +66,48 @@ pDecl
       return (Decl ident basetype shape)
 
 -- Expr
+-- L1: ||
+-- L2: &&
+-- L3: !
+-- L4: = != < <= > >=
+-- L5: + -
+-- L6: * /
+-- L7: -
 
 pExpr :: Parser Expr
 pExpr
   -- = choice [pStrLit, (chainl1 pTerm pAdd), (chainl1 pTerm pSub), pRelationalOps]
-  = choice [pStrLit, (chainl1 pFactor pAddSub)]
+  = choice [pStrLit, pExprL1]
 
--- pTerm :: parser Expr
--- pTerm = choice [(chainl1 pFactor pMul), (chainl1 pFactor pDiv)]
--- 
-pFactor :: Parser Expr
--- pFactor = choice [pUnaryMinus, paras pExpr, pBoolConst, pIntConst, pFloatConst ]
-pFactor = choice [pBoolConst, pIntConst, pFloatConst]
+pExprL1 :: Parser Expr
+pExprL1 = chainl1 pExprL2 pBoolOr
+
+pExprL2 :: Parser Expr
+pExprL2 = chainl1 pExprL3 pBoolAnd
+
+pExprL3 :: Parser Expr
+pExprL3 = choice [pUnaryNot, pExprL4]
+
+pExprL4 :: Parser Expr
+pExprL4 = choice [try pRelationalOps, pExprL5]
+
+pExprL5 :: Parser Expr
+pExprL5 = chainl1 pExprL6 pAddSub
+
+pExprL6 :: Parser Expr
+pExprL6 = chainl1 pExprL7 pMulDiv
+
+pExprL7 :: Parser Expr
+-- pExprL7 = choice [pUnaryMinus, parens pExpr, pBoolConst, pIntConst, pFloatConst ]
+pExprL7 = choice [pUnaryMinus, pBoolConst, pIntConst, pFloatConst, pEvar, pParensExpr]
+
+pParensExpr :: Parser Expr
+pParensExpr
+  = do
+      reserved LPAREN
+      e <- pExpr
+      reserved RPAREN
+      return e
 
 pBoolConst, pIntConst, pFloatConst, pStrLit :: Parser Expr
 pBoolConst
@@ -112,91 +142,80 @@ pAddSub
       reserved PLUS
       return (BinaryOp Op_add)
 
--- pMul
---   = do
---       reserved MUL
---       return BinaryOps (Mul)
--- 
--- pDiv
---   = do
---       reserved DIV
---       return Div
--- 
--- pAnd
---   = do
---       reserved AND
---       return And
--- 
--- pOr
---   = do
---       reserved OR
---       return Or
--- 
--- pRelationalOps :: Parser (Expr -> Expr -> Expr)
--- pRelationalOps
---   = choice [pEq, pNe, pLt, pLe, pGt, pGe]
--- 
--- pEq, pNe, pLt, pLe, pGt, pGe :: Parser Expr
--- pEq
---   = do
---       f1 <- pFactor
---       reserved EQUAL
---       f2 <- pFactor
---       return (BinaryOp Op_eq f1 f2)
--- 
--- pNe
---   = do
---       f1 <- pFactor
---       reserved UNEQUAL
---       f2 <- pFactor
---       return (BinaryOp Op_ne f1 f2)
--- 
--- pLt
---   = do
---       f1 <- pFactor
---       reserved LESS
---       f2 <- pFactor
---       return (BinaryOp Op_lt f1 f2)
--- 
--- pLe
---   = do
---       f1 <- pFactor
---       reserved LESSEQUAL
---       f2 <- pFactor
---       return (BinaryOp Op_le f1 f2)
--- 
--- pGt
---   = do
---       f1 <- pFactor
---       reserved GREATER
---       f2 <- pFactor
---       return (BinaryOp Op_gt f1 f2)
--- 
--- pGe
---   = do
---       f1 <- pFactor
---       reserved GREATEQUAL
---       f2 <- pFactor
---       return (BinaryOp Op_ge f1 f2)
--- 
--- pUnaryMinus, pUnaryNot :: Parser Expr
--- pUnaryMinus
---   = do
---       reserved MINUS
---       f <- pFactor
---       return (UnaryMinus f)
--- 
--- pUnaryNot
---   = do
---       reserved UNARYNOT
---       f <- pFactor
---       return (UnaryNot f)
+pMulDiv
+  = do
+      reserved MUL
+      return (BinaryOp Op_mul)
+    <|>
+    do
+      reserved DIV
+      return (BinaryOp Op_div)
 
--- pEvar :: Parsec Expr
--- pEvar
---   = do
---       v <- pVar
---       return (Evar v)
+
+pBoolAnd
+  = do
+      reserved AND
+      return (BinaryOp Op_and)
+
+pBoolOr
+  = do
+      reserved OR
+      return (BinaryOp Op_or)
+
+
+pRelationalOps :: Parser Expr
+pRelationalOps
+  = do
+      f1 <- pExprL5
+      op <- pRelationalOperator
+      f2 <- pExprL5
+      return (BinaryOp op f1 f2)
+
+
+pRelationalOperator :: Parser Binop
+pRelationalOperator
+  = do
+      reserved EQUAL
+      return Op_eq
+    <|>
+    do
+      reserved UNEQUAL
+      return Op_ne
+    <|>
+    do
+      reserved LESS
+      return Op_lt
+    <|>
+    do
+      reserved LESSEQUAL
+      return Op_le
+    <|>
+    do
+      reserved GREATER
+      return Op_gt
+    <|>
+    do
+      reserved GREATEQUAL
+      return Op_ge
+
+pUnaryMinus, pUnaryNot :: Parser Expr
+pUnaryMinus
+  = do
+      reserved MINUS
+      f <- pExprL7
+      return (UnaryMinus f)
+
+pUnaryNot
+  = do
+      reserved UNARYNOT
+      f <- pExprL4
+      return (UnaryNot f)
+
+pEvar :: Parser Expr
+pEvar
+  = do
+      v <- pVar
+      return (Evar v)
 
 -- Expr End
 
