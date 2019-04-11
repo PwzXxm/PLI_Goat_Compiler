@@ -50,7 +50,7 @@ rules :-
   \*         { \p s -> (p, MUL) }
   \/         { \p s -> (p, DIV) }
   \<         { \p s -> (p, LESS) }
-  \=\<        { \p s -> (p, LESSEQUAL) }
+  \<\=        { \p s -> (p, LESSEQUAL) }
   \>         { \p s -> (p, GREATER) }
   \>\=       { \p s -> (p, GREATEQUAL) }
   \=         { \p s -> (p, EQUAL) }
@@ -59,7 +59,7 @@ rules :-
   \]         { \p s -> (p, RSQUARE) }
   \|\|       { \p s -> (p, OR) }
   \&\&       { \p s -> (p, AND) }
-  \!         { \p s -> (p, UNARY) }
+  \!         { \p s -> (p, UNARYNOT) }
   \;         { \p s -> (p, SEMI) }
   \,         { \p s -> (p, COMMA) }
   @ident     { \p s -> (p, IDENT s) }
