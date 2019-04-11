@@ -219,52 +219,44 @@ pEvar
 
 -- Expr End
 
-pShape, pShapeVar, pShapeArr, pShapeMat :: Parser Shape
+pShape :: Parser Shape
 pShape
-  = choice [try pShapeMat, try pShapeArr, pShapeVar]
-
-pShapeMat
   = do
       reserved LSQUARE
       s0 <- intConst
-      reserved COMMA
-      s1 <- intConst
-      reserved RSQUARE
-      return (ShapeMat s0 s1)
-
-pShapeArr
-  = do
-      reserved LSQUARE
-      s <- intConst
-      reserved RSQUARE
-      return (ShapeArr s)
-
-pShapeVar
-  = do
+      shape <- (
+        do
+          reserved RSQUARE
+          return (ShapeArr s0)
+        <|>
+        do
+          reserved COMMA
+          s1 <- intConst
+          reserved RSQUARE
+          return (ShapeMat s0 s1))
+      return shape
+    <|>
+    do
       return ShapeVar
 
-pIdx, pIdxVar, pIdxArr, pIdxMat :: Parser Idx
+pIdx :: Parser Idx
 pIdx
-  = choice [try pIdxMat, try pIdxArr, pIdxVar]
-
-pIdxMat
   = do
       reserved LSQUARE
       e0 <- pExpr
-      reserved COMMA
-      e1 <- pExpr
-      reserved RSQUARE
-      return (IdxMat e0 e1)
-
-pIdxArr
-  = do
-      reserved LSQUARE
-      e <- pExpr
-      reserved RSQUARE
-      return (IdxArr e)
-
-pIdxVar
-  = do
+      shape <- (
+        do
+          reserved RSQUARE
+          return (IdxArr e0)
+        <|>
+        do
+          reserved COMMA
+          e1 <- pExpr
+          reserved RSQUARE
+          return (IdxMat e0 e1))
+      return shape
+    <|>
+    do
       return IdxVar
 
 pParaIndi :: Parser Indi
