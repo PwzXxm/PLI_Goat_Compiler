@@ -23,6 +23,7 @@ runGoatFormatter (Program []) = return ()
 runGoatFormatter (Program (x:xs))
   = do
       programFormatter x
+      output "\n"
       runGoatFormatter (Program xs)
 
 programFormatter :: Proc -> StrWriter
@@ -30,16 +31,17 @@ programFormatter (Proc id paras decls stmts)
   = do
       output "proc "
       output id
-      output "("
+      output " ("
       parasFormatter paras
       output ")\n"
-      -- declsFormatter decls
-      -- putStr "begin\n"
-      -- stmtsFormatter stmts
-      -- putStr "end\n"
+      declsFormatter decls
+      output "begin\n"
+      stmtsFormatter 1 stmts
+      output "end\n"
 
 
 parasFormatter :: [Para] -> StrWriter
+parasFormatter [] = return ()
 parasFormatter [x] = paraFormatter x
 parasFormatter (x:xs)
   = do
@@ -56,37 +58,85 @@ paraFormatter (Para id btype indi)
       output " "
       output id
 
--- declsFormatter :: [Decl] -> IO ()
--- declsFormatter [] = return ()
--- declsFormatter ((Decl id btype shape):xs)
---   = do
---       putStr "    "
---       btypeFormatter btype
---       putStr " "
---       putStr id
---       shapeFormatter shape
---       putStr "\n"
---       declsFormatter xs
+declsFormatter :: [Decl] -> StrWriter
+declsFormatter [] = return ()
+declsFormatter ((Decl id btype shape):xs)
+  = do
+      output "    "
+      btypeFormatter btype
+      output " "
+      output id
+      shapeFormatter shape
+      output ";\n"
+      declsFormatter xs
       
--- stmtsFormatter :: [Stmt] -> IO ()
--- stmtsFormatter [] = return ()
--- stmtsFormatter (x:xs)
---   = do
---       stmtFormatter 1 x
---       putStr "\n"
---       stmtsFormatter xs
+stmtsFormatter :: Int -> [Stmt] -> StrWriter
+stmtsFormatter _ [] = return ()
+stmtsFormatter inde (x:xs)
+  = do
+      stmtFormatter inde x
+      output "\n"
+      stmtsFormatter inde xs
 
--- stmtFormatter :: Int -> Stmt -> IO ()
--- stmtFormatter inde (Read var)
---   = do
---       indeFormatter inde
---       putStr "read "
---       varFormatter var
--- stmtFormatter inde (Write expr)
---   = do
---       indeFormatter inde
---       putStr "write "
---       exprFormatter expr
+stmtFormatter :: Int -> Stmt -> StrWriter
+stmtFormatter inde (Read var)
+  = do
+      indeFormatter inde
+      output "read "
+      varFormatter var
+      output ";"
+stmtFormatter inde (Write expr)
+  = do
+      indeFormatter inde
+      output "write "
+      exprFormatter False expr
+      output ";"
+stmtFormatter inde (Assign var expr)
+  = do
+      indeFormatter inde
+      varFormatter var
+      output " := "
+      exprFormatter False expr
+      output ";"
+stmtFormatter inde (Call id xs)
+  = do
+      indeFormatter inde
+      output "call "
+      output id
+      output "("
+      exprsFormatter xs
+      output ")"
+      output ";"
+stmtFormatter inde (If expr s1 [])
+  = do
+      indeFormatter inde
+      output "if "
+      exprFormatter False expr
+      output " then\n"
+      stmtsFormatter (inde+1) s1
+      indeFormatter inde
+      output "fi"
+stmtFormatter inde (If expr s1 s2)
+  = do
+      indeFormatter inde
+      output "if "
+      exprFormatter False expr
+      output " then\n"
+      stmtsFormatter (inde+1) s1
+      indeFormatter inde
+      output "else\n"
+      stmtsFormatter (inde+1) s2
+      indeFormatter inde
+      output "fi"
+stmtFormatter inde (While expr stmts)
+  = do
+      indeFormatter inde
+      output "while "
+      exprFormatter False expr
+      output " do\n"
+      stmtsFormatter (inde+1) stmts
+      indeFormatter inde
+      output "od"
 
 indiFormatter :: Indi -> StrWriter
 indiFormatter InVar = output "var"
@@ -95,6 +145,7 @@ indiFormatter InRef = output "ref"
 btypeFormatter :: BaseType -> StrWriter
 btypeFormatter BoolType = output "bool"
 btypeFormatter IntType = output "int"
+btypeFormatter FloatType = output "float"
 
 shapeFormatter :: Shape -> StrWriter
 shapeFormatter ShapeVar = return ()
@@ -111,51 +162,80 @@ shapeFormatter (ShapeMat a b)
     output (show b)
     output "]"
 
--- varFormatter :: Var -> IO ()
--- varFormatter (Var id idx)
---   = do
---       putStr id
---       idxFormatter idx
+varFormatter :: Var -> StrWriter
+varFormatter (Var id idx)
+  = do
+      output id
+      idxFormatter idx
 
--- idxFormatter :: Idx -> IO ()
--- idxFormatter IdxVar = return ()
--- idxFormatter (IdxArr expr)
---   = do
---       putStr "["
---       exprFormatter expr
---       putStr "]"
--- idxFormatter (IdxMat e1 e2)
---   = do
---       putStr "["
---       exprFormatter e1
---       putStr "]["
---       exprFormatter e2
---       putStr "]"
+idxFormatter :: Idx -> StrWriter
+idxFormatter IdxVar = return ()
+idxFormatter (IdxArr expr)
+  = do
+      output "["
+      exprFormatter False expr
+      output "]"
+idxFormatter (IdxMat e1 e2)
+  = do
+      output "["
+      exprFormatter False e1
+      output "]["
+      exprFormatter False e2
+      output "]"
 
--- exprFormatter :: Expr -> IO ()
--- exprFormatter (BoolConst bool) = putStr (show bool)
--- exprFormatter (IntConst int) = putStr (show int)
--- exprFormatter (StrConst string) = putStr (show string)
--- exprFormatter (Id id) = putStr id
--- exprFormatter (Add e1 e2)
---   = do
---       exprFormatter e1
---       putStr " + "
---       exprFormatter e2
--- exprFormatter (Mul e1 e2)
---   = do
---       exprFormatter e1
---       putStr " * "
---       exprFormatter e2
--- exprFormatter (UnaryMinus expr)
---   = do
---       putStr "-"
---       exprFormatter expr
+exprsFormatter :: [Expr] -> StrWriter
+exprsFormatter [] = return ()
+exprsFormatter [x] = exprFormatter False x
+exprsFormatter (x:xs)
+  = do
+      exprFormatter False x
+      output ", "
+      exprsFormatter xs
+
+exprFormatter :: Bool -> Expr -> StrWriter
+exprFormatter _ (BoolConst bool) = output (show bool)
+exprFormatter _ (IntConst int) = output (show int)
+exprFormatter _ (StrConst string) = output (show string)
+exprFormatter _ (Evar var) = varFormatter var
+exprFormatter True (BinaryOp binop e1 e2)
+  = do
+      output "("
+      exprFormatter True e1
+      binopFotmatter binop
+      exprFormatter True e2
+      output ")"
+exprFormatter False (BinaryOp binop e1 e2)
+  = do
+      exprFormatter True e1
+      binopFotmatter binop
+      exprFormatter True e2
+exprFormatter _ (UnaryMinus expr)
+  = do
+      output "-"
+      exprFormatter True expr
+exprFormatter _ (UnaryNot expr)
+  = do
+      output "!"
+      exprFormatter True expr
 
 
--- indeFormatter :: Int -> IO ()
--- indeFormatter 0 = return ()
--- indeFormatter a
---   = do
---     putStr "    "
---     indeFormatter (a-1)
+binopFotmatter :: Binop -> StrWriter
+binopFotmatter Op_add = output " + "
+binopFotmatter Op_sub = output " - "
+binopFotmatter Op_mul = output " * "
+binopFotmatter Op_div = output " / "
+binopFotmatter Op_eq = output " = "
+binopFotmatter Op_ne = output " != "
+binopFotmatter Op_lt = output " < "
+binopFotmatter Op_le = output " =< "
+binopFotmatter Op_gt = output " > "
+binopFotmatter Op_ge = output " >= "
+binopFotmatter Op_and = output " && "
+binopFotmatter Op_or = output " || "
+
+indeFormatter :: Int -> StrWriter
+indeFormatter 0 = return ()
+indeFormatter a
+  = do
+    output "    "
+    indeFormatter (a-1)
