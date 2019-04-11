@@ -404,6 +404,6 @@ testf
       let tokens = runGoatLexer "../build/test.in" input
       let res = runParser pMain () "" tokens
       case res of
-        Right ast -> runGoatFormatter ast
+        Right ast -> runGoatFormatterAndOutput ast
         Left  err -> print err
       
