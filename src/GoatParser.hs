@@ -76,8 +76,7 @@ pDecl
 
 pExpr :: Parser Expr
 pExpr
-  -- = choice [pStrLit, (chainl1 pTerm pAdd), (chainl1 pTerm pSub), pRelationalOps]
-  = choice [pStrLit, pExprL1]
+  = pExprL1
 
 pExprL1 :: Parser Expr
 pExprL1 = chainl1 pExprL2 pBoolOr
@@ -313,7 +312,7 @@ pRead
 pWrite
   = do
       reserved WRITE
-      e <- pExpr
+      e <- choice [pStrLit, pExpr]
       return (Write e)
 
 pCall
