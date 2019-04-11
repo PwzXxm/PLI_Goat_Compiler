@@ -69,25 +69,23 @@ pExpr
 
 pShape, pShapeVar, pShapeArr, pShapeMat :: Parser Shape
 pShape
-  = do choice [pShapeMat, pShapeArr, pShapeVar]
+  = choice [try pShapeMat, try pShapeArr, pShapeVar]
 
 pShapeMat
-  = try (do
+  = do
       reserved LSQUARE
       s0 <- intConst
       reserved COMMA
       s1 <- intConst
       reserved RSQUARE
       return (ShapeMat s0 s1)
-  )
 
 pShapeArr
-  = try (do
+  = do
       reserved LSQUARE
       s <- intConst
       reserved RSQUARE
       return (ShapeArr s)
-  )
 
 pShapeVar
   = do
@@ -95,25 +93,23 @@ pShapeVar
 
 pIdx, pIdxVar, pIdxArr, pIdxMat :: Parser Idx
 pIdx
-  = do choice [pIdxMat, pIdxArr, pIdxVar]
+  = choice [try pIdxMat, try pIdxArr, pIdxVar]
 
 pIdxMat
-  = try (do
+  = do
       reserved LSQUARE
       e0 <- pExpr
       reserved COMMA
       e1 <- pExpr
       reserved RSQUARE
       return (IdxMat e0 e1)
-  )
 
 pIdxArr
-  = try (do
+  = do
       reserved LSQUARE
       e <- pExpr
       reserved RSQUARE
       return (IdxArr e)
-  )
 
 pIdxVar
   = do
