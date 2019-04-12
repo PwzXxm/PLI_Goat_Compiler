@@ -11,7 +11,7 @@ import Text.Parsec.Pos
 $digit       = 0-9
 @alpha       = [a-zA-Z]
 @digits      = $digit+
-@float       = $digit \. $digit
+@float       = @digits \. @digits
 @stringlit   = \" [^\"]* \"
 @ident       = @alpha (@alpha | $digit | \_ | \')*
 @comment     = \# [^\n]* \n

@@ -55,6 +55,10 @@ pBaseType
     do 
       reserved INT
       return IntType
+    <|>
+    do
+      reserved FLOAT
+      return FloatType
 
 pDecl :: Parser Decl
 pDecl
