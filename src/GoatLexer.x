@@ -50,7 +50,7 @@ rules :-
   \*         { \p s -> (p, MUL) }
   \/         { \p s -> (p, DIV) }
   \<         { \p s -> (p, LESS) }
-  \<\=        { \p s -> (p, LESSEQUAL) }
+  \<\=       { \p s -> (p, LESSEQUAL) }
   \>         { \p s -> (p, GREATER) }
   \>\=       { \p s -> (p, GREATEQUAL) }
   \=         { \p s -> (p, EQUAL) }
