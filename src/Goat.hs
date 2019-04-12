@@ -46,7 +46,7 @@ main
             let tokens = runGoatLexer source_file input
             let ast = runGoatParser tokens
             case ast of
-              Right tree -> putStrLn ("^_^")  -- (show (runGoatFormatter tree)) -- need to fix
+              Right tree -> runGoatFormatterAndOutput tree
               Left err ->
                 do
                   putStr "Parse error: "
