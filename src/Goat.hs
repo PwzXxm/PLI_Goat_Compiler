@@ -10,54 +10,59 @@ import System.Environment
 import System.Exit
 
 main :: IO ()
--- main
---   = do
---       progname <- getProgName
---       args <- getArgs
---       excute progname args
---
--- excute :: String -> [String] -> IO ()
--- excute _ [filename]
---   = do
---     putStrLn "Sorry, cannot generate code yet"
---     exitWith (ExitFailure 1)
--- 
--- excute _ ["-p", filename]
---   = do
---       input <- readFile filename
---       let output = runGoatParse input
---       case output of
---         Right ast -> print ast
---         Left  err -> do 
---           putStr "Parse error at "
---           print err
---     -- TODO: Pretty print
--- 
--- excute progname _
---   = do
---       putStrLn ("Usage: " ++ progname ++ " filename\n\n")
---       exitWith (ExitFailure 1)
-
-main 
+main
   = do
-    putStr "Test"
--- main
---   = do { progname <- getProgName
---         ; args <- getArgs
---         ; checkArgs progname args
---         ; input <- readFile (head args)
---         ; let output = runGoatParse input
---         ; case output of
---             Right ast -> print ast
---             Left  err -> do { putStr "Parse error at "
---                             ; print err
---                             }
---         }
--- 
--- checkArgs :: String -> [String] -> IO ()
--- checkArgs _ [filename]
---     = return ()
--- checkArgs progname _
---     = do { putStrLn ("Usage: " ++ progname ++ " filename\n\n")
---         ; exitWith (ExitFailure 1)
---         }
+      progname <- getProgName
+      args <- getArgs
+
+      let usageMsg = "usage: " ++ progname ++ " [-st | -sa | -p | -h] file"
+
+      case args of
+        [source_file] ->
+          do
+            putStrLn ("Sorry, cannot generate code yet")
+            putStrLn (usageMsg)
+        ["-st", source_file] ->
+          do
+            input <- readFile source_file
+            let tokens = runGoatLexer source_file input
+            putStrLn (show tokens)
+        ["-sa", source_file] ->
+          do
+            input <- readFile source_file
+            let tokens = runGoatLexer source_file input
+            let ast = runGoatParser tokens
+            case ast of
+              Right tree -> putStrLn (show tree)
+              Left err ->
+                do
+                  putStr "Parse error: "
+                  putStrLn (show err)
+                  exitWith (ExitFailure 2)
+
+        ["-p", source_file] ->
+          do
+            input <- readFile source_file
+            let tokens = runGoatLexer source_file input
+            let ast = runGoatParser tokens
+            case ast of
+              Right tree -> putStrLn ("^_^")  -- (show (runGoatFormatter tree)) -- need to fix
+              Left err ->
+                do
+                  putStr "Parse error: "
+                  putStrLn (show err)
+                  exitWith (ExitFailure 2)
+
+        ["-h", source_file] ->
+          do
+            putStrLn usageMsg
+            putStrLn ("Options and arguments:")
+            putStrLn ("-st    : display secret tokens")
+            putStrLn ("-sa    : display secret Abstract Syntax Tree")
+            putStrLn ("-p     : pretty print the source file")
+            putStrLn ("-h     : display the help menu")
+            putStrLn ("file   : the file to be processed")
+        _ ->
+          do
+            putStrLn usageMsg
+            exitWith (ExitFailure 1)

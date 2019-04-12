@@ -394,6 +394,8 @@ pMain
       eof
       return (Program procs)
 
+runGoatParser :: [Token] -> Either ParseError GoatProgram
+runGoatParser tokens = runParser pMain () "" tokens
 
 test
   = do
