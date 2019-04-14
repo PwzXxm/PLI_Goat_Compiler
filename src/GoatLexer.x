@@ -12,7 +12,7 @@ $digit       = 0-9
 @alpha       = [a-zA-Z]
 @digits      = $digit+
 @float       = @digits \. @digits
-@stringlit   = \" [^\"]* \"
+@stringlit   = \" [^\"\n]* \"
 @ident       = @alpha (@alpha | $digit | \_ | \')*
 @comment     = \# [^\n]* \n
 
@@ -69,7 +69,12 @@ rules :-
 type AlexToken = (AlexPosn, Tok)
 
 mapFunc :: String -> AlexToken -> Token
-mapFunc filename ((AlexPn _ line col), tok) = ((newPos filename line col), tok)
+mapFunc filename ((AlexPn _ line col), tok) = ((newPos filename line col), (cleanStrLit tok))
+
+-- remove start & end quote in string literal
+cleanStrLit :: Tok -> Tok
+cleanStrLit (LIT str) = (LIT (tail (init str)))
+cleanStrLit tok = tok
 
 runGoatLexer :: String -> String -> [Token]
 runGoatLexer filename s 
