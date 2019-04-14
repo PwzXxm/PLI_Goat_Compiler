@@ -20,7 +20,10 @@ reserved tok
 
 identifier :: Parser String
 identifier
-  = gToken (\t -> case t of {IDENT id -> Just id; other -> Nothing})
+  = do 
+      gToken (\t -> case t of {IDENT id -> Just id; other -> Nothing})
+    <?>
+    "identifier"
 
 intConst :: Parser Int
 intConst
@@ -59,6 +62,8 @@ pBaseType
     do
       reserved FLOAT
       return FloatType
+    <?>
+    "type"
 
 pDecl :: Parser Decl
 pDecl
@@ -80,7 +85,10 @@ pDecl
 
 pExpr :: Parser Expr
 pExpr
-  = pExprL1
+  = do
+      pExprL1
+    <?>
+    "expression"
 
 pExprL1 :: Parser Expr
 pExprL1 = chainl1 pExprL2 pBoolOr
@@ -111,6 +119,8 @@ pParensExpr
       e <- pExpr
       reserved RPAREN
       return e
+    <?>
+    "(<expression>)"
 
 pBoolConst, pIntConst, pFloatConst, pStrLit :: Parser Expr
 pBoolConst
@@ -122,6 +132,8 @@ pIntConst
   = do
       i <- intConst
       return (IntConst i)
+    <?>
+    "int const"
 
 pFloatConst
   = do
@@ -132,6 +144,8 @@ pStrLit
   = do
       s <- strLitConst
       return (StrConst s)
+    <?>
+    "string literal"
  
 --pAdd, pSub, pMul, pDiv, pAnd, pOr :: Parser (Expr -> Expr -> Expr)
 pAddSub :: Parser (Expr -> Expr -> Expr)
@@ -219,6 +233,8 @@ pEvar
   = do
       v <- pVar
       return (Evar v)
+    <?>
+    "variable"
 
 -- Expr End
 
@@ -271,6 +287,8 @@ pParaIndi
     do 
       reserved REF
       return InRef
+    <?>
+    "parameter indicator"
 
 pPara :: Parser Para
 pPara
@@ -293,6 +311,8 @@ pProc
       stmts <- many1 pStmt
       reserved END
       return (Proc id paras decls stmts)
+    <?>
+    "procedure"
 
 -- Stmt
 
@@ -305,6 +325,8 @@ pStmtAtom
       r <- choice [pRead, pWrite, pCall, pAsg]
       reserved SEMI
       return r
+    <?>
+      "atomic statement"
 
 pRead, pWrite, pCall, pAsg :: Parser Stmt
 pRead
@@ -335,8 +357,7 @@ pAsg
       e <- pExpr
       return (Assign v e)
 
-pStmtComp
-  = choice [pIf, pWhile]
+pStmtComp = (choice [pIf, pWhile]) <?> "composite statement"
 
 pIf, pWhile :: Parser Stmt
 pIf
