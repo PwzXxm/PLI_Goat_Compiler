@@ -13,10 +13,13 @@ output x = tell $ Endo ([x]<>)
 type StrWriter = Writer (Endo [String]) ()
 ----------------------------------------------
 
+runGoatFormatterAndReturnString :: GoatProgram -> String
+runGoatFormatterAndReturnString program
+  = concat (appEndo (execWriter (runGoatFormatter program)) [])
 
 runGoatFormatterAndOutput :: GoatProgram -> IO ()
 runGoatFormatterAndOutput program
-  = mapM_ putStr $ appEndo (execWriter (runGoatFormatter program)) []
+  = mapM_ putStr (appEndo (execWriter (runGoatFormatter program)) [])
 
 runGoatFormatter :: GoatProgram -> StrWriter
 runGoatFormatter (Program []) = return ()
