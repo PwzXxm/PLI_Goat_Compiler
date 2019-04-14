@@ -1,0 +1,3 @@
+Parse error: "./testdata/prettier/w-proc-para-ref-no-type.goat" (line 1, column 12):
+unexpected identifier: "n"
+expecting type
