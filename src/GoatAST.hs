@@ -2,7 +2,7 @@ module GoatAST where
 
 type Ident = String
 
-data BaseType 
+data BaseType
   = BoolType | IntType | FloatType
     deriving (Show, Eq)
 
@@ -22,10 +22,10 @@ data Var
   = Var Ident Idx
     deriving (Show, Eq)
 
-data Binop 
+data Binop
   = Op_add
   | Op_sub
-  | Op_mul 
+  | Op_mul
   | Op_div
   | Op_eq
   | Op_ne
@@ -48,7 +48,7 @@ data Expr
   | UnaryNot Expr
     deriving (Show, Eq)
 
-data Stmt 
+data Stmt
   = Assign Var Expr
   | Read Var
   | Write Expr
@@ -57,11 +57,11 @@ data Stmt
   | While Expr [Stmt]
     deriving (Show, Eq)
 
-data Decl 
+data Decl
   = Decl Ident BaseType Shape
     deriving (Show, Eq)
 
-data Indi 
+data Indi
   = InVar | InRef
     deriving (Show, Eq)
 

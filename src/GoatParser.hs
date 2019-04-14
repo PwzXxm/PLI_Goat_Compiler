@@ -1,16 +1,15 @@
-module GoatParser where
-module GoatParser(runGoatParser) where 
+module GoatParser (runGoatParser) where
 
-import GoatAST
-import GoatToken
-import GoatLexer
-import GoatFormatter
+import           GoatAST
+import           GoatFormatter
+import           GoatLexer
+import           GoatToken
 
-import Data.Char
-import Text.Parsec
-import Text.Parsec.Pos
-import System.Environment
-import System.Exit
+import           Data.Char
+import           System.Environment
+import           System.Exit
+import           Text.Parsec
+import           Text.Parsec.Pos
 
 type Parser a
    = Parsec [Token] () a
@@ -21,7 +20,7 @@ reserved tok
 
 identifier :: Parser String
 identifier
-  = do 
+  = do
       gToken (\t -> case t of {IDENT id -> Just id; other -> Nothing})
     <?>
     "identifier"
@@ -56,7 +55,7 @@ pBaseType
       reserved BOOL
       return BoolType
     <|>
-    do 
+    do
       reserved INT
       return IntType
     <|>
@@ -147,7 +146,7 @@ pStrLit
       return (StrConst s)
     <?>
     "string literal"
- 
+
 --pAdd, pSub, pMul, pDiv, pAnd, pOr :: Parser (Expr -> Expr -> Expr)
 pAddSub :: Parser (Expr -> Expr -> Expr)
 
@@ -285,7 +284,7 @@ pParaIndi
       reserved VAL
       return InVar
     <|>
-    do 
+    do
       reserved REF
       return InRef
     <?>
@@ -318,7 +317,7 @@ pProc
 -- Stmt
 
 pStmt, pStmtAtom, pStmtComp :: Parser Stmt
-pStmt 
+pStmt
   = choice [pStmtAtom, pStmtComp]
 
 pStmtAtom
@@ -367,7 +366,7 @@ pIf
       e <- pExpr
       reserved THEN
       stmts <- many1 pStmt
-      -- else 
+      -- else
       estmts <- (
         do
           reserved FI
@@ -425,4 +424,4 @@ testf
       case res of
         Right ast -> runGoatFormatterAndOutput ast
         Left  err -> print err
-      
+

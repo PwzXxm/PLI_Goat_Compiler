@@ -1,11 +1,15 @@
-module GoatFormatter(runGoatFormatter, runGoatFormatterAndOutput, runGoatFormatterAndReturnString) where
+module GoatFormatter
+( runGoatFormatter
+, runGoatFormatterAndOutput
+, runGoatFormatterAndReturnString
+) where
 
-import GoatAST
+import           GoatAST
 
 -- Writer used for IO like output with higher performance than (++)
 -- From https://kseo.github.io/posts/2017-01-21-writer-monad.html
-import Control.Monad.Trans.Writer.Strict
-import Data.Monoid
+import           Control.Monad.Trans.Writer.Strict
+import           Data.Monoid
 
 output :: String -> Writer (Endo [String]) ()
 output x = tell $ Endo ([x]<>)
@@ -72,7 +76,7 @@ declsFormatter ((Decl id btype shape):xs)
       shapeFormatter shape
       output ";\n"
       declsFormatter xs
-      
+
 stmtsFormatter :: Int -> [Stmt] -> StrWriter
 stmtsFormatter _ [] = return ()
 stmtsFormatter inde (x:xs)
@@ -146,8 +150,8 @@ indiFormatter InVar = output "var"
 indiFormatter InRef = output "ref"
 
 btypeFormatter :: BaseType -> StrWriter
-btypeFormatter BoolType = output "bool"
-btypeFormatter IntType = output "int"
+btypeFormatter BoolType  = output "bool"
+btypeFormatter IntType   = output "int"
 btypeFormatter FloatType = output "float"
 
 shapeFormatter :: Shape -> StrWriter
@@ -228,14 +232,14 @@ binopFotmatter Op_add = output " + "
 binopFotmatter Op_sub = output " - "
 binopFotmatter Op_mul = output " * "
 binopFotmatter Op_div = output " / "
-binopFotmatter Op_eq = output " = "
-binopFotmatter Op_ne = output " != "
-binopFotmatter Op_lt = output " < "
-binopFotmatter Op_le = output " =< "
-binopFotmatter Op_gt = output " > "
-binopFotmatter Op_ge = output " >= "
+binopFotmatter Op_eq  = output " = "
+binopFotmatter Op_ne  = output " != "
+binopFotmatter Op_lt  = output " < "
+binopFotmatter Op_le  = output " =< "
+binopFotmatter Op_gt  = output " > "
+binopFotmatter Op_ge  = output " >= "
 binopFotmatter Op_and = output " && "
-binopFotmatter Op_or = output " || "
+binopFotmatter Op_or  = output " || "
 
 indeFormatter :: Int -> StrWriter
 indeFormatter 0 = return ()
