@@ -12,7 +12,7 @@ $digit       = 0-9
 @alpha       = [a-zA-Z]
 @digits      = $digit+
 @float       = @digits \. @digits
-@stringlit   = \" [^\"\n]* \"
+@stringlit   = \" [^\"\n\t]* \"
 @ident       = @alpha (@alpha | $digit | \_ | \')*
 @comment     = \# [^\n]* \n
 
