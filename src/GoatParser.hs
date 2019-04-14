@@ -1,4 +1,15 @@
-module GoatParser (runGoatParser) where
+-- | Parse given tokens and returns the Abstract Syntax Tree
+--
+-- Authors:
+--   Weizhi Xu  (752454)
+--   Zijun Chen (813190)
+--   Zhe Tang   (743398)
+
+module GoatParser
+( runGoatParser
+, test
+, testf
+) where
 
 import           GoatAST
 import           GoatFormatter
@@ -11,8 +22,7 @@ import           System.Exit
 import           Text.Parsec
 import           Text.Parsec.Pos
 
-type Parser a
-   = Parsec [Token] () a
+type Parser a = Parsec [Token] () a
 
 reserved :: Tok -> Parser ()
 reserved tok
@@ -314,8 +324,6 @@ pProc
     <?>
     "procedure"
 
--- Stmt
-
 pStmt, pStmtAtom, pStmtComp :: Parser Stmt
 pStmt
   = choice [pStmtAtom, pStmtComp]
@@ -357,6 +365,7 @@ pAsg
       e <- pExpr
       return (Assign v e)
 
+
 pStmtComp = (choice [pIf, pWhile]) <?> "composite statement"
 
 pIf, pWhile :: Parser Stmt
@@ -366,7 +375,8 @@ pIf
       e <- pExpr
       reserved THEN
       stmts <- many1 pStmt
-      -- else
+      -- check if there is an else statment
+      -- if not, return empty
       estmts <- (
         do
           reserved FI
@@ -389,8 +399,7 @@ pWhile
       reserved OD
       return (While e stmts)
 
--- Stmt End
-
+-- | Parse variables: identifier, array and matrix
 pVar :: Parser Var
 pVar
   = do
@@ -398,7 +407,8 @@ pVar
       idx <- pIdx
       return (Var ident idx)
 
-
+-- | Parse and check there is a least one procedure
+-- and it reaches the end of file
 pMain :: Parser GoatProgram
 pMain
   = do
@@ -406,9 +416,14 @@ pMain
       eof
       return (Program procs)
 
+-- | Perform parsing for Goat language
+-- It takes a list of tokens recognized at the lexical analysis stage
+-- It returns the abstract syntax tree if successful, of type 'GoatProgram'
+-- Otherwise, returns a error, of type 'ParseError'
 runGoatParser :: [Token] -> Either ParseError GoatProgram
 runGoatParser tokens = runParser pMain () "" tokens
 
+-- | Returns AST given the input of test file
 test
   = do
       input <- readFile "../build/test.in"
@@ -416,6 +431,7 @@ test
       let res = runParser pMain () "" tokens
       return res
 
+-- | Returns pretty printed code given the input of test file
 testf
   = do
       input <- readFile "../build/test.in"
@@ -424,4 +440,3 @@ testf
       case res of
         Right ast -> runGoatFormatterAndOutput ast
         Left  err -> print err
-
