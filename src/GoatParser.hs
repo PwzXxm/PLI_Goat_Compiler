@@ -95,14 +95,14 @@ pExprL4 :: Parser Expr
 pExprL4 = choice [try pRelationalOps, pExprL5]
 
 pExprL5 :: Parser Expr
-pExprL5 = chainl1 pExprL6 pAddSub
+pExprL5 = choice [pBoolConst, (chainl1 pExprL6 pAddSub)]
 
 pExprL6 :: Parser Expr
 pExprL6 = chainl1 pExprL7 pMulDiv
 
 pExprL7 :: Parser Expr
 -- pExprL7 = choice [pUnaryMinus, parens pExpr, pBoolConst, pIntConst, pFloatConst ]
-pExprL7 = choice [pUnaryMinus, pBoolConst, pIntConst, pFloatConst, pEvar, pParensExpr]
+pExprL7 = choice [pUnaryMinus, pIntConst, pFloatConst, pEvar, pParensExpr]
 
 pParensExpr :: Parser Expr
 pParensExpr
