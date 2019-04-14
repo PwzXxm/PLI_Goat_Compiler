@@ -1,4 +1,4 @@
-module GoatFormatter where
+module GoatFormatter(runGoatFormatter, runGoatFormatterAndOutput, runGoatFormatterAndReturnString) where
 
 import GoatAST
 

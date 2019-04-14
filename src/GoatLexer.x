@@ -1,5 +1,5 @@
 {
-module GoatLexer where
+module GoatLexer(runGoatLexer) where
 
 import GoatToken
 

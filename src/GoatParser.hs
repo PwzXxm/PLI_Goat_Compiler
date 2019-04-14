@@ -1,4 +1,5 @@
 module GoatParser where
+module GoatParser(runGoatParser) where 
 
 import GoatAST
 import GoatToken
