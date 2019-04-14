@@ -182,7 +182,7 @@ idxFormatter (IdxMat e1 e2)
   = do
       output "["
       exprFormatter False e1
-      output "]["
+      output ", "
       exprFormatter False e2
       output "]"
 
