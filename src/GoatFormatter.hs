@@ -22,7 +22,7 @@ runGoatFormatterAndOutput program
   = mapM_ putStr (appEndo (execWriter (runGoatFormatter program)) [])
 
 runGoatFormatter :: GoatProgram -> StrWriter
-runGoatFormatter (Program []) = return ()
+runGoatFormatter (Program [x]) = programFormatter x
 runGoatFormatter (Program (x:xs))
   = do
       programFormatter x
