@@ -72,11 +72,11 @@ instance Show Tok where
   show THEN            = "then"
   show CALL            = "call"
   show ASSIGN          = "assign"
-  show (INT_CONST _)   = "int const"
-  show (BOOL_CONST _)  = "bool const"
-  show (FLOAT_CONST _) = "float const"
-  show (IDENT _)       = "identifier"
-  show (LIT _)         = "string literal"
+  show (INT_CONST x)   = "int const" ++ userInputWrapper (show x)
+  show (BOOL_CONST x)  = "bool const" ++ userInputWrapper (show x)
+  show (FLOAT_CONST x) = "float const" ++ userInputWrapper (show x)
+  show (IDENT x)       = "identifier" ++ userInputWrapper x
+  show (LIT x)         = "string literal" ++ userInputWrapper x
   show LPAREN          = "("
   show RPAREN          = ")"
   show PLUS            = "+"
