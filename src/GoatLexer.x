@@ -16,6 +16,8 @@ $digit       = 0-9
 @ident       = @alpha (@alpha | $digit | \_ | \')*
 @comment     = \# [^\n]* \n
 
+@unknown         = .
+
 rules :-
 
   $white+    ;    -- skip white space
@@ -64,7 +66,7 @@ rules :-
   \,         { \p s -> (p, COMMA) }
   @ident     { \p s -> (p, IDENT s) }
   @stringlit { \p s -> (p, LIT s) }
-
+  @unknown       { \p s -> (p, UNKNOWN s) }
 {
 type AlexToken = (AlexPosn, Tok)
 

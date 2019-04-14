@@ -48,6 +48,7 @@ data Tok
   | UNARYNOT
   | SEMI
   | COMMA
+  | UNKNOWN String
   deriving (Eq)
 
 -- showTok :: (Show a) => Tok a -> String
@@ -95,3 +96,7 @@ instance Show Tok where
   show UNARYNOT        = "!"
   show SEMI            = ";"
   show COMMA           = ","
+  show (UNKNOWN x)     = "unknown token" ++ userInputWrapper x
+
+userInputWrapper :: String -> String
+userInputWrapper str = ": \"" ++ str ++ "\""
