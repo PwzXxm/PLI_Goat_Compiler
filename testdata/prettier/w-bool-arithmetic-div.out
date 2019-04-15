@@ -1,2 +1,2 @@
-Lexical/Parse error: "./testdata/prettier/w-bool-arithmetic-div.goat" (line 3, column 16):
+Syntax error: "./testdata/prettier/w-bool-arithmetic-div.goat" (line 3, column 16):
 unexpected /

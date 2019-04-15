@@ -45,7 +45,7 @@ execute job source_file
                     return ()
             Left err ->
               do
-                putStr "Lexical/Parse error: "
+                putStr "Syntax error: "
                 putStrLn (show err)
                 exitWith (ExitFailure 2)
 

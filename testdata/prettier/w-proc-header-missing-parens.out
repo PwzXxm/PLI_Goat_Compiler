@@ -1,2 +1,2 @@
-Lexical/Parse error: "./testdata/prettier/w-proc-header-missing-parens.goat" (line 2, column 1):
+Syntax error: "./testdata/prettier/w-proc-header-missing-parens.goat" (line 2, column 1):
 unexpected begin
