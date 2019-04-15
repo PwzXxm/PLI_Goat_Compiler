@@ -1,3 +1,10 @@
+-- | Data structure for the Abstract Syntax Tree
+--
+-- Authors:
+--   Weizhi Xu  (752454)
+--   Zijun Chen (813190)
+--   Zhe Tang   (743398)
+
 module GoatAST where
 
 type Ident = String
@@ -6,12 +13,14 @@ data BaseType
   = BoolType | IntType | FloatType
     deriving (Show, Eq)
 
+-- | for variable declaration
 data Shape
   = ShapeVar
   | ShapeArr Int
   | ShapeMat Int Int
     deriving (Show, Eq)
 
+-- | for variable index
 data Idx
   = IdxVar
   | IdxArr Expr

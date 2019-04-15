@@ -1,12 +1,12 @@
 module GoatFormatter
-( runGoatFormatter
-, runGoatFormatterAndOutput
+( runGoatFormatterAndOutput
 , runGoatFormatterAndReturnString
 ) where
 
 import           GoatAST
 
 import           Numeric
+
 -- Writer used for IO like output with higher performance than (++)
 -- From https://kseo.github.io/posts/2017-01-21-writer-monad.html
 import           Control.Monad.Trans.Writer.Strict

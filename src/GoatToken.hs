@@ -1,3 +1,10 @@
+-- | Data structure for the token list
+--
+-- Authors:
+--   Weizhi Xu  (752454)
+--   Zijun Chen (813190)
+--   Zhe Tang   (743398)
+
 module GoatToken where
 
 import           Text.Parsec.Pos
@@ -51,7 +58,7 @@ data Tok
   | UNKNOWN String
   deriving (Eq)
 
--- showTok :: (Show a) => Tok a -> String
+-- | Override show to have a more user friendly error message
 instance Show Tok where
   show BOOL               = "boolean"
   show INT                = "int"

@@ -1,4 +1,11 @@
 {
+-- | Run lexical analysis on input string and returns a list of tokens and their positions.
+--
+-- Authors:
+--   Weizhi Xu  (752454)
+--   Zijun Chen (813190)
+--   Zhe Tang   (743398)
+
 module GoatLexer(runGoatLexer) where
 
 import GoatToken
@@ -16,6 +23,7 @@ $digit       = 0-9
 @ident       = @alpha (@alpha | $digit | \_ | \')*
 @comment     = \# [^\n]* \n
 
+-- | capturing unknown token to prevent lexer throwing a error directly
 @unknown         = .
 
 rules :-
@@ -70,14 +78,16 @@ rules :-
 {
 type AlexToken = (AlexPosn, Tok)
 
+-- | convert AlexPosn to Parsec's SourcePos
 mapFunc :: String -> AlexToken -> Token
 mapFunc filename ((AlexPn _ line col), tok) = ((newPos filename line col), (cleanStrLit tok))
 
--- remove start & end quote in string literal
+-- | remove start & end quote in string literal
 cleanStrLit :: Tok -> Tok
 cleanStrLit (LIT str) = (LIT (tail (init str)))
 cleanStrLit tok = tok
 
+-- | main lexer function
 runGoatLexer :: String -> String -> [Token]
 runGoatLexer filename s 
   = map (mapFunc filename) (alexScanTokens s)
