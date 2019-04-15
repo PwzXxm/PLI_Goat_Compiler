@@ -106,5 +106,6 @@ instance Show Tok where
   show COMMA              = ","
   show (UNKNOWN x)        = "unknown token" ++ userInputWrapper x
 
+-- | Add double quotes where possible for error messages
 userInputWrapper :: String -> String
 userInputWrapper str = ": \"" ++ str ++ "\""
