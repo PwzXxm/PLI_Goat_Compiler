@@ -1,0 +1,6 @@
+proc main()
+begin
+write false;
+write true;
+  write "Test\n";
+end

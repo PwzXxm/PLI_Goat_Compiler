@@ -1,0 +1,7 @@
+proc main()
+begin
+    a := true && true;
+a := false && true;
+            a := false && false;    a := true && false;
+  write "Test\n";
+end

@@ -1,0 +1,5 @@
+proc main ()
+begin
+    write "Te\tst\n";
+    write "Test\n";
+end

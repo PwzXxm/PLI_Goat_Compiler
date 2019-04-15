@@ -1,0 +1,5 @@
+proc main()
+begin
+write 12312.123123;
+  write "Test\n";
+end

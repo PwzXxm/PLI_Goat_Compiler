@@ -1,0 +1,5 @@
+proc main()
+begin
+123adfsfas := 1;
+  write "Test\n";
+end

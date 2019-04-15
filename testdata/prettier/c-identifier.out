@@ -1,0 +1,14 @@
+proc main ()
+begin
+    asdfsdf := 1;
+    asd1231fsdf := 1;
+    asd1231fsdf123123 := 1;
+    a_sdfsdf := 1;
+    aDFDF := 1;
+    DFSDF := 1;
+    asdfa' := 1;
+    asdf'sdf := 1;
+    asdfs_df := 1;
+    asdfsdf_ := 1;
+    write "Test\n";
+end

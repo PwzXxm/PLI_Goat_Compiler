@@ -1,0 +1,5 @@
+proc main()
+begin
+write if true then a := 2; if
+  write "Test\n";
+end

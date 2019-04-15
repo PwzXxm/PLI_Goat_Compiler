@@ -1,0 +1,5 @@
+proc main ()
+    int a[2, 3];
+begin
+    write "Test\n";
+end

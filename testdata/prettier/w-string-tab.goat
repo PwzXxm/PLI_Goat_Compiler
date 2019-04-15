@@ -1,0 +1,7 @@
+proc main()
+begin
+write "asdf	asdf";
+  write "Test
+";
+end
+

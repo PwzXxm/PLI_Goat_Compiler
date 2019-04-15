@@ -1,0 +1,5 @@
+proc main()
+begin
+'asdfsadf := 1;
+  write "Test\n";
+end

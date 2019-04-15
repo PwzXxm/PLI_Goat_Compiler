@@ -1,0 +1,6 @@
+proc main ()
+begin
+    a := !false;
+    a := !true;
+    write "Test\n";
+end
