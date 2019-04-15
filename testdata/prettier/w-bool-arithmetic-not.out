@@ -1,0 +1,3 @@
+Parse error: "./testdata/prettier/w-bool-arithmetic-not.goat" (line 3, column 8):
+unexpected bool const: "false"
+expecting int const, float const, variable or (<expression>)

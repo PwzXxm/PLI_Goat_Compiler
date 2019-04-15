@@ -1,0 +1,5 @@
+proc main()
+begin
+ a:= false * false;
+  write "Test\n";
+end
