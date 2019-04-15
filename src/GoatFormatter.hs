@@ -200,7 +200,8 @@ exprsFormatter (x:xs)
       exprsFormatter xs
 
 exprFormatter :: Bool -> Expr -> StrWriter
-exprFormatter _ (BoolConst bool) = output (show bool)
+exprFormatter _ (BoolConst True) = output "true"
+exprFormatter _ (BoolConst False) = output "false"
 exprFormatter _ (IntConst int) = output (show int)
 exprFormatter _ (FloatConst float) = output (show float)
 exprFormatter _ (StrConst string) = output ("\"" ++ string ++ "\"")
