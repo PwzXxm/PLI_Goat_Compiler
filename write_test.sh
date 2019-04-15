@@ -17,12 +17,9 @@ then
     cp_c="cat ${testdata_path}c-basic.goat > ${testdata_path}${file}.goat"
     run_c="./Goat -p ${testdata_path}${file}.goat > ${testdata_path}${file}.out"
 
-    # Make Goat if not exist
-    if [ ! -e Goat ]
-    then
-        eval "make"
-        wait $!
-    fi
+    # Make Goat
+    eval "make"
+    wait $!
 
     # add basic template to test file
     eval $cp_c
