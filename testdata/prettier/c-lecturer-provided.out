@@ -1,4 +1,4 @@
-proc q (var float x, ref int k)
+proc q (val float x, ref int k)
     int n;
     float y;
     bool a[8];

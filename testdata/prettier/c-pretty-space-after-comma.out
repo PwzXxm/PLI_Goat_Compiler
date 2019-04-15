@@ -1,4 +1,4 @@
-proc main (var int a, var int b)
+proc main (val int a, val int b)
 begin
     a := a[1, 2];
     write "Test\n";

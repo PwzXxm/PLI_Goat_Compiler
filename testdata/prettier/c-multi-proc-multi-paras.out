@@ -1,9 +1,9 @@
-proc p2_ (var int a, var int b)
+proc p2_ (val int a, val int b)
 begin
     write "Test\n";
 end
 
-proc p'2 (ref float f, var int a)
+proc p'2 (ref float f, val int a)
 begin
     write "Test\n";
 end
