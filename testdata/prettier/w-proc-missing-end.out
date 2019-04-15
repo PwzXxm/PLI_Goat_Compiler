@@ -1,0 +1,3 @@
+Syntax error: "./testdata/prettier/w-proc-missing-end.goat" (line 3, column 17):
+unexpected end of input
+expecting atomic statement or composite statement

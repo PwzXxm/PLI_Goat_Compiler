@@ -1,0 +1,4 @@
+proc main()
+begin
+[2,3] = 23;
+end

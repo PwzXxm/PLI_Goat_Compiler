@@ -1,0 +1,3 @@
+Syntax error: "./testdata/prettier/w-while-miss-expr.goat" (line 3, column 7):
+unexpected do
+expecting expression

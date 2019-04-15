@@ -1,0 +1,4 @@
+proc main()
+begin
+if a > 1 then else a:=24; fi
+end

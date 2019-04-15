@@ -48,7 +48,7 @@ execute job source_file
                     return ()
             Left err ->
               do
-                putStr "Lexical/Parse error: "
+                putStr "Syntax error: "
                 putStrLn (show err)
                 exitWith (ExitFailure 2)
 
@@ -62,15 +62,11 @@ main
       let usageMsg = "usage: " ++ progname ++ " [-st | -sa | -p | -h] file"
 
       case args of
-        [source_file] -> 
-          do
-            putStrLn ("Sorry, cannot generate code yet")
-            putStrLn (usageMsg)
 
         ["-st", source_file] -> execute JobToken source_file
         ["-sa", source_file] -> execute JobAST source_file
         ["-p", source_file] -> execute JobPrettier source_file
-        ["-h", source_file] ->
+        ["-h"] ->
           do
             putStrLn usageMsg
             putStrLn ("Options and arguments:")
@@ -79,6 +75,9 @@ main
             putStrLn ("-p     : pretty print the source file")
             putStrLn ("-h     : display the help menu")
             putStrLn ("file   : the file to be processed")
+        [source_file] -> 
+          do
+            putStrLn ("Sorry, cannot generate code yet")
         _ ->
           do
             putStrLn usageMsg

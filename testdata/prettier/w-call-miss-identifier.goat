@@ -1,0 +1,4 @@
+proc main()
+begin
+call (23, 22);
+end

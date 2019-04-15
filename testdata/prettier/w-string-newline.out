@@ -1,0 +1,3 @@
+Syntax error: "./testdata/prettier/w-string-newline.goat" (line 3, column 7):
+unexpected unknown token: """
+expecting string literal or expression

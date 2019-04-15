@@ -1,0 +1,4 @@
+proc main()
+begin
+if then a := 1; else a:=2; fi
+end

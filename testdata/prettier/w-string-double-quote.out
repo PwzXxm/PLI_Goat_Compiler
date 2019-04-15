@@ -1,2 +1,2 @@
-Lexical/Parse error: "./testdata/prettier/w-string-double-quote.goat" (line 3, column 18):
+Syntax error: "./testdata/prettier/w-string-double-quote.goat" (line 3, column 18):
 unexpected identifier: "afasdf"

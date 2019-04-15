@@ -1,0 +1,6 @@
+proc main()
+begin
+read a[2*5];
+read a[a>5, x *23];
+read a[b || a>5, x *23+23*11];
+end

@@ -1,0 +1,3 @@
+Syntax error: "./testdata/prettier/w-while-miss-stmt.goat" (line 3, column 16):
+unexpected od
+expecting atomic statement or composite statement

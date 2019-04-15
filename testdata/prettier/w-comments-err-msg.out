@@ -1,0 +1,3 @@
+Syntax error: "./testdata/prettier/w-comments-err-msg.goat" (line 17, column 8):
+unexpected ;
+expecting string literal or expression

@@ -1,0 +1,3 @@
+Syntax error: "./testdata/prettier/w-read-miss-identifier-array.goat" (line 3, column 6):
+unexpected [
+expecting identifier

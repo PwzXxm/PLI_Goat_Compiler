@@ -1,0 +1,3 @@
+Syntax error: "./testdata/prettier/w-if-else-miss-stmt.goat" (line 5, column 5):
+unexpected fi
+expecting atomic statement or composite statement

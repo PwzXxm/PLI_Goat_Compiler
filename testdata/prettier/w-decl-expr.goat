@@ -1,0 +1,5 @@
+proc main()
+(a + b)
+begin
+  write "Test\n";
+end

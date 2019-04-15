@@ -1,0 +1,4 @@
+proc main(val int a, ref float b)
+begin
+  write "Test\n";
+end

@@ -1,0 +1,11 @@
+proc main ()
+begin
+    while a + b do
+        a := 2;
+        a := 2 * 4;
+        a := a > b;
+        a := ((a || b) || c) || d;
+        a := a[2, 3];
+        a := 1.44;
+    od
+end

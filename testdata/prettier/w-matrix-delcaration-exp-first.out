@@ -1,2 +1,2 @@
-Lexical/Parse error: "./testdata/prettier/w-matrix-delcaration-exp-first.goat" (line 2, column 8):
+Syntax error: "./testdata/prettier/w-matrix-delcaration-exp-first.goat" (line 2, column 8):
 unexpected *
