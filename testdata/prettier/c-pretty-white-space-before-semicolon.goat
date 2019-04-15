@@ -1,0 +1,6 @@
+proc main()
+begin
+adfasdf := 12 
+;
+  write "Test\n"    ;
+end

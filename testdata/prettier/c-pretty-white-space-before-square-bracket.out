@@ -1,0 +1,6 @@
+proc main ()
+begin
+    a[123, 2] := 1;
+    a[123, 2] := 1;
+    write "Test\n";
+end

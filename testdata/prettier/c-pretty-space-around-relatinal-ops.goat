@@ -1,0 +1,29 @@
+proc main()
+begin
+a:=a=b;
+a:=a!=b;
+a:=a<b;
+a:=a<=b;
+a:=a>b;
+a:=a>=b;
+
+a:=             a    =                  b;
+a:=a
+!=              b;
+a:=a  <                                                     b;
+a:=
+
+
+
+
+a 
+            <=
+
+
+
+
+            b;
+a:=                                 a               
+                                            >   b;
+a:= a       >=                                                                  b;
+end

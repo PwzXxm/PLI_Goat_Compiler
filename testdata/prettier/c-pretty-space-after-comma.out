@@ -1,0 +1,5 @@
+proc main (var int a, var int b)
+begin
+    a := a[1, 2];
+    write "Test\n";
+end

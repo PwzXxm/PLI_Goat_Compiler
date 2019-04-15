@@ -1,0 +1,7 @@
+proc main()
+begin
+a := (-(x) - (y + 4)*z);
+a := (-(x*y) - y + 4*z);
+
+a := -x + y *z / 2 -23*2 && a + b || a *c+d;
+end

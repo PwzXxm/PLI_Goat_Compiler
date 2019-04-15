@@ -1,0 +1,30 @@
+proc main ()
+begin
+    if a > 1 then
+        if a > 1 then
+            if a > 1 then
+                a := 1;
+            else
+                a := 1;
+            fi
+        else
+            a := 1;
+        fi
+    else
+        a := 1;
+    fi
+    if a > 1 then
+        if a > 1 then
+            if a > 1 then
+                a := 1;
+            fi
+        fi
+    fi
+    while a > 1 do
+        while a > 1 do
+            while a > 1 do
+                a := 1;
+            od
+        od
+    od
+end

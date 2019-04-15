@@ -1,0 +1,10 @@
+proc main ()
+begin
+    write "Test\n";
+    if a > 0 then
+        a := 1;
+    fi
+    while a > 1 do
+        a := 2;
+    od
+end

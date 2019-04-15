@@ -1,0 +1,6 @@
+proc main(val int a    ,val int b)
+begin
+a := a[1      ,
+2];
+  write "Test\n";
+end

@@ -1,0 +1,14 @@
+proc main()
+begin
+a :=a+b-c*a/b&&a||b;
+a :=              a              +       b  -       c
+
+
+*      a   
+
+
+        / b   
+
+
+    &&                                      a  ||                               b;
+end

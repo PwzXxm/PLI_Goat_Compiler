@@ -1,0 +1,22 @@
+proc main ()
+begin
+    id := a;
+    id[2] := 2 * 3;
+    id[2, 3] := 4 / 2;
+    read adsf;
+    read asdf[23];
+    read asdfasdf[23, 22];
+    write adsf;
+    call p(asdf, asdf, saf);
+    if a = a then
+        a := 1;
+    fi
+    if a > b then
+        a := 2;
+    else
+        asd := 1;
+    fi
+    while a = s do
+        a := 2;
+    od
+end
