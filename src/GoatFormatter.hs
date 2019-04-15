@@ -203,7 +203,7 @@ exprFormatter :: Bool -> Expr -> StrWriter
 exprFormatter _ (BoolConst bool) = output (show bool)
 exprFormatter _ (IntConst int) = output (show int)
 exprFormatter _ (FloatConst float) = output (show float)
-exprFormatter _ (StrConst string) = output (show string)
+exprFormatter _ (StrConst string) = output ("\"" + string + "\"")
 exprFormatter _ (Evar var) = varFormatter var
 exprFormatter True (BinaryOp binop e1 e2)
   = do
