@@ -137,6 +137,8 @@ pBoolConst
   = do
       b <- boolConst
       return (BoolConst b)
+    <?>
+    "bool const"
 
 pIntConst
   = do
@@ -149,6 +151,8 @@ pFloatConst
   = do
       f <- floatConst
       return (FloatConst f)
+    <?>
+    "float const"
 
 pStrLit
   = do
