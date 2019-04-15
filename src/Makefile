@@ -5,7 +5,7 @@
 #   Zhe Tang   (743398)
 
 SRC       = .
-TARGET    = .
+TARGET    = ./build
 
 SRC_FILES = $(SRC)/Goat.hs $(SRC)/GoatAST.hs $(SRC)/GoatParser.hs $(SRC)/GoatToken.hs $(SRC)/GoatFormatter.hs $(TARGET)/GoatLexer.hs
 
@@ -17,4 +17,4 @@ $(TARGET)/GoatLexer.hs: $(SRC)/GoatLexer.x
 	alex -o $(TARGET)/GoatLexer.hs $(SRC)/GoatLexer.x
 
 clean:
-	rm -f $(TARGET)/*.hi $(TARGET)/*.o $(TARGET)/GoatLexer.hs ./Goat
+	rm -f $(TARGET)/* ./Goat
