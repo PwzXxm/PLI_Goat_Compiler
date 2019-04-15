@@ -1,0 +1,5 @@
+proc main ()
+begin
+# wrong
+    write "Test\n";
+end

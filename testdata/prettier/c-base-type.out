@@ -1,0 +1,7 @@
+proc main ()
+    int i;
+    float f;
+    bool b;
+begin
+    write "Test\n";
+end
