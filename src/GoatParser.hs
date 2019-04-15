@@ -64,39 +64,20 @@ strLitConst
 
 -----------------------------------------------------------------
 
-pBaseType :: Parser BaseType
-pBaseType
-  = do
-      reserved BOOL
-      return BoolType
-    <|>
-    do
-      reserved INT
-      return IntType
-    <|>
-    do
-      reserved FLOAT
-      return FloatType
-    <?>
-    "type"
 
-pDecl :: Parser Decl
-pDecl
-  = do
-      basetype <- pBaseType
-      ident <- identifier
-      shape <- pShape
-      reserved SEMI
-      return (Decl ident basetype shape)
-
--- Expr
--- L1: ||
--- L2: &&
--- L3: !
--- L4: = != < <= > >=
--- L5: + -
--- L6: * /
--- L7: -
+-----------------------------------------------------------------
+--  pExpr is the main parser for expressions. 
+--  Level is decided based on the precedence of each operator
+--  pStrLit is not a part of pExpr, it is only used in write statement
+-----------------------------------------------------------------
+--  pExprL1: ||
+--  pExprL2: &&
+--  pExprL3: !
+--  pExprL4: = != < <= > >=
+--  pExprL5: + -
+--  pExprL6: * /
+--  pExprL7: -
+-----------------------------------------------------------------
 
 pExpr :: Parser Expr
 pExpr
@@ -114,8 +95,9 @@ pExprL2 = chainl1 pExprL3 pBoolAnd
 pExprL3 :: Parser Expr
 pExprL3 = choice [pUnaryNot, pExprL4]
 
+-- | Relational operators are non-associative
 pExprL4 :: Parser Expr
-pExprL4 = choice [try pRelationalOps, pExprL5]
+pExprL4 = choice [try pRelationalOps, pExprL5] 
 
 pExprL5 :: Parser Expr
 pExprL5 = choice [pBoolConst, (chainl1 pExprL6 pAddSub)]
@@ -124,7 +106,6 @@ pExprL6 :: Parser Expr
 pExprL6 = chainl1 pExprL7 pMulDiv
 
 pExprL7 :: Parser Expr
--- pExprL7 = choice [pUnaryMinus, parens pExpr, pBoolConst, pIntConst, pFloatConst ]
 pExprL7 = choice [pUnaryMinus, pIntConst, pFloatConst, pEvar, pParensExpr]
 
 pParensExpr :: Parser Expr
@@ -159,6 +140,7 @@ pFloatConst
     <?>
     "float const"
 
+-- | pStrLit is not a part of pExpr, it is only used in write statement
 pStrLit
   = do
       s <- strLitConst
@@ -166,7 +148,7 @@ pStrLit
     <?>
     "string literal"
 
---pAdd, pSub, pMul, pDiv, pAnd, pOr :: Parser (Expr -> Expr -> Expr)
+
 pAddSub :: Parser (Expr -> Expr -> Expr)
 
 pAddSub
@@ -187,7 +169,6 @@ pMulDiv
       reserved DIV
       return (BinaryOp Op_div)
 
-
 pBoolAnd
   = do
       reserved AND
@@ -198,7 +179,6 @@ pBoolOr
       reserved OR
       return (BinaryOp Op_or)
 
-
 pRelationalOps :: Parser Expr
 pRelationalOps
   = do
@@ -206,7 +186,6 @@ pRelationalOps
       op <- pRelationalOperator
       f2 <- pExprL5
       return (BinaryOp op f1 f2)
-
 
 pRelationalOperator :: Parser Binop
 pRelationalOperator
@@ -255,14 +234,24 @@ pEvar
     <?>
     "variable"
 
--- | Parse variables: identifier, array and matrix
-pVar :: Parser Var
-pVar
-  = do
-      ident <- identifier
-      idx <- pIdx
-      return (Var ident idx)
+-----------------------------------------------------------------
 
+
+-----------------------------------------------------------------
+--  Parsers for variables / declearations / parameters
+-----------------------------------------------------------------
+
+-- | Parser for variable declaration
+pDecl :: Parser Decl
+pDecl
+  = do
+      basetype <- pBaseType
+      ident <- identifier
+      shape <- pShape
+      reserved SEMI
+      return (Decl ident basetype shape)
+
+-- | Parser for shape of variable in declaration
 pShape :: Parser Shape
 pShape
   = do
@@ -283,6 +272,15 @@ pShape
     do
       return ShapeVar
 
+-- | Parse variables: identifier, array and matrix
+pVar :: Parser Var
+pVar
+  = do
+      ident <- identifier
+      idx <- pIdx
+      return (Var ident idx)
+
+-- | Parser for variable index
 pIdx :: Parser Idx
 pIdx
   = do
@@ -303,6 +301,32 @@ pIdx
     do
       return IdxVar
 
+-- | Parser for variable type
+pBaseType :: Parser BaseType
+pBaseType
+  = do
+      reserved BOOL
+      return BoolType
+    <|>
+    do
+      reserved INT
+      return IntType
+    <|>
+    do
+      reserved FLOAT
+      return FloatType
+    <?>
+    "type"
+
+-- | Parser for parameters of procdures
+pPara :: Parser Para
+pPara
+  = do
+      indi <- pParaIndi
+      t <- pBaseType
+      id <- identifier
+      return (Para id t indi)
+
 pParaIndi :: Parser Indi
 pParaIndi
   = do
@@ -315,13 +339,7 @@ pParaIndi
     <?>
     "parameter indicator"
 
-pPara :: Parser Para
-pPara
-  = do
-      indi <- pParaIndi
-      t <- pBaseType
-      id <- identifier
-      return (Para id t indi)
+-----------------------------------------------------------------
 
 -----------------------------------------------------------------
 --  pStmt is the main parser for statment. 
@@ -371,7 +389,7 @@ pAsg
       return (Assign v e)
 
 
--- | parser for composite statements
+-- | Parser for composite statements
 -- Including read, write, call and assignment
 pStmtComp = (choice [pIf, pWhile]) <?> "composite statement"
 

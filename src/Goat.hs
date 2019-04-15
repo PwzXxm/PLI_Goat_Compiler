@@ -29,6 +29,7 @@ execute job source_file
       let tokens = runGoatLexer source_file input
       if job == JobToken
         then do
+          -- tokens from lexer
           putStrLn (show tokens)
           return ()
         else do
@@ -38,9 +39,11 @@ execute job source_file
               do
                 if job == JobAST
                   then do
+                    -- AST from parser
                     putStrLn (show tree)
                     return ()
                   else do
+                    -- preitter
                     runGoatFormatterAndOutput tree
                     return ()
             Left err ->
