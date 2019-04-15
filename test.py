@@ -29,6 +29,7 @@ def run_test_case(input_file: str) -> None:
         # print("Pass")
         return
 
+    print("File: " + "\033[0;31m" + file_name + "\033[0m")
     print("Fail !!!!")
     print("Is correct case:", is_correct)
     print("Return code:", cp.returncode)
