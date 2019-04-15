@@ -1,3 +1,10 @@
+-- | Main module of this Goat Compiler
+--
+-- Authors:
+--   Weizhi Xu  (752454)
+--   Zijun Chen (813190)
+--   Zhe Tang   (743398)
+
 module Main where
 
 import GoatParser
@@ -9,11 +16,12 @@ import Text.Parsec
 import System.Environment
 import System.Exit
 
+-- | Job type
 data Job
   = JobToken | JobAST | JobPrettier | JobCompile
   deriving (Eq)
 
-
+-- | Execute lexer, parser ... in order and output the result based on job type
 execute :: Job -> String -> IO ()
 execute job source_file
   = do
@@ -41,7 +49,7 @@ execute job source_file
                 putStrLn (show err)
                 exitWith (ExitFailure 2)
 
-
+-- | Main function that handles the execution arguments
 main :: IO ()
 main
   = do

@@ -5,11 +5,7 @@
 --   Zijun Chen (813190)
 --   Zhe Tang   (743398)
 
-module GoatParser
-( runGoatParser
-, test
-, testf
-) where
+module GoatParser(runGoatParser) where
 
 import           GoatAST
 import           GoatFormatter
@@ -24,10 +20,25 @@ import           Text.Parsec.Pos
 
 type Parser a = Parsec [Token] () a
 
+-----------------------------------------------------------------
+--  Parser helpers for recognizing a specific token (and its value)
+-----------------------------------------------------------------
+
+-- | General helper
+gToken :: (Tok -> Maybe a) -> Parser a
+gToken test
+  = token showToken posToken testToken
+    where
+      showToken (pos, tok) = show tok
+      posToken  (pos, tok) = pos
+      testToken (pos, tok) = test tok
+
+-- | Parser for tokens that don't have values
 reserved :: Tok -> Parser ()
 reserved tok
   = gToken (\t -> if t == tok then Just () else Nothing)
 
+-- | Parsers for tokens that have values
 identifier :: Parser String
 identifier
   = do
@@ -51,13 +62,7 @@ strLitConst :: Parser String
 strLitConst
   = gToken (\t -> case t of {LIT v -> Just v; other -> Nothing})
 
-gToken :: (Tok -> Maybe a) -> Parser a
-gToken test
-  = token showToken posToken testToken
-    where
-      showToken (pos, tok) = show tok
-      posToken  (pos, tok) = pos
-      testToken (pos, tok) = test tok
+-----------------------------------------------------------------
 
 pBaseType :: Parser BaseType
 pBaseType
@@ -250,7 +255,13 @@ pEvar
     <?>
     "variable"
 
--- Expr End
+-- | Parse variables: identifier, array and matrix
+pVar :: Parser Var
+pVar
+  = do
+      ident <- identifier
+      idx <- pIdx
+      return (Var ident idx)
 
 pShape :: Parser Shape
 pShape
@@ -312,26 +323,16 @@ pPara
       id <- identifier
       return (Para id t indi)
 
-pProc :: Parser Proc
-pProc
-  = do
-      reserved PROC
-      id <- identifier
-      reserved LPAREN
-      paras <- sepBy pPara (reserved COMMA)
-      reserved RPAREN
-      decls <- many pDecl
-      reserved BEGIN
-      stmts <- many1 pStmt
-      reserved END
-      return (Proc id paras decls stmts)
-    <?>
-    "procedure"
+-----------------------------------------------------------------
+--  pStmt is the main parser for statment. 
+-----------------------------------------------------------------
 
 pStmt, pStmtAtom, pStmtComp :: Parser Stmt
 pStmt
   = choice [pStmtAtom, pStmtComp]
 
+-- | parser for atomic statements
+-- Including read, write, call and assignment
 pStmtAtom
   = do
       r <- choice [pRead, pWrite, pCall, pAsg]
@@ -370,6 +371,8 @@ pAsg
       return (Assign v e)
 
 
+-- | parser for composite statements
+-- Including read, write, call and assignment
 pStmtComp = (choice [pIf, pWhile]) <?> "composite statement"
 
 pIf, pWhile :: Parser Stmt
@@ -388,6 +391,7 @@ pIf
         <|>
         do
           reserved ELSE
+          -- else body can not be empty
           s <- many1 pStmt
           reserved FI
           return s)
@@ -403,13 +407,24 @@ pWhile
       reserved OD
       return (While e stmts)
 
--- | Parse variables: identifier, array and matrix
-pVar :: Parser Var
-pVar
+-----------------------------------------------------------------
+
+-- | Parser for the procedure
+pProc :: Parser Proc
+pProc
   = do
-      ident <- identifier
-      idx <- pIdx
-      return (Var ident idx)
+      reserved PROC
+      id <- identifier
+      reserved LPAREN
+      paras <- sepBy pPara (reserved COMMA)
+      reserved RPAREN
+      decls <- many pDecl
+      reserved BEGIN
+      stmts <- many1 pStmt
+      reserved END
+      return (Proc id paras decls stmts)
+    <?>
+    "procedure"
 
 -- | Parse and check there is a least one procedure
 -- and it reaches the end of file
@@ -426,21 +441,3 @@ pMain
 -- Otherwise, returns a error, of type 'ParseError'
 runGoatParser :: [Token] -> Either ParseError GoatProgram
 runGoatParser tokens = runParser pMain () "" tokens
-
--- | Returns AST given the input of test file
-test
-  = do
-      input <- readFile "../build/test.in"
-      let tokens = runGoatLexer "../build/test.in" input
-      let res = runParser pMain () "" tokens
-      return res
-
--- | Returns pretty printed code given the input of test file
-testf
-  = do
-      input <- readFile "../build/test.in"
-      let tokens = runGoatLexer "../build/test.in" input
-      let res = runParser pMain () "" tokens
-      case res of
-        Right ast -> runGoatFormatterAndOutput ast
-        Left  err -> print err
