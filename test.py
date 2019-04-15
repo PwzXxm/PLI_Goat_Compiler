@@ -29,7 +29,7 @@ def run_test_case(input_file: str) -> None:
         # print("Pass")
         return
 
-    print("File: " + "\033[0;31m" + file_name + "\033[0m")
+    print("File: " + "\033[0;31m" + file_name + "\033[0m") # comment this line
     print("Fail !!!!")
     print("Is correct case:", is_correct)
     print("Return code:", cp.returncode)
@@ -52,7 +52,7 @@ def test_prettier() -> None:
     #for i, case in enumerate(test_cases):
     #    print("({} / {}) {}:".format(i+1, len(test_cases), case))
     #    run_test_case(case)
-    for i in tqdm(range(len(test_cases))):
+    for i in tqdm(range(len(test_cases))): # comment these lines
         run_test_case(test_cases[i])
 
 def build() -> None:

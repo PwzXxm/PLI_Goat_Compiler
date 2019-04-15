@@ -1,2 +1,2 @@
-Parse error: "./testdata/prettier/w-bool-arithmetic-mul.goat" (line 3, column 12):
+Lexical/Parse error: "./testdata/prettier/w-bool-arithmetic-mul.goat" (line 3, column 12):
 unexpected *

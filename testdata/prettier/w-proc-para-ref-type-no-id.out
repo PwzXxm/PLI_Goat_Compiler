@@ -1,3 +1,3 @@
-Parse error: "./testdata/prettier/w-proc-para-ref-type-no-id.goat" (line 1, column 18):
+Lexical/Parse error: "./testdata/prettier/w-proc-para-ref-type-no-id.goat" (line 1, column 18):
 unexpected )
 expecting identifier
