@@ -1,3 +1,10 @@
+-- | Pretty printing for parser checking
+--
+-- Authors:
+--   Weizhi Xu  (752454)
+--   Zijun Chen (813190)
+--   Zhe Tang   (743398)
+
 module GoatFormatter
 ( runGoatFormatterAndOutput
 , runGoatFormatterAndReturnString
