@@ -331,7 +331,7 @@ pParaIndi :: Parser Indi
 pParaIndi
   = do
       reserved VAL
-      return InVar
+      return InVal
     <|>
     do
       reserved REF

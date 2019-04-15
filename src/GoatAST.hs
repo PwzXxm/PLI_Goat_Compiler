@@ -71,7 +71,7 @@ data Decl
     deriving (Show, Eq)
 
 data Indi
-  = InVar | InRef
+  = InVal | InRef
     deriving (Show, Eq)
 
 data Para

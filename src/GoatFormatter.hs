@@ -165,7 +165,7 @@ stmtFormatter inde (While expr stmts)
 
 -- | Print indication in presentation of the parameter
 indiFormatter :: Indi -> StrWriter
-indiFormatter InVar = output "var"
+indiFormatter InVal = output "val"
 indiFormatter InRef = output "ref"
 
 -- | Print base type of the identification
