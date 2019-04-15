@@ -6,6 +6,7 @@ module GoatFormatter
 
 import           GoatAST
 
+import           Numeric
 -- Writer used for IO like output with higher performance than (++)
 -- From https://kseo.github.io/posts/2017-01-21-writer-monad.html
 import           Control.Monad.Trans.Writer.Strict
@@ -203,7 +204,7 @@ exprFormatter :: Bool -> Expr -> StrWriter
 exprFormatter _ (BoolConst True) = output "true"
 exprFormatter _ (BoolConst False) = output "false"
 exprFormatter _ (IntConst int) = output (show int)
-exprFormatter _ (FloatConst float) = output (show float)
+exprFormatter _ (FloatConst float) = output (showFFloatAlt Nothing float "")
 exprFormatter _ (StrConst string) = output ("\"" ++ string ++ "\"")
 exprFormatter _ (Evar var) = varFormatter var
 exprFormatter True (BinaryOp binop e1 e2)

@@ -3,7 +3,7 @@ proc q (var float x, ref int k)
     float y;
     bool a[8];
 begin
-    a[7] := True;
+    a[7] := true;
     k := 42;
 end
 
