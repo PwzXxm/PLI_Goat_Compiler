@@ -1,0 +1,4 @@
+proc main()
+begin
+while a = 1 do a:=1; od
+end

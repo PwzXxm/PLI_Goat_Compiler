@@ -1,0 +1,6 @@
+proc main()
+begin
+write "asdfasdfasdf
+";
+  write "Test\n";
+end

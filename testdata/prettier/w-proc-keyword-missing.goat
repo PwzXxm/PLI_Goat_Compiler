@@ -1,0 +1,4 @@
+main()
+begin
+  write "Test\n";
+end

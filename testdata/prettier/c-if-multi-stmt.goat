@@ -1,0 +1,11 @@
+proc main()
+begin
+if a > 0 then
+a := 2;
+a := 2*4;
+a := a > b;
+a := a || b || c || d;
+a := a[2, 3];
+a := 1.44;
+fi
+end

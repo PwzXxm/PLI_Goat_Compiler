@@ -1,0 +1,4 @@
+proc main()
+begin
+read [2];
+end

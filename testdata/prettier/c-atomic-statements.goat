@@ -1,0 +1,13 @@
+proc main()
+begin
+    id := 123;
+id := 1.1213;
+    id := false;
+    id [2] := a + b;
+    id [1, 4] := a > b;
+    read asdfas;
+    read asdfas[2];
+    read asdfasd[2,3];
+    write asdfasdf;
+    call p      (a || b);
+end

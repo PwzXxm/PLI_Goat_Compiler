@@ -1,0 +1,12 @@
+proc p2_(val int a, val int b)
+begin
+  write "Test\n";
+end
+proc p'2(ref float f, val int a)
+begin
+  write "Test\n";
+end
+proc main()
+begin
+  write "Test\n";
+end

@@ -1,0 +1,6 @@
+proc main()
+begin
+if a >0 then a :=1;
+else
+    fi
+end

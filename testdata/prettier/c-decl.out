@@ -1,0 +1,13 @@
+proc main ()
+    int a;
+    float b;
+    bool c;
+    int d[3];
+    float e[4];
+    bool f[5];
+    int g[3, 3];
+    float h[4, 3];
+    bool i[5, 5];
+begin
+    write "Test\n";
+end

@@ -1,0 +1,4 @@
+proc ()
+begin
+  write "Test\n";
+end

@@ -1,0 +1,7 @@
+proc main()
+if a > b then
+    a := 1
+    fi
+begin
+  write "Test\n";
+end

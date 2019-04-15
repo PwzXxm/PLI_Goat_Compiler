@@ -1,0 +1,7 @@
+proc main()
+while a > 0 do
+    a := 1
+    od
+begin
+  write "Test\n";
+end

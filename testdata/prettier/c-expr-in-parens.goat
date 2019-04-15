@@ -1,0 +1,4 @@
+proc main()
+begin
+ a:=(a*b + c *d -d);
+end
