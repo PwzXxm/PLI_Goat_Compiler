@@ -1,3 +1,9 @@
+# Make the Goat program 
+# Authors:
+#   Weizhi Xu  (752454)
+#   Zijun Chen (813190)
+#   Zhe Tang   (743398)
+
 SRC       = .
 TARGET    = .
 
