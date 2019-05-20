@@ -121,30 +121,34 @@ pParensExpr
 pBoolConst, pIntConst, pFloatConst, pStrLit :: Parser Expr
 pBoolConst
   = do
+      pos <- getPosition
       b <- boolConst
-      return (BoolConst b)
+      return (BoolConst pos b)
     <?>
     "bool const"
 
 pIntConst
   = do
+      pos <- getPosition
       i <- intConst
-      return (IntConst i)
+      return (IntConst pos i)
     <?>
     "int const"
 
 pFloatConst
   = do
+      pos <- getPosition
       f <- floatConst
-      return (FloatConst f)
+      return (FloatConst pos f)
     <?>
     "float const"
 
 -- | pStrLit is not a part of pExpr, it is only used in write statement
 pStrLit
   = do
+      pos <- getPosition
       s <- strLitConst
-      return (StrConst s)
+      return (StrConst pos s)
     <?>
     "string literal"
 
@@ -153,39 +157,46 @@ pAddSub :: Parser (Expr -> Expr -> Expr)
 
 pAddSub
   = do
+      pos <- getPosition
       reserved MINUS
-      return (BinaryOp Op_sub)
+      return (BinaryOp pos Op_sub)
     <|>
     do
+      pos <- getPosition
       reserved PLUS
-      return (BinaryOp Op_add)
+      return (BinaryOp pos Op_add)
 
 pMulDiv
   = do
+      pos <- getPosition
       reserved MUL
-      return (BinaryOp Op_mul)
+      return (BinaryOp pos Op_mul)
     <|>
     do
+      pos <- getPosition
       reserved DIV
-      return (BinaryOp Op_div)
+      return (BinaryOp pos Op_div)
 
 pBoolAnd
   = do
+      pos <- getPosition
       reserved AND
-      return (BinaryOp Op_and)
+      return (BinaryOp pos Op_and)
 
 pBoolOr
   = do
+      pos <- getPosition
       reserved OR
-      return (BinaryOp Op_or)
+      return (BinaryOp pos Op_or)
 
 pRelationalOps :: Parser Expr
 pRelationalOps
   = do
+      pos <- getPosition
       f1 <- pExprL5
       op <- pRelationalOperator
       f2 <- pExprL5
-      return (BinaryOp op f1 f2)
+      return (BinaryOp pos op f1 f2)
 
 pRelationalOperator :: Parser Binop
 pRelationalOperator
@@ -216,21 +227,24 @@ pRelationalOperator
 pUnaryMinus, pUnaryNot :: Parser Expr
 pUnaryMinus
   = do
+      pos <- getPosition
       reserved MINUS
       f <- pExprL7
-      return (UnaryMinus f)
+      return (UnaryMinus pos f)
 
 pUnaryNot
   = do
+      pos <- getPosition
       reserved UNARYNOT
       f <- pExprL4
-      return (UnaryNot f)
+      return (UnaryNot pos f)
 
 pEvar :: Parser Expr
 pEvar
   = do
+      pos <- getPosition
       v <- pVar
-      return (Evar v)
+      return (Evar pos v)
     <?>
     "variable"
 
@@ -245,11 +259,12 @@ pEvar
 pDecl :: Parser Decl
 pDecl
   = do
+      pos <- getPosition
       basetype <- pBaseType
       ident <- identifier
       shape <- pShape
       reserved SEMI
-      return (Decl ident basetype shape)
+      return (Decl pos ident basetype shape)
 
 -- | Parser for shape of variable in declaration
 pShape :: Parser Shape
@@ -276,9 +291,10 @@ pShape
 pVar :: Parser Var
 pVar
   = do
+      pos <- getPosition
       ident <- identifier
       idx <- pIdx
-      return (Var ident idx)
+      return (Var pos ident idx)
 
 -- | Parser for variable index
 pIdx :: Parser Idx
@@ -322,10 +338,11 @@ pBaseType
 pPara :: Parser Para
 pPara
   = do
+      pos <- getPosition
       indi <- pParaIndi
       t <- pBaseType
       id <- identifier
-      return (Para id t indi)
+      return (Para pos id t indi)
 
 pParaIndi :: Parser Indi
 pParaIndi
@@ -362,31 +379,35 @@ pStmtAtom
 pRead, pWrite, pCall, pAsg :: Parser Stmt
 pRead
   = do
+      pos <- getPosition
       reserved READ
       var <- pVar
-      return (Read var)
+      return (Read pos var)
 
 pWrite
   = do
+      pos <- getPosition
       reserved WRITE
       e <- choice [pStrLit, pExpr]
-      return (Write e)
+      return (Write pos e)
 
 pCall
   = do
+      pos <- getPosition
       reserved CALL
       id <- identifier
       reserved LPAREN
       exprs <- sepBy pExpr (reserved COMMA)
       reserved RPAREN
-      return (Call id exprs)
+      return (Call pos id exprs)
 
 pAsg
   = do
+      pos <- getPosition
       v <- pVar
       reserved ASSIGN
       e <- pExpr
-      return (Assign v e)
+      return (Assign pos v e)
 
 
 -- | Parser for composite statements
@@ -396,6 +417,7 @@ pStmtComp = (choice [pIf, pWhile]) <?> "composite statement"
 pIf, pWhile :: Parser Stmt
 pIf
   = do
+      pos <- getPosition
       reserved IF
       e <- pExpr
       reserved THEN
@@ -414,16 +436,17 @@ pIf
           reserved FI
           return s)
 
-      return (If e stmts estmts)
+      return (If pos e stmts estmts)
 
 pWhile
   = do
+      pos <- getPosition
       reserved WHILE
       e <- pExpr
       reserved DO
       stmts <- many1 pStmt
       reserved OD
-      return (While e stmts)
+      return (While pos e stmts)
 
 -----------------------------------------------------------------
 
@@ -431,6 +454,7 @@ pWhile
 pProc :: Parser Proc
 pProc
   = do
+      pos <- getPosition
       reserved PROC
       id <- identifier
       reserved LPAREN
@@ -440,7 +464,7 @@ pProc
       reserved BEGIN
       stmts <- many1 pStmt
       reserved END
-      return (Proc id paras decls stmts)
+      return (Proc pos id paras decls stmts)
     <?>
     "procedure"
 

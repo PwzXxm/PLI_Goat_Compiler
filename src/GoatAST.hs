@@ -7,6 +7,7 @@
 
 module GoatAST where
 
+import           Text.Parsec.Pos
 type Ident = String
 
 data BaseType
@@ -28,7 +29,7 @@ data Idx
     deriving (Show, Eq)
 
 data Var
-  = Var Ident Idx
+  = Var SourcePos Ident Idx
     deriving (Show, Eq)
 
 data Binop
@@ -47,27 +48,27 @@ data Binop
     deriving (Show, Eq)
 
 data Expr
-  = BoolConst Bool
-  | IntConst Int
-  | FloatConst Float
-  | StrConst String
-  | Evar Var
-  | BinaryOp Binop Expr Expr -- Binary Operator
-  | UnaryMinus Expr -- Unary operator
-  | UnaryNot Expr
+  = BoolConst SourcePos Bool
+  | IntConst SourcePos Int
+  | FloatConst SourcePos Float
+  | StrConst SourcePos String
+  | Evar SourcePos Var
+  | BinaryOp SourcePos Binop Expr Expr -- Binary Operator
+  | UnaryMinus SourcePos Expr -- Unary operator
+  | UnaryNot SourcePos Expr
     deriving (Show, Eq)
 
 data Stmt
-  = Assign Var Expr
-  | Read Var
-  | Write Expr
-  | Call Ident [Expr]
-  | If Expr [Stmt] [Stmt]
-  | While Expr [Stmt]
+  = Assign SourcePos Var Expr
+  | Read SourcePos Var
+  | Write SourcePos Expr
+  | Call SourcePos Ident [Expr]
+  | If SourcePos Expr [Stmt] [Stmt]
+  | While SourcePos Expr [Stmt]
     deriving (Show, Eq)
 
 data Decl
-  = Decl Ident BaseType Shape
+  = Decl SourcePos Ident BaseType Shape
     deriving (Show, Eq)
 
 data Indi
@@ -75,11 +76,11 @@ data Indi
     deriving (Show, Eq)
 
 data Para
-  = Para Ident BaseType Indi
+  = Para SourcePos Ident BaseType Indi
     deriving (Show, Eq)
 
 data Proc
-  = Proc Ident [Para] [Decl] [Stmt]
+  = Proc SourcePos Ident [Para] [Decl] [Stmt]
     deriving (Show, Eq)
 
 data GoatProgram
