@@ -19,10 +19,11 @@ import           Numeric
 import           Control.Monad.Trans.Writer.Strict
 import           Data.Monoid
 
-output :: String -> Writer (Endo [String]) ()
-output x = tell $ Endo ([x]<>)
-
 type StrWriter = Writer (Endo [String]) ()
+
+-- O(1) time complexity
+output :: String -> StrWriter
+output x = tell $ Endo ([x]<>)
 ----------------------------------------------
 
 -- | Concatenate strings into one
