@@ -17,6 +17,8 @@ import Text.Parsec
 import System.Environment
 import System.Exit
 import Control.Monad.State
+import Data.Map (Map)
+import qualified Data.Map as M
 
 -- | Job type
 data Job
@@ -55,11 +57,13 @@ execute job source_file
                         let
                           state = Astate
                             { procs = M.empty
-                            , varibles = M.emtpy
+                            , varibles = M.empty
                             , slotCounter = 0
                             , procCounter = 0
                             }
-                        in runState Analyzer (semanticCheckDGoatProgram tree) state
+                          (result, _) = runState (semanticCheckDGoatProgram tree) state
+                        putStrLn(show result)
+                        return ()
             Left err ->
               do
                 putStr "Syntax error: "
@@ -80,7 +84,6 @@ main
         ["-st", source_file] -> execute JobToken source_file
         ["-sa", source_file] -> execute JobAST source_file
         ["-p", source_file] -> execute JobPrettier source_file
-        [source_file] -> execute JobCompile source_file
         ["-h"] ->
           do
             putStrLn usageMsg
@@ -90,6 +93,7 @@ main
             putStrLn ("-p     : pretty print the source file")
             putStrLn ("-h     : display the help menu")
             putStrLn ("file   : the file to be processed")
+        [source_file] -> execute JobCompile source_file
         _ ->
           do
             putStrLn usageMsg
