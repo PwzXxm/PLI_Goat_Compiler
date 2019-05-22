@@ -11,7 +11,8 @@ import GoatAST
 import Data.Map (Map)
 import qualified Data.Map as M
 import Control.Monad.State
-import Debug.Trace
+import Control.Monad.Except
+import Text.Parsec.Pos
 
 data Astate = Astate
   { procs :: M.Map String DProcProto
@@ -20,7 +21,12 @@ data Astate = Astate
   , procCounter :: Int
   }
 
-type Analyzer a = State Astate a
+data SemanticError = SemanticError SourcePos String
+
+instance Show SemanticError where
+  show (SemanticError pos str) = (show pos) ++ " " ++ str
+
+type Analyzer a = StateT Astate (Either SemanticError) a
 
 getProcProto :: String -> Analyzer DProcProto
 getProcProto name
@@ -32,10 +38,9 @@ putProcProto :: String -> DProcProto -> Analyzer ()
 putProcProto name dProcProto
   = do
       st <- get
-      let p = if M.member name (procs st)
-                then error ("Procedure named " ++ name ++ " already exist")
-                else M.insert name dProcProto (procs st)
-        in put st{procs = p}
+      if M.member name (procs st)
+        then lift $ throwError (SemanticError (newPos "" 0 0) ("Variable named " ++ name ++ " already exist"))
+        else put st {procs = M.insert name dProcProto (procs st)}
 
 getVar :: String -> Analyzer DVar
 getVar var
@@ -47,10 +52,9 @@ putVar :: String -> DVar -> Analyzer ()
 putVar name var
   = do
       st <- get
-      let v = if M.member name (varibles st)
-                then error ("Variable named " ++ name ++ " already exist")
-                else M.insert name var (varibles st)
-        in put st{varibles = v}
+      if M.member name (varibles st)
+        then lift $ throwError (SemanticError (newPos "" 0 0) ("Variable named " ++ name ++ " already exist"))
+        else put st{varibles = M.insert name var (varibles st)}
 
 resetVar :: Analyzer ()
 resetVar
@@ -83,6 +87,22 @@ resetProcCounter
   = do
       st <- get
       put st{procCounter = 0}
+
+-----------------------------------
+
+runSemanticCheck :: GoatProgram -> Either SemanticError DGoatProgram
+runSemanticCheck tree
+  = do
+      let
+        state = Astate
+          { procs = M.empty
+          , varibles = M.empty
+          , slotCounter = 0
+          , procCounter = 0
+          }
+      r <- evalStateT (semanticCheckDGoatProgram tree) state
+      return r
+      
 
 -----------------------------------
 

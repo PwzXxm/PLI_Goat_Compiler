@@ -54,15 +54,16 @@ execute job source_file
                         return ()
                       else do
                         -- compile
-                        let
-                          state = Astate
-                            { procs = M.empty
-                            , varibles = M.empty
-                            , slotCounter = 0
-                            , procCounter = 0
-                            }
-                          (result, _) = runState (semanticCheckDGoatProgram tree) state
-                        putStrLn(show result)
+                        let semanticResult = runSemanticCheck tree
+                        case semanticResult of
+                          Right decoratedAST ->
+                            do
+                              putStrLn(show decoratedAST)
+                          Left err ->
+                            do
+                              putStr "Semantic error: "
+                              putStrLn (show err)
+                              exitWith (ExitFailure 3)
                         return ()
             Left err ->
               do
