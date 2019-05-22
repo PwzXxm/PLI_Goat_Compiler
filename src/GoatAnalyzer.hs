@@ -8,12 +8,13 @@
 module GoatAnalyzer where
 
 import GoatAST
+import Data.Map (Map)
 import qualified Data.Map as M
 import Control.Monad.State
 
 data Astate = Astate
-  { procs :: M String [DPara]
-  , varibles :: M String DVar
+  { procs :: M.Map String [DPara]
+  , varibles :: M.Map String DVar
   , slotCounter :: Int
   , procCounter :: Int
   }
@@ -24,22 +25,22 @@ getProc :: String -> Analyzer [DPara]
 getProc name
   = do
       st <- get
-      return $ (procs st) ! name
+      return $ (procs st) M.! name
 
 putProc :: String -> [DPara] -> Analyzer ()
-putproc name params
+putProc name params
   = do
       st <- get
       let p = if M.member name (procs st)
                 then error ("Procedure named " ++ name ++ " already exist")
                 else M.insert name params (procs st)
-      in put st{procs = p}
+        in put st{procs = p}
 
 getVar :: String -> Analyzer DVar
-getProc var
+getVar var
   = do
       st <- get
-      return $ (varibles st) ! var
+      return $ (varibles st) M.! var
 
 putVar :: String -> DVar -> Analyzer ()
 putVar name var
@@ -48,13 +49,13 @@ putVar name var
       let v = if M.member name (varibles st)
                 then error ("Variable named " ++ name ++ " already exist")
                 else M.insert name var (varibles st)
-      in put st{varibles = v}
+        in put st{varibles = v}
 
 getSlotCounter :: Analyzer Int
 getSlotCounter
   = do
       st <- get
-      put st{slotCounter = slotCounter + 1}
+      put st{slotCounter = (slotCounter st) + 1}
       return $ slotCounter st
 
 resetSlotCounter :: Analyzer ()
@@ -67,7 +68,7 @@ getProcCounter :: Analyzer Int
 getProcCounter
   = do
       st <- get
-      put st{procCounter = procCounter + 1}
+      put st{procCounter = (procCounter st) + 1}
       return $ procCounter st
 
 resetProcCounter :: Analyzer ()
@@ -79,6 +80,7 @@ resetProcCounter
 -----------------------------------
 
 semanticCheckDGoatProgram :: GoatProgram -> Analyzer DGoatProgram
-semanticCheckDGoatProgram Program procs
+semanticCheckDGoatProgram (Program procs)
     = do
-        
+        s <- getSlotCounter
+        return $ DProgram s []
