@@ -52,6 +52,12 @@ putVar name var
                 else M.insert name var (varibles st)
         in put st{varibles = v}
 
+resetVar :: Analyzer ()
+resetVar
+  = do
+      st <- get
+      put st{varibles = M.empty}
+
 getSlotCounter :: Int -> Analyzer Int
 getSlotCounter s
   = do
@@ -103,6 +109,7 @@ loadProcProto procs
 checkProc :: Proc -> Analyzer DProc
 checkProc (Proc sourcePos ident paras decls stmts)
   = do
+      resetVar
       resetSlotCounter
       (DProcProto pid _) <- getProcProto ident
       -- parameters
