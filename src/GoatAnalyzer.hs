@@ -135,7 +135,7 @@ checkProc (Proc sourcePos ident paras decls stmts)
       return (DProc pid dParas dDecls dStmts totalSize)
 
 checkStat :: Stmt -> Analyzer DStmt
-checkStat _
+checkStat (Assign sourcePos var expr)
 -- palceholder
   = do
       return (DCall 0 [])
