@@ -86,3 +86,62 @@ data Proc
 data GoatProgram
   = Program [Proc]
     deriving (Show, Eq)
+
+
+--------------------------------------------------
+--  Decorated Asbtract Syntax Tree
+--------------------------------------------------
+type SlotNum = Int
+type SlotSize = Int
+type ProcId = Int
+
+data DType
+  = DBoolType | DIntType | DFloatType
+    deriving (Show, Eq)
+
+-- | for variable index
+data DIdx
+  = DIdxVar
+  | DIdxArr DExpr
+  | DIdxMat DExpr DExpr
+    deriving (Show, Eq)
+
+data DVar
+  = DVar SlotNum DIdx DType
+    deriving (Show, Eq)
+
+data DExpr
+  = DBoolConst Bool
+  | DIntConst Int
+  | DFloatConst Float
+  | DStrConst String
+  | DEvar DVar
+  | DBinaryOp Binop DExpr DExpr DType -- Binary Operator
+  | DUnaryMinus DExpr DType -- Unary operator
+  | DUnaryNot DExpr DType
+    deriving (Show, Eq)
+
+data DStmt
+  = DAssign DVar DExpr
+  | DRead DVar
+  | DWrite DExpr
+  | DCall ProcId [DExpr]
+  | DIf DExpr [DStmt] [DStmt]
+  | DWhile DExpr [DStmt]
+    deriving (Show, Eq)
+
+data DDecl
+  = DDecl SlotNum DType Shape
+    deriving (Show, Eq)
+
+data DPara
+  = DPara SlotNum Indi DType
+    deriving (Show, Eq)
+
+data DProc
+  = DProc ProcId [DPara] [DDecl] [DStmt] SlotSize
+    deriving (Show, Eq)
+
+data DGoatProgram
+  = DProgram ProcId [DProc]
+    deriving (Show, Eq)
