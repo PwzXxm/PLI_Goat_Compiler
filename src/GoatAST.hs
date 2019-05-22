@@ -95,10 +95,6 @@ type SlotNum = Int
 type SlotSize = Int
 type ProcId = Int
 
-data DType
-  = DBoolType | DIntType | DFloatType
-    deriving (Show, Eq)
-
 -- | for variable index
 data DIdx
   = DIdxVar
@@ -107,7 +103,7 @@ data DIdx
     deriving (Show, Eq)
 
 data DVar
-  = DVar SlotNum DIdx DType
+  = DVar SlotNum DIdx BaseType
     deriving (Show, Eq)
 
 data DExpr
@@ -116,9 +112,9 @@ data DExpr
   | DFloatConst Float
   | DStrConst String
   | DEvar DVar
-  | DBinaryOp Binop DExpr DExpr DType -- Binary Operator
-  | DUnaryMinus DExpr DType -- Unary operator
-  | DUnaryNot DExpr DType
+  | DBinaryOp Binop DExpr DExpr BaseType -- Binary Operator
+  | DUnaryMinus DExpr BaseType -- Unary operator
+  | DUnaryNot DExpr BaseType
     deriving (Show, Eq)
 
 data DStmt
@@ -131,11 +127,11 @@ data DStmt
     deriving (Show, Eq)
 
 data DDecl
-  = DDecl SlotNum DType Shape
+  = DDecl SlotNum BaseType Shape
     deriving (Show, Eq)
 
 data DPara
-  = DPara SlotNum Indi DType
+  = DPara Indi BaseType
     deriving (Show, Eq)
 
 data DProc
@@ -145,3 +141,6 @@ data DProc
 data DGoatProgram
   = DProgram ProcId [DProc]
     deriving (Show, Eq)
+
+data DProcProto
+  = DProcProto ProcId [DPara]

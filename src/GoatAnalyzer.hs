@@ -11,9 +11,10 @@ import GoatAST
 import Data.Map (Map)
 import qualified Data.Map as M
 import Control.Monad.State
+import Debug.Trace
 
 data Astate = Astate
-  { procs :: M.Map String [DPara]
+  { procs :: M.Map String DProcProto
   , varibles :: M.Map String DVar
   , slotCounter :: Int
   , procCounter :: Int
@@ -21,19 +22,19 @@ data Astate = Astate
 
 type Analyzer a = State Astate a
 
-getProc :: String -> Analyzer [DPara]
-getProc name
+getProcProto :: String -> Analyzer DProcProto
+getProcProto name
   = do
       st <- get
       return $ (procs st) M.! name
 
-putProc :: String -> [DPara] -> Analyzer ()
-putProc name params
+putProcProto :: String -> DProcProto -> Analyzer ()
+putProcProto name dProcProto
   = do
       st <- get
       let p = if M.member name (procs st)
                 then error ("Procedure named " ++ name ++ " already exist")
-                else M.insert name params (procs st)
+                else M.insert name dProcProto (procs st)
         in put st{procs = p}
 
 getVar :: String -> Analyzer DVar
@@ -81,6 +82,25 @@ resetProcCounter
 
 semanticCheckDGoatProgram :: GoatProgram -> Analyzer DGoatProgram
 semanticCheckDGoatProgram (Program procs)
-    = do
-        s <- getSlotCounter
-        return $ DProgram s []
+  = do
+      loadProcProto procs
+      dProcs <- mapM checkProc procs
+      return $ DProgram 0 dProcs
+
+loadProcProto :: [Proc] -> Analyzer ()
+loadProcProto procs
+    = mapM_ (\(Proc sourcePos ident paras _ _) -> 
+          do 
+            -- do not check the parameter for now
+            -- will be checked when analysing the procedure
+            let dParas = map (\(Para _ _ baseType indi) -> (DPara indi baseType)) paras
+            pid <- getProcCounter
+            putProcProto ident (DProcProto pid dParas)
+            return ()) procs
+      
+
+checkProc :: Proc -> Analyzer DProc
+checkProc (Proc sourcePos ident paras decls stmts)
+  = do
+      (DProcProto pid _) <- getProcProto ident
+      return (DProc pid [] [] [] 0)
