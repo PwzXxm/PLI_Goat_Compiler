@@ -21,20 +21,20 @@ data Statement
   | Store_in Reg Reg
 
 data Constant
-  = Reg Int
-  | Reg Float
-  | Reg String
+  = ConsInt Reg Int
+  | ConsFloat Float
+  | ConsString String
 
 
 data Operation
-  = BinaryOp Reg Reg Reg
-  | BinaryOp Reg Reg
+  = BinaryOp3 Reg Reg Reg
+  | BinaryOp2 Reg Reg
   | CmpOp Reg Reg Reg 
   | Add_of Reg Reg Reg
   | Sub_off Reg Reg Reg
-  | And Reg Reg Reg
-  | Or Reg Reg Reg
-  | Not Reg Reg
+  | And_ Reg Reg Reg
+  | Or_ Reg Reg Reg
+  | Not_ Reg Reg
   | Int2real Reg Reg
   | Move Reg Reg Reg
 
@@ -45,7 +45,7 @@ data Instruction
   | Debug
   | Call Label
   | Call_bt String
-  | If Branch Branch Branch
+  | If_else Branch Branch Branch
   | If Branch Branch
   | While Branch Branch Branch
   | Push Int
@@ -53,7 +53,7 @@ data Instruction
   | Comment String
 
 data Label
-  = Int [Expression]
+  = Label Int [Instruction]
 
 data Branch
   = Cond Bool Reg Label
@@ -65,4 +65,6 @@ data Prog
 data Debug
   = DebugReg Reg
   | DebugSlot Int
-  | DebugStack 
+  | DebugStack
+
+
