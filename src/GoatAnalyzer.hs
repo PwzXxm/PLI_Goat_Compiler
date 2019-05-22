@@ -159,11 +159,87 @@ checkProc (Proc sourcePos ident paras decls stmts)
       return (DProc pid dParas dDecls dStmts totalSize)
 
 checkStat :: Stmt -> Analyzer DStmt
--- checkStat (Assign sourcePos var expr)
-checkStat _
--- palceholder
+checkStat (Assign sourcePos (Var _ ident _) expr)
   = do
-      return (DCall 0 [])
+      dVar <- getVar ident sourcePos
+      dExpr <- checkExpr expr
+      return $ DAssign dVar dExpr
+checkStat (Read sourcePos (Var _ ident _))
+  = do
+      dVar <- getVar ident sourcePos
+      return $ DRead dVar
+checkStat (Write sourcePos expr)
+  = do
+      dExpr <- checkExpr expr
+      return $ DWrite dExpr
+checkStat (Call sourcePos ident exprs)
+  = do
+      dExprs <- mapM checkExpr exprs
+      (DProcProto procId _) <- getProcProto ident sourcePos
+      return $ DCall procId dExprs
+checkStat (If sourcePos expr stmts1 stmts2)
+  = do
+      dExpr <- checkExpr expr
+      dStmts1 <- mapM checkStat stmts1
+      dStmts2 <- mapM checkStat stmts2
+      return $ DIf dExpr dStmts1 dStmts2
+checkStat (While sourcePos expr stmts)
+  = do
+      dExpr <- checkExpr expr
+      dStmts <- mapM checkStat stmts
+      return $ DWhile dExpr dStmts
+
+checkExpr :: Expr -> Analyzer DExpr
+checkExpr (BoolConst _ bool)
+  = do
+      return $ DBoolConst bool
+checkExpr (IntConst _ int)
+  = do
+      return $ DIntConst int
+checkExpr (FloatConst _ float)
+  = do
+      return $ DFloatConst float
+checkExpr (StrConst _ string)
+  = do
+      return $ DStrConst string
+checkExpr (Evar sourcePos (Var _ ident _))
+  = do
+      dVar <- getVar ident sourcePos
+      return $ DEvar dVar
+checkExpr (BinaryOp sourcePos binop expr1 expr2)
+  = do
+      dExpr1 <- checkExpr expr1
+      dExpr2 <- checkExpr expr2
+      if cmpBaseType dExpr1 dExpr2
+        then return $ DBinaryOp binop dExpr1 dExpr2 (getBaseType dExpr1)
+        else lift $ throwError (SemanticError sourcePos ("different type varibles"))
+checkExpr (UnaryMinus _ expr)
+  = do
+      dExpr <- checkExpr expr
+      return $ DUnaryMinus dExpr (getBaseType dExpr)
+checkExpr (UnaryNot _ expr)
+  = do
+      dExpr <- checkExpr expr
+      return $ DUnaryNot dExpr (getBaseType dExpr)
+
+-- test :: Analyzer DPara
+-- test
+--   = do
+--     s <- getSlotCounter 1
+--     return (DPara s InVal BoolType)
+
+getBaseType :: DExpr -> BaseType
+getBaseType (DBoolConst bool) = BoolType
+getBaseType (DIntConst int) = IntType
+getBaseType (DFloatConst float) = FloatType
+-- getBaseType (StrConst string) = DStrConst string
+getBaseType (DEvar (DVar _ _ baseType)) = baseType
+getBaseType (DBinaryOp _ _ _ baseType) = baseType
+getBaseType (DUnaryMinus _ baseType) = baseType
+getBaseType (DUnaryNot _ baseType) = baseType
+
+cmpBaseType :: DExpr -> DExpr -> Bool
+cmpBaseType e1 e2 = (getBaseType e1) == (getBaseType e2)
 
 getVarSizeByShape :: Shape -> Int
 getVarSizeByShape (ShapeVar) = 1
