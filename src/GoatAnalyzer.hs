@@ -28,32 +28,36 @@ instance Show SemanticError where
 
 type Analyzer a = StateT Astate (Either SemanticError) a
 
-getProcProto :: String -> Analyzer DProcProto
-getProcProto name
-  = do
-      st <- get
-      return $ (procs st) M.! name
-
-putProcProto :: String -> DProcProto -> Analyzer ()
-putProcProto name dProcProto
+getProcProto :: String -> SourcePos -> Analyzer DProcProto
+getProcProto name sourcePos
   = do
       st <- get
       if M.member name (procs st)
-        then lift $ throwError (SemanticError (newPos "" 0 0) ("Variable named " ++ name ++ " already exist"))
-        else put st {procs = M.insert name dProcProto (procs st)}
+        then return $ (procs st) M.! name
+        else lift $ throwError (SemanticError sourcePos ("Procedure named " ++ name ++ " does not exist"))
 
-getVar :: String -> Analyzer DVar
-getVar var
+putProcProto :: String -> DProcProto -> SourcePos -> Analyzer ()
+putProcProto name dProcProto sourcePos
   = do
       st <- get
-      return $ (varibles st) M.! var
+      if M.member name (procs st)
+        then lift $ throwError (SemanticError sourcePos ("Procedure named " ++ name ++ " already exists"))
+        else put st {procs = M.insert name dProcProto (procs st)}
 
-putVar :: String -> DVar -> Analyzer ()
-putVar name var
+getVar :: String -> SourcePos -> Analyzer DVar
+getVar name sourcePos
   = do
       st <- get
       if M.member name (varibles st)
-        then lift $ throwError (SemanticError (newPos "" 0 0) ("Variable named " ++ name ++ " already exist"))
+        then return $ (varibles st) M.! name
+        else lift $ throwError (SemanticError sourcePos ("Variable named " ++ name ++ " does not exist"))
+
+putVar :: String -> DVar -> SourcePos -> Analyzer ()
+putVar name var sourcePos
+  = do
+      st <- get
+      if M.member name (varibles st)
+        then lift $ throwError (SemanticError sourcePos ("Variable named " ++ name ++ " already exists"))
         else put st{varibles = M.insert name var (varibles st)}
 
 resetVar :: Analyzer ()
@@ -122,7 +126,7 @@ loadProcProto procs
           -- will be checked when analysing the procedure
           let dParas = map (\(Para _ _ baseType indi) -> (DProcProtoPara indi baseType)) paras
           pid <- getProcCounter
-          putProcProto ident (DProcProto pid dParas)
+          putProcProto ident (DProcProto pid dParas) sourcePos
           return ()
         ) procs
 
@@ -131,19 +135,19 @@ checkProc (Proc sourcePos ident paras decls stmts)
   = do
       resetVar
       resetSlotCounter
-      (DProcProto pid _) <- getProcProto ident
+      (DProcProto pid _) <- getProcProto ident sourcePos
       -- parameters
       dParas <- mapM (\(Para sourcePos ident baseType indi) -> 
         do
           sc <- getSlotCounter 1
-          putVar ident (DVar sc (ShapeVar) baseType)
+          putVar ident (DVar sc (ShapeVar) baseType) sourcePos
           return (DPara sc indi baseType)
         ) paras
       -- declarations
       dDecls <- mapM (\(Decl sourcePos ident baseType shape) -> 
         do
           sc <- getSlotCounter (getVarSizeByShape shape)
-          putVar ident (DVar sc shape baseType)
+          putVar ident (DVar sc shape baseType) sourcePos
           return (DDecl sc baseType shape)
         ) decls
       -- the current counter + 1 is the total size
