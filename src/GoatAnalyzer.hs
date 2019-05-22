@@ -52,11 +52,11 @@ putVar name var
                 else M.insert name var (varibles st)
         in put st{varibles = v}
 
-getSlotCounter :: Analyzer Int
-getSlotCounter
+getSlotCounter :: Int -> Analyzer Int
+getSlotCounter s
   = do
       st <- get
-      put st{slotCounter = (slotCounter st) + 1}
+      put st{slotCounter = (slotCounter st) + s}
       return $ slotCounter st
 
 resetSlotCounter :: Analyzer ()
@@ -87,20 +87,53 @@ semanticCheckDGoatProgram (Program procs)
       dProcs <- mapM checkProc procs
       return $ DProgram 0 dProcs
 
+-- load all procedure's prototype and check for duplicate identity
 loadProcProto :: [Proc] -> Analyzer ()
 loadProcProto procs
     = mapM_ (\(Proc sourcePos ident paras _ _) -> 
-          do 
-            -- do not check the parameter for now
-            -- will be checked when analysing the procedure
-            let dParas = map (\(Para _ _ baseType indi) -> (DPara indi baseType)) paras
-            pid <- getProcCounter
-            putProcProto ident (DProcProto pid dParas)
-            return ()) procs
-      
+        do 
+          -- do not check the parameter for now
+          -- will be checked when analysing the procedure
+          let dParas = map (\(Para _ _ baseType indi) -> (DProcProtoPara indi baseType)) paras
+          pid <- getProcCounter
+          putProcProto ident (DProcProto pid dParas)
+          return ()
+        ) procs
 
 checkProc :: Proc -> Analyzer DProc
 checkProc (Proc sourcePos ident paras decls stmts)
   = do
+      resetSlotCounter
       (DProcProto pid _) <- getProcProto ident
-      return (DProc pid [] [] [] 0)
+      -- parameters
+      dParas <- mapM (\(Para sourcePos ident baseType indi) -> 
+        do
+          sc <- getSlotCounter 1
+          putVar ident (DVar sc (ShapeVar) baseType)
+          return (DPara sc indi baseType)
+        ) paras
+      -- declarations
+      dDecls <- mapM (\(Decl sourcePos ident baseType shape) -> 
+        do
+          sc <- getSlotCounter (getVarSizeByShape shape)
+          putVar ident (DVar sc shape baseType)
+          return (DDecl sc baseType shape)
+        ) decls
+      -- the current counter + 1 is the total size
+      totalSize <- getSlotCounter 1
+
+      -- statements
+      dStmts <- mapM checkStat stmts
+
+      return (DProc pid dParas dDecls dStmts totalSize)
+
+checkStat :: Stmt -> Analyzer DStmt
+checkStat _
+-- palceholder
+  = do
+      return (DCall 0 [])
+
+getVarSizeByShape :: Shape -> Int
+getVarSizeByShape (ShapeVar) = 1
+getVarSizeByShape (ShapeArr a) = a
+getVarSizeByShape (ShapeMat a b) = a * b

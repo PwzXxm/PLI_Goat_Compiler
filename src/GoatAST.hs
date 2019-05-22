@@ -103,7 +103,7 @@ data DIdx
     deriving (Show, Eq)
 
 data DVar
-  = DVar SlotNum DIdx BaseType
+  = DVar SlotNum Shape BaseType
     deriving (Show, Eq)
 
 data DExpr
@@ -131,7 +131,7 @@ data DDecl
     deriving (Show, Eq)
 
 data DPara
-  = DPara Indi BaseType
+  = DPara SlotNum Indi BaseType
     deriving (Show, Eq)
 
 data DProc
@@ -143,4 +143,8 @@ data DGoatProgram
     deriving (Show, Eq)
 
 data DProcProto
-  = DProcProto ProcId [DPara]
+  = DProcProto ProcId [DProcProtoPara]
+
+data DProcProtoPara
+  = DProcProtoPara Indi BaseType
+    deriving (Show, Eq)
