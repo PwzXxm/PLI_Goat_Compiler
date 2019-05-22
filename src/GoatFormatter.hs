@@ -46,7 +46,7 @@ runGoatFormatter (Program (x:xs))
 
 -- | Print one program
 programFormatter :: Proc -> StrWriter
-programFormatter (Proc id paras decls stmts)
+programFormatter (Proc _ id paras decls stmts)
   = do
       output "proc "
       output id
@@ -70,7 +70,7 @@ parasFormatter (x:xs)
 
 -- | Print one parameter
 paraFormatter :: Para -> StrWriter
-paraFormatter (Para id btype indi)
+paraFormatter (Para _ id btype indi)
   = do
       indiFormatter indi
       output " "
@@ -81,7 +81,7 @@ paraFormatter (Para id btype indi)
 -- | Print declarations in the program
 declsFormatter :: [Decl] -> StrWriter
 declsFormatter [] = return ()
-declsFormatter ((Decl id btype shape):xs)
+declsFormatter ((Decl _ id btype shape):xs)
   = do
       output "    "
       btypeFormatter btype
@@ -104,26 +104,26 @@ stmtsFormatter inde (x:xs)
 -- | Print one statement depending on its structure
 -- | Int: indention of the line
 stmtFormatter :: Int -> Stmt -> StrWriter
-stmtFormatter inde (Read var)
+stmtFormatter inde (Read _ var)
   = do
       indeFormatter inde
       output "read "
       varFormatter var
       output ";"
-stmtFormatter inde (Write expr)
+stmtFormatter inde (Write _ expr)
   = do
       indeFormatter inde
       output "write "
       exprFormatter False expr
       output ";"
-stmtFormatter inde (Assign var expr)
+stmtFormatter inde (Assign _ var expr)
   = do
       indeFormatter inde
       varFormatter var
       output " := "
       exprFormatter False expr
       output ";"
-stmtFormatter inde (Call id xs)
+stmtFormatter inde (Call _ id xs)
   = do
       indeFormatter inde
       output "call "
@@ -132,7 +132,7 @@ stmtFormatter inde (Call id xs)
       exprsFormatter xs
       output ")"
       output ";"
-stmtFormatter inde (If expr s1 [])
+stmtFormatter inde (If _ expr s1 [])
   = do
       indeFormatter inde
       output "if "
@@ -141,7 +141,7 @@ stmtFormatter inde (If expr s1 [])
       stmtsFormatter (inde+1) s1
       indeFormatter inde
       output "fi"
-stmtFormatter inde (If expr s1 s2)
+stmtFormatter inde (If _ expr s1 s2)
   = do
       indeFormatter inde
       output "if "
@@ -153,7 +153,7 @@ stmtFormatter inde (If expr s1 s2)
       stmtsFormatter (inde+1) s2
       indeFormatter inde
       output "fi"
-stmtFormatter inde (While expr stmts)
+stmtFormatter inde (While _ expr stmts)
   = do
       indeFormatter inde
       output "while "
@@ -192,7 +192,7 @@ shapeFormatter (ShapeMat a b)
 
 -- | Print one varible
 varFormatter :: Var -> StrWriter
-varFormatter (Var id idx)
+varFormatter (Var _ id idx)
   = do
       output id
       idxFormatter idx
@@ -227,29 +227,29 @@ exprsFormatter (x:xs)
 -- | Bool: True: There is a pair of parenthesises out of the expression
 -- |       Flase: Vice versa
 exprFormatter :: Bool -> Expr -> StrWriter
-exprFormatter _ (BoolConst True) = output "true"
-exprFormatter _ (BoolConst False) = output "false"
-exprFormatter _ (IntConst int) = output (show int)
-exprFormatter _ (FloatConst float) = output (showFFloatAlt Nothing float "")
-exprFormatter _ (StrConst string) = output ("\"" ++ string ++ "\"")
-exprFormatter _ (Evar var) = varFormatter var
-exprFormatter True (BinaryOp binop e1 e2)
+exprFormatter _ (BoolConst _ True) = output "true"
+exprFormatter _ (BoolConst _ False) = output "false"
+exprFormatter _ (IntConst _ int) = output (show int)
+exprFormatter _ (FloatConst _ float) = output (showFFloatAlt Nothing float "")
+exprFormatter _ (StrConst _ string) = output ("\"" ++ string ++ "\"")
+exprFormatter _ (Evar _ var) = varFormatter var
+exprFormatter True (BinaryOp _ binop e1 e2)
   = do
       output "("
       exprFormatter True e1
       binopFotmatter binop
       exprFormatter True e2
       output ")"
-exprFormatter False (BinaryOp binop e1 e2)
+exprFormatter False (BinaryOp _ binop e1 e2)
   = do
       exprFormatter True e1
       binopFotmatter binop
       exprFormatter True e2
-exprFormatter _ (UnaryMinus expr)
+exprFormatter _ (UnaryMinus _ expr)
   = do
       output "-"
       exprFormatter True expr
-exprFormatter _ (UnaryNot expr)
+exprFormatter _ (UnaryNot _ expr)
   = do
       output "!"
       exprFormatter True expr

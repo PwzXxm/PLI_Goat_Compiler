@@ -10,11 +10,13 @@ module Main where
 import GoatParser
 import GoatLexer
 import GoatFormatter
+import GoatAnalyzer
 
 import Data.Char
 import Text.Parsec
 import System.Environment
 import System.Exit
+import Control.Monad.State
 
 -- | Job type
 data Job
@@ -43,9 +45,21 @@ execute job source_file
                     putStrLn (show tree)
                     return ()
                   else do
-                    -- preitter
-                    runGoatFormatterAndOutput tree
-                    return ()
+                    if job == JobPrettier
+                      then do 
+                        -- preitter
+                        runGoatFormatterAndOutput tree
+                        return ()
+                      else do
+                        -- compile
+                        let
+                          state = Astate
+                            { procs = M.empty
+                            , varibles = M.emtpy
+                            , slotCounter = 0
+                            , procCounter = 0
+                            }
+                        in runState Analyzer (semanticCheckDGoatProgram tree) state
             Left err ->
               do
                 putStr "Syntax error: "
@@ -66,6 +80,7 @@ main
         ["-st", source_file] -> execute JobToken source_file
         ["-sa", source_file] -> execute JobAST source_file
         ["-p", source_file] -> execute JobPrettier source_file
+        [source_file] -> execute JobCompile source_file
         ["-h"] ->
           do
             putStrLn usageMsg
@@ -75,9 +90,6 @@ main
             putStrLn ("-p     : pretty print the source file")
             putStrLn ("-h     : display the help menu")
             putStrLn ("file   : the file to be processed")
-        [source_file] -> 
-          do
-            putStrLn ("Sorry, cannot generate code yet")
         _ ->
           do
             putStrLn usageMsg
