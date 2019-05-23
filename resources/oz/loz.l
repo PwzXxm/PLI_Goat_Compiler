@@ -46,7 +46,7 @@ extern	int	ozyylex_destroy(void);
 
 alpha	[a-zA-Z_]
 digit	[0-9]
-alnum	[a-zA-Z_0-9]
+alnum	[a-zA-Z_'0-9]
 sp	[ \t]
 nl	[\n\f]
 nonl	[^\n\f]
