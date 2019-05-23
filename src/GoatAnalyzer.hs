@@ -181,13 +181,13 @@ checkStat (Assign _ (Var sourcePos ident idx) expr)
     -- TODO: check type
       (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
       dExpr <- checkExpr expr
-      dIdx <- checkIdx idx
+      dIdx <- checkShapeAndIdx shape idx sourcePos
       return $ DAssign (DVar slotNum dIdx dBaseType) dExpr
 checkStat (Read _ (Var sourcePos ident idx))
   = do
     -- TODO: check type
       (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
-      dIdx <- checkIdx idx
+      dIdx <- checkShapeAndIdx shape idx sourcePos
       return $ DRead (DVar slotNum dIdx dBaseType)
 checkStat (Write sourcePos expr)
   = do
@@ -226,8 +226,7 @@ checkExpr (StrConst _ string)
 checkExpr (Evar sourcePos (Var _ ident idx))
   = do
       (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
-      dIdx <- checkIdx idx
-      -- check shape and idx
+      dIdx <- checkShapeAndIdx shape idx sourcePos
       return $ DEvar (DVar slotNum dIdx dBaseType)
 checkExpr (BinaryOp sourcePos binop expr1 expr2)
   = do
@@ -257,59 +256,62 @@ getBaseType (DUnaryNot _ dBaseType)      = dBaseType
 checkBaseType :: DExpr -> DExpr -> Binop -> SourcePos -> Analyzer DBaseType
 checkBaseType e1 e2 binop sourcePos
   | binop == Op_add || binop == Op_sub || binop == Op_mul || binop == Op_div
-  = do
-      if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType || (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
-        then throwSemanticErr sourcePos ("The two operands of a binary arithmetic operator must have numeric type")
-        else
-          if (getBaseType e1) == DFloatType || (getBaseType e2) == DFloatType
-            then return DFloatType
-            else return DIntType
-checkBaseType e1 e2 binop sourcePos
+    = do
+        if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType || (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
+          then throwSemanticErr sourcePos ("The two operands of a binary arithmetic operator must have numeric type")
+          else
+            if (getBaseType e1) == DFloatType || (getBaseType e2) == DFloatType
+              then return DFloatType
+              else return DIntType
   | binop == Op_eq || binop == Op_ne
-  = do
-      if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
-        then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
-        else
-          if (getBaseType e1) == (getBaseType e1)
-            then return $ getBaseType e1
-            else throwSemanticErr sourcePos ("The two operands of = and != must be same type")
-checkBaseType e1 e2 binop sourcePos
+    = do
+        if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
+          then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
+          else
+            if (getBaseType e1) == (getBaseType e1)
+              then return $ getBaseType e1
+              else throwSemanticErr sourcePos ("The two operands of = and != must be same type")
   | binop == Op_lt || binop == Op_le || binop == Op_gt || binop == Op_ge
-  = do
-      if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
-        then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
-        else
-          if (getBaseType e1) == (getBaseType e2)
-            then return DBoolType
-            else 
-              if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType
-                then throwSemanticErr sourcePos ("Cannot campare a Boolean type and a numeric type")
-                else return DBoolType
-checkBaseType e1 e2 binop sourcePos
-  | binop == Op_and || binop == Op_or
-  = do
-      if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
-        then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
-        else
-          if (getBaseType e1) == DBoolType && (getBaseType e2) == DBoolType
-            then return DBoolType
-            else throwSemanticErr sourcePos ("The two operands of && and || must be Boolean type")
+    = do
+        if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
+          then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
+          else
+            if (getBaseType e1) == (getBaseType e2)
+              then return DBoolType
+              else 
+                if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType
+                  then throwSemanticErr sourcePos ("Cannot campare a Boolean type and a numeric type")
+                  else return DBoolType
+  | otherwise
+    = do
+        if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
+          then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
+          else
+            if (getBaseType e1) == DBoolType && (getBaseType e2) == DBoolType
+              then return DBoolType
+              else throwSemanticErr sourcePos ("The two operands of && and || must be Boolean type")
 
--- check index int
-checkIdx :: Idx -> Analyzer DIdx
-checkIdx IdxVar
+
+checkShapeAndIdx :: Shape -> Idx -> SourcePos -> Analyzer DIdx
+checkShapeAndIdx ShapeVar IdxVar _
   = do
       return DIdxVar
-checkIdx (IdxArr expr)
+checkShapeAndIdx (ShapeArr _) (IdxArr expr) sourcePos
   = do
       dExpr <- checkExpr expr
-      return $ DIdxArr dExpr
-checkIdx (IdxMat expr1 expr2)
+      if (getBaseType dExpr) == DIntType
+        then return $ DIdxArr dExpr
+        else throwSemanticErr sourcePos ("Index should be Int not " ++ (show (getBaseType dExpr)))
+checkShapeAndIdx (ShapeMat _ _) (IdxMat expr1 expr2) sourcePos
   = do
       dExpr1 <- checkExpr expr1
       dExpr2 <- checkExpr expr2
-      return $ DIdxMat dExpr1 dExpr2
-
+      if (getBaseType dExpr1) == DIntType && (getBaseType dExpr2) == DIntType
+        then return $ DIdxMat dExpr1 dExpr2
+        else throwSemanticErr sourcePos ("Index should be Int not " ++ (show (getBaseType dExpr1)) ++ " and " ++ (show (getBaseType dExpr2)))
+checkShapeAndIdx _ _ sourcePos
+  = do
+      throwSemanticErr sourcePos ("Index type and shape type are different")
 
 getVarSizeByShape :: Shape -> Int
 getVarSizeByShape (ShapeVar) = 1
