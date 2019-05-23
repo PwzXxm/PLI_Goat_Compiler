@@ -216,6 +216,79 @@ evalExpr tReg (DFloatConst v)
 evalExpr tReg (DStrConst v)
   = appendIns (IConstant $ ConsString tReg v)
 
+evalExpr tReg (DEvar dVar)
+  = loadFromVar tReg dVar
+
+evalExpr tReg (DBinaryOp binop e0 e1 dBaseType)
+  = do
+      r0 <- getReg
+
+      evalExpr tReg e0
+      evalExpr r0 e1
+
+      checkBinaryType tReg r0 e0 e1
+
+      genBinop binop tReg r0 dBaseType
+
+      setNextUnusedReg r0
+
+evalExpr tReg (DUnaryMinus e0 DFloatType)
+  = appendIns (IOperation $ Unary NEG REAL tReg tReg)
+
+evalExpr tReg (DUnaryMinus e0 DIntType)
+  = appendIns (IOperation $ Unary NEG INT tReg tReg)
+
+evalExpr tReg (DUnaryNot e0 _)
+  = appendIns (IOperation $ Not_ tReg tReg)
+
+checkBinaryType :: Int -> Int -> DExpr -> DExpr -> Generator ()
+checkBinaryType r0 r1 e0 e1
+  = do
+      if getBaseType e0 /= getBaseType e1
+        then do
+          genIntToFloat r0 e0
+          genIntToFloat r1 e1
+      else
+        return ()
+
+genIntToFloat :: Int -> DExpr -> Generator ()
+genIntToFloat r e
+  = do
+      if (getBaseType e) == DIntType
+        then appendIns (IOperation $ Int2real r r)
+      else return ()
+
+-- TODO: Binary op
+genBinop :: Binop -> Int -> Int -> DBaseType -> Generator()
+genBinop binop r0 r1 dBaseType
+  | isLogicalBinop binop
+    = do
+        return ()
+  | otherwise
+    = do
+        return ()
+
+
+
+isLogicalBinop :: Binop -> Bool
+isLogicalBinop Op_and = True
+isLogicalBinop Op_or = True
+isLogicalBinop _ = False
+
+isRelationalBinop :: Binop -> Bool
+isRelationalBinop Op_eq = True
+isRelationalBinop Op_ne = True
+isRelationalBinop Op_lt = True
+isRelationalBinop Op_le = True
+isRelationalBinop Op_gt = True
+isRelationalBinop Op_ge = True
+isRelationalBinop _ = False
+
+-- TODO: load
+loadFromVar :: Int -> DVar -> Generator()
+loadFromVar tReg (DVar slotNum (DIdxVar _) dBaseType)
+  = appendIns (IStatement $ Load tReg slotNum)
+
 runCodeGenerator :: DGoatProgram -> [Instruction]
 runCodeGenerator dGoatProgram
   = let state = Gstate { regCounter = 0, labelCounter = 0, instructions = Endo ([]<>) }
