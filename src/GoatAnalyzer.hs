@@ -255,15 +255,41 @@ checkBaseType e1 e2 binop sourcePos
   | binop == Op_add || binop == Op_sub || binop == Op_mul || binop == Op_div
   = do
       if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType || (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
-        then throwSemanticErr sourcePos ("binary arithmetic operator must have numeric type")
+        then throwSemanticErr sourcePos ("The two operands of a binary arithmetic operator must have numeric type")
         else
           if (getBaseType e1) == DFloatType || (getBaseType e2) == DFloatType
             then return DFloatType
             else return DIntType
--- checkBaseType e1 e2 binop sourcePos
---   | binop == Op_eq || binop == Op_ne
---   = do
---       if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
+checkBaseType e1 e2 binop sourcePos
+  | binop == Op_eq || binop == Op_ne
+  = do
+      if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
+        then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
+        else
+          if (getBaseType e1) == (getBaseType e1)
+            then return $ getBaseType e1
+            else throwSemanticErr sourcePos ("The two operands of = and != must be same type")
+checkBaseType e1 e2 binop sourcePos
+  | binop == Op_lt || binop == Op_le || binop == Op_gt || binop == Op_ge
+  = do
+      if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
+        then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
+        else
+          if (getBaseType e1) == (getBaseType e2)
+            then return DBoolType
+            else 
+              if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType
+                then throwSemanticErr sourcePos ("Cannot campare a Boolean type and a numeric type")
+                else return DBoolType
+checkBaseType e1 e2 binop sourcePos
+  | binop == Op_and || binop == Op_or
+  = do
+      if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
+        then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
+        else
+          if (getBaseType e1) == DBoolType && (getBaseType e2) == DBoolType
+            then return DBoolType
+            else throwSemanticErr sourcePos ("The two operands of && and || must be Boolean type")
 
 -- check index int
 checkIdx :: Idx -> Analyzer DIdx
