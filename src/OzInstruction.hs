@@ -110,19 +110,27 @@ data Debug
 
 -- | Print one instruction
 instructionFormatter :: Instruction -> String
-instructionFormatter (IConstant c) = constantFormatter c
-instructionFormatter (IOperation o) = operationFormatter o
-instructionFormatter (IStatement s) = statementFormatter s
-instructionFormatter (IDebug d) = debugFormatter d
-instructionFormatter (IBranch b) = branchFormatter b
-instructionFormatter (ICall l) = "call " ++ (lshow l)
-instructionFormatter (ICall_bt bt) = "call_builtin " ++ bt
-instructionFormatter (IPushStack i) = "push_stack_frame " ++ (show i)
-instructionFormatter (IPopStack i) = "pop_stack_frame " ++ (show i)
-instructionFormatter (IComment str) = "# " ++ str
-instructionFormatter (IHalt) = "halt"
-instructionFormatter (IReturn) = "return"
-instructionFormatter (ILabel l) = (lshow l) ++ ":"
+instructionFormatter x 
+  = case x of
+    (IComment _) -> "  " ++ instructionFormatter_ x
+    (ILabel _)   -> instructionFormatter_ x
+    _            -> "    " ++ instructionFormatter_ x
+
+
+instructionFormatter_ :: Instruction -> String
+instructionFormatter_ (IConstant c) = constantFormatter c
+instructionFormatter_ (IOperation o) = operationFormatter o
+instructionFormatter_ (IStatement s) = statementFormatter s
+instructionFormatter_ (IDebug d) = debugFormatter d
+instructionFormatter_ (IBranch b) = branchFormatter b
+instructionFormatter_ (ICall l) = "call " ++ (lshow l)
+instructionFormatter_ (ICall_bt bt) = "call_builtin " ++ bt
+instructionFormatter_ (IPushStack i) = "push_stack_frame " ++ (show i)
+instructionFormatter_ (IPopStack i) = "pop_stack_frame " ++ (show i)
+instructionFormatter_ (IComment str) = "# " ++ str
+instructionFormatter_ (IHalt) = "halt"
+instructionFormatter_ (IReturn) = "return"
+instructionFormatter_ (ILabel l) = (lshow l) ++ ":"
 
 constantFormatter :: Constant -> String
 constantFormatter (ConsInt r i) = "int_const " ++ (rshow r) ++ ", " ++ (show i)
@@ -187,7 +195,7 @@ rshow :: Reg -> String
 rshow r = "r" ++ (show r)
 
 lshow :: Label -> String
-lshow l = "label_" ++ (show l)
+lshow l = "label_" ++ l
 
 debugFormatter :: Debug -> String
 debugFormatter (DebugReg r) = "debug_reg " ++ (rshow r)
