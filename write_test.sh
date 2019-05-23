@@ -5,7 +5,7 @@
 #   ./write_test w-no-global-variable-float
 #   ./write_test c-empty 
 
-testdata_path="./testdata/prettier/"
+testdata_path="./testdata/compiler/"
 
 vi_sth() {
     eval "vi ${testdata_path}$1$2"
@@ -14,8 +14,8 @@ vi_sth() {
 if [ $# -eq 1 ]
 then
     file=$1
-    cp_c="cat ${testdata_path}c-basic.goat > ${testdata_path}${file}.goat"
-    run_c="./Goat -p ${testdata_path}${file}.goat > ${testdata_path}${file}.out"
+    cp_c="cat ${testdata_path}c-basic.gt > ${testdata_path}${file}.gt"
+    run_c="./Goat ${testdata_path}${file}.gt > ${testdata_path}${file}.out"
 
     # Make Goat
     eval "make"

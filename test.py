@@ -51,6 +51,8 @@ def run_compiler_test_case(input_file: str) -> None:
     sample_output = os.path.join(file_path, file_name + '.out')
     prefix = file_name[:2]
 
+    print("Checking " + file_name)
+
     with open(goat_output_path, 'w') as fp:
         cp = subprocess.run(["./Goat", input_file], stdout=fp)
 
@@ -69,10 +71,10 @@ def run_compiler_test_case(input_file: str) -> None:
         oz_location = './resources/oz/oz'
 
         if is_stdin_exist:
-            with open(stdin_path, 'w') as fin:
-                oz_cp = subprocess.run([oz_location], input=fin, stdout=subprocess.PIPE)
+            with open(stdin_path, 'rb') as fin:
+                oz_cp = subprocess.run([oz_location, goat_output_path], input=fin.read(), stdout=subprocess.PIPE)
         else:
-            oz_cp = subprocess.run([oz_location], stdout=subprocess.PIPE)
+            oz_cp = subprocess.run([oz_location, goat_output_path], stdout=subprocess.PIPE)
         
         if oz_cp.returncode != 0 and prefix == 'r-':
             return
@@ -102,6 +104,7 @@ def run_compiler_test_case(input_file: str) -> None:
             exit(1)
         
         print("\033[0;31m" + "Error: " + "\033[0m" + "Running Oz emulator failure")
+        print((oz_cp.stdout).decode("utf-8"))
         exit(1)
     
     print("\033[0;31m" + "Error: " + "\033[0m" + "Compilation exits with error code" + cp.returncode)
