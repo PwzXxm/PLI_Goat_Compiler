@@ -43,7 +43,7 @@ data Constant
 
 data Operation
   = Binary BinaryOp RegType Reg Reg Reg
-  | Unary BinaryOp RegType Reg Reg
+  | Unary UnaryOp RegType Reg Reg
   | Cmp CmpOp RegType Reg Reg Reg 
   | Add_off Reg Reg Reg
   | Sub_off Reg Reg Reg
