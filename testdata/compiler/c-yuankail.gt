@@ -1,0 +1,63 @@
+# Really cumbersome version of quicksort since Goat supports neither
+# functions with return values, nor entire arrays as arguments.
+
+proc main()
+    int a[5];
+    int i;
+begin
+    a[0] := 5;
+    a[1] := 4;
+    a[2] := 3;
+    a[3] := 2;
+    a[4] := 1;
+    i := 0;
+    call sort(a[0], a[1], a[2], a[3], a[4], 0, 4);
+    while i < 5 do
+        write a[i];
+        i := i + 1;
+    od
+end
+
+proc sort(ref int a, ref int b, ref int c, ref int d, ref int e, val int lo, val int hi)
+    int arr[5];
+    int p;
+    int i;
+    int j;
+begin
+    if lo < hi then
+        arr[0] := a;
+        arr[1] := b;
+        arr[2] := c;
+        arr[3] := d;
+        arr[4] := e;
+        p := arr[lo];
+        i := lo;
+        j := hi;
+        while i < j do
+            while i < hi && arr[i] <= p do
+                i := i + 1;
+            od
+            while j >= lo && arr[j] > p do
+                j := j - 1;
+            od
+            call swap(arr[i], arr[j]);
+        od
+        call swap(arr[i], arr[j]);
+        call swap(arr[lo], arr[j]);
+        a := arr[0];
+        b := arr[1];
+        c := arr[2];
+        d := arr[3];
+        e := arr[4];
+        call sort(a, b, c, d, e, lo, j - 1);
+        call sort(a, b, c, d, e, j + 1, hi);
+    fi
+end
+
+proc swap(ref int a, ref int b)
+    int temp;
+begin
+    temp := a;
+    a := b;
+    b := temp;
+end

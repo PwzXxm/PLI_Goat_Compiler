@@ -1,0 +1,30 @@
+
+proc main ()
+    int arr[4];
+    int tmp;
+
+begin
+    write "Please input 4 integers: ";
+    read arr[0];
+    read arr[1];
+    read arr[2];
+    read arr[3];
+
+    tmp := arr[0];
+    arr[0] := arr[3];
+    arr[3] := tmp;
+
+    tmp := arr[1];
+    arr[1] := arr[2];
+    arr[2] := tmp;
+
+    write "The reversed array is: ";
+    write arr[0];
+    write " ";
+    write arr[1];
+    write " ";
+    write arr[2];
+    write " ";
+    write arr[3];
+    write "\n";
+end

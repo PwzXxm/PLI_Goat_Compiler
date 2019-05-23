@@ -1,0 +1,62 @@
+# Bubble Sort
+# By Yige Wen
+
+proc main()
+    int a[5];
+    int len;
+    int i;
+    int j;
+
+begin
+    len := 5;
+
+    a[0] := 5;
+    a[1] := 7;
+    a[2] := 9;
+    a[3] := -4;
+    a[4] := 1;
+
+    write "Before Sort: ";
+    i := 0;
+    while i < len do
+        write a[i]; 
+        if i < len - 1 then
+            write ", ";
+        else
+            write "\n";
+        fi
+        i := i + 1;
+    od
+
+    i := 0;
+    while i < len - 1 do
+        j := 0;
+        while j < len - 1 - i do
+            if a[j] > a[j+1] then
+                call exchange(a[j], a[j+1]);
+            fi
+            j := j + 1;
+        od
+        i := i + 1;
+    od
+
+    write "After Sort: ";
+    i := 0;
+    while i < len do
+        write a[i]; 
+        if i < len - 1 then
+            write ", ";
+        else
+            write "\n";
+        fi
+        i := i + 1;
+    od
+end
+
+proc exchange(ref int x, ref int y)
+    int temp;
+begin
+    temp := x;
+    x := y;
+    y := x;
+end

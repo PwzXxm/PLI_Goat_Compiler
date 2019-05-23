@@ -1,0 +1,92 @@
+###############################################################################
+# COMP90045 - Programming Language Implementation
+# Assignment 3a
+# Primes printer using Sieve of Eratosthenes
+# Finds primes less than or equal to n
+# n is bounded by the array size, since there's no dynamic allocation
+# Algorithm adapted from https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
+###############################################################################
+
+proc main ()
+	int n;
+	int count;
+begin
+	# Read from stdin
+	write "Enter number <= 10000: \n";
+	read n;
+
+	if n <= 10000 then
+		# Perform calculations
+		call primes(n, count);
+
+		# Write count
+		write "π(";
+		write n;
+		write ") = ";
+		write count;
+		write "\n";
+	else
+		write "Error: number greater than 10000\n";
+	fi
+end
+
+# Primary prime calculations function
+proc primes (val int n, ref int count)
+	# Loop vars
+	int i;
+	int multiplier;
+
+	# Array
+	bool is_prime[10001];
+	int largest_found_prime;
+begin
+	# Reset array
+	i := 1;
+	while i <= n do
+		is_prime[i] := true;
+		i := i + 1;
+	od
+
+	# 1 is not prime
+	is_prime[1] := false;
+
+	# Sieve up to sqrt(n)
+	i := 2;
+	while i * i <= n do
+		# If is prime, then need to set multiples
+		if is_prime[i] = true then
+			# Set multiples to false
+			multiplier := 2;
+			while i * multiplier <= n do
+				is_prime[multiplier * i] := false;
+				multiplier := multiplier + 1;
+			od
+		fi
+		i := i + 1;
+	od
+
+	# Now count, note there may be primes which are larger than sqrt(n)
+	i := 1;
+	while i <= n do
+		if is_prime[i] = true then
+			count := count + 1;
+			largest_found_prime := i;
+		fi
+		i := i + 1;
+	od
+
+	# Print primes (in format "p1, p2, ..., pn")
+	i := 1;
+	while i <= n do
+		if is_prime[i] = true then
+			write i;
+			# Add delimiters
+			if largest_found_prime = i then
+				write "\n";
+			else
+				write ", ";
+			fi
+		fi
+		i := i + 1;
+	od
+end

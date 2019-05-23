@@ -1,0 +1,196 @@
+proc binary_search()
+    int collection[5];
+    int length;
+    int x;
+    int low;
+    int high;
+    int mid;
+    bool flag;
+begin
+    collection[0] := 1;
+    collection[1] := 2;
+    collection[2] := 3;
+    collection[3] := 4;
+    collection[4] := 5;
+    length := 5;
+    x := 3;
+    low := 0;
+    high := length - 1;
+    flag := false;
+
+    write "collection: ";
+    write collection[0];
+    write collection[1];
+    write collection[2];
+    write collection[3];
+    write collection[4];
+    write "\n";
+    write "x: ";
+    write x;
+    write "\n";
+
+    while (low <= high) do
+        mid := (low + high)/2;
+        if (x = collection[mid]) then
+            flag := true;
+            low := high;
+        else
+            if (x < collection[mid]) then
+                high := mid - 1;
+            else
+                low := mid + 1;
+            fi
+        fi
+    od
+
+    if (flag) then
+        write "x is found\n";
+    else
+        write "x is not found\n";
+    fi
+end
+
+proc factorial_recurse(val int num, ref int ret)
+begin
+    if num = 0 then
+        ret := 1;
+    else
+        call factorial_recurse(num-1, ret);
+        ret := num * ret;
+    fi
+end
+
+proc factorial()
+    int num;
+    int ans;
+begin
+    num := 5;
+    ans := 1;
+    call factorial_recurse(num, ans);
+    write "factorial of ";
+    write num;
+    write " is ";
+    write ans;
+    write "\n";
+end
+
+proc fibonacci_recurse(val int num, ref int ret)
+    int ret1;
+    int ret2;
+begin
+    if num = 0 then
+        ret := 0;
+    else 
+        if num = 1 then
+            ret := 1;
+        else 
+            ret1 := 0;
+            call fibonacci_recurse(num-1, ret1);
+            ret2 := 0;
+            call fibonacci_recurse(num-2, ret2);
+            ret := ret1 + ret2;
+        fi
+    fi
+end
+
+proc fibonacci()
+    int num;
+    int ans;
+begin
+    num := 8;
+    ans := 0;
+    call fibonacci_recurse(num, ans);
+    write "fibonacci of ";
+    write num;
+    write " is ";
+    write ans;
+    write "\n";
+end
+
+proc selection_sort()
+    int length;
+    int collection[3];
+    int i;
+    int j;
+    int tmp;
+    int min;
+begin
+    length := 3;
+    collection[0] := 3;
+    collection[1] := 6;
+    collection[2] := 2;
+    write "unsorted: ";
+    write collection[0];
+    write collection[1];
+    write collection[2];
+    write "\n";
+
+    i := 0;
+    while i < (length - 1) do
+        min := i;
+        j := i + 1;
+        while j < length do
+            if collection[j] < collection [min] then
+                min := j;
+            fi
+            j := j + 1;
+        od
+        tmp := collection[min];
+        collection[min] := collection [i];
+        collection [i] := tmp;
+        i := i + 1;
+    od
+
+    write "sorted: ";
+    write collection[0];
+    write collection[1];
+    write collection[2];
+    write "\n";
+end
+
+proc move(val int disks, val int source, val int auxiliary, val int target)
+begin
+    if (disks > 0) then
+        # move N-1 discs from source to auxiliary using target 
+		# as intermediate pole
+        call move(disks - 1, source, target, auxiliary);
+
+        # move one disc from source to target
+        write "Move disk ";
+        write disks;
+        write " from ";
+        write source;
+        write "->";
+        write target;
+        write "\n";
+
+        # move N-1 discs from auxiliary to target using source 
+		# as intermediate pole
+        call move(disks - 1, auxiliary, source, target);
+    fi
+end
+
+proc tower_of_hanoi()
+    int N;
+begin
+    N := 3;
+    call move(N, 1, 2, 3);
+end
+
+proc main()
+begin
+    write "binary_search:\n";
+    call binary_search();
+
+    write "\nfactorial:\n";
+    call factorial();
+
+    write "\nfibonacci:\n";
+    call fibonacci();
+    
+    write "\nselection_sort:\n";
+    call selection_sort();
+
+    write "\ntower_of_hanoi:\n";
+    call tower_of_hanoi();
+end

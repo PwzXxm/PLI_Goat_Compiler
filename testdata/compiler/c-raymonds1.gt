@@ -1,0 +1,79 @@
+# A program which currently prints the Collatz sequence for the number 12.
+# Could possibly read a number from input if you wanna change it.
+
+proc main()
+    int num;
+    bool success;
+    bool even;
+begin
+    num := 12;
+
+    call is_even(even, num);
+    if even 
+    then
+        call reduce(success, num);
+    else
+        call expand(success, num);
+    fi
+
+    write "For the number ";
+    write num;
+    write "; sequence termination: ";
+    write success;
+    write "!\n";
+end
+
+proc reduce(ref bool successful, val int num)
+    bool even;
+begin
+    if num = 1 then 
+        write num;
+        write "\n";
+        successful := true;
+    else
+        write num;
+        write " -> ";
+        num := num/2;
+        call is_even(even, num);
+        if even
+        then  
+            call reduce(successful, num);
+        else
+            call expand(successful, num);
+        fi
+    fi
+end
+
+proc expand(ref bool successful, val int num) 
+    bool even;
+begin
+    if num = 1 then 
+        write num;
+        write "\n";
+        successful := true;
+    else
+        write num;
+        write " -> ";
+        num := 3 * num + 1;
+        call is_even(even, num);
+        if even
+        then  
+            call reduce(successful, num);
+        else
+            call expand(successful, num);
+        fi
+    fi
+end
+
+proc is_even(ref bool evenness, val int num)
+begin
+    evenness := false;
+    while num >= 0
+    do
+        if num = 0 
+        then 
+            evenness := true;
+        fi
+        num := num - 2;
+    od
+end

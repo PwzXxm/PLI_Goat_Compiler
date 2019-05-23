@@ -1,0 +1,45 @@
+proc initFloatValue (ref float value)
+begin
+    value := 0.0;
+end
+
+proc initIntValue (ref int value)
+begin
+    value := 0;
+end
+
+proc main ()
+    float x;
+    int y;
+    bool z;
+    int count;
+    int count2;
+    int intList[3];
+    float floatMat[2,3];
+begin
+    write "let's test\n";
+    # init List
+    count := 0;
+    while count < 3 do
+        call initIntValue(intList[count]);
+        count := count + 1;
+    od
+    # init Matrix
+    count := 0;
+    count2 := 0;
+    while count < 2 do
+        while count2 < 3 do
+            call initFloatValue(floatMat[count, count2]);
+            count2 := count2 + 1;
+        od
+        count := count + 1;
+    od
+    x := 3.5;
+    write "please input y: ";
+    read y;
+    z := y < 10;
+    while z do
+        y := y + 1;
+        z := y < 10;
+    od
+end

@@ -1,0 +1,15 @@
+# Milestone 4 test case:
+# Call by-value arguments and procedure calls 
+
+proc main ()
+
+begin
+    call f(8, false);
+    write "\n";
+end
+
+proc f(val int x, val bool y)
+begin
+    write(x > 4 || y);
+end
+

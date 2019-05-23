@@ -1,0 +1,66 @@
+proc main()
+# this program test two calculations in call by reference and call by value
+# also test loop in matrix
+	float ans;
+begin
+	call calculation1(ans);
+	write ans;   # should write 0.0
+	call calculation2(ans);
+	write ans;
+  call loopMatrix();
+end
+
+proc calculation1(val float ans)
+float a;
+begin
+	a := 10.1;
+	ans := a * (2+1) / 3 - 1.1 + 10/6;
+	write ans;
+end
+
+proc calculation2(ref float ans)
+float a;
+begin
+	a := 10.1;
+	ans := a * (2+1) / 3 - 1.1 + 10/6;
+	write ans;
+end
+
+
+proc loopMatrix()
+	int lo;
+	int hi;
+	int lo2;
+	int hi2;
+	float element;
+	float matrix[5,5];
+
+begin
+	lo := 0;
+	hi := 5;
+	lo2 := 0;
+	hi2 := 5;
+	element := 1.1;
+
+	while lo < hi do
+		while lo2 < hi2 do
+			matrix[lo,lo2] := element;
+			lo2 := lo2 + 1;
+			element := element * 2;
+		od
+		lo := lo + 1;
+	od
+
+	lo := 0;
+	hi := 5;
+	lo2 := 0;
+	hi2 := 5;
+	while lo < hi do
+		while lo2 < hi2 do
+			write matrix[lo,lo2];
+			lo2 := lo2 + 1;
+		od
+		lo := lo + 1;
+	od
+
+end

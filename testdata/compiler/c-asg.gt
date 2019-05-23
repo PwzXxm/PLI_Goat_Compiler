@@ -1,0 +1,55 @@
+# Testing Goat assignments
+
+proc main()
+    int a;
+    bool b;
+begin
+    a := 42;
+    write a;
+    write "\n";
+    a := a;
+    write a;
+    write "\n";
+    a := (4*5*6) + (1*2*3);
+    write a;
+    write "\n";
+    a := (4/5/6) - (1/2/3);
+    write a;
+    write "\n";
+    a := (4+5+6) * (1+2+3);
+    write a;
+    write "\n";
+    a := (4-5-6) / (1-2-3);
+    write a;
+    write "\n";
+    a := -0;
+    write a;
+    write "\n";
+    a := -(1*2*3);
+    write a;
+    write "\n";
+
+    b := true;
+    b := b && (true && false) && (true || false || true);
+    write b;
+    write "\n";
+    b := b || (true && (false && true)) || (false || true);
+    write b;
+    write "\n";
+    b := ! (true && false || true);
+    write b;
+    write "\n";
+    b := (4*5*6) > (1+2+3);
+    write b;
+    write "\n";
+    b := (4*5*6) <= (1+2+3);
+    write b;
+    write "\n";
+    b := (1+2+3) < (4*5*6);
+    write b;
+    write "\n";
+    b := (1+2+3) >= (4*5*6);
+    write b;
+    write "\n";
+end
+
