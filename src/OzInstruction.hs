@@ -58,9 +58,12 @@ data Instruction
   | ICall Label
   | ICall_bt String
   | IBranch Branch
-  | IPush Int
-  | IPop Int
+  | IPushStack Int
+  | IPopStack Int
   | IComment String
+  | IHalt
+  | IReturn
+  | ILabel Label
     deriving (Show, Eq)
 
 data Branch
@@ -114,8 +117,8 @@ instructionFormatter (IDebug d) = debugFormatter d
 instructionFormatter (IBranch b) = branchFormatter b
 instructionFormatter (ICall l) = "call " ++ (lshow l)
 instructionFormatter (ICall_bt bt) = "call_builtin " ++ bt
-instructionFormatter (IPush i) = "push_stack_frame " ++ (show i)
-instructionFormatter (IPop i) = "pop_stack_frame " ++ (show i)
+instructionFormatter (IPushStack i) = "push_stack_frame " ++ (show i)
+instructionFormatter (IPopStack i) = "pop_stack_frame " ++ (show i)
 instructionFormatter (IComment str) = "# " ++ str
 
 
