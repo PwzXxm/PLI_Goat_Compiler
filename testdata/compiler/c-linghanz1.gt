@@ -1,0 +1,29 @@
+proc main()
+	int x;
+	int n;
+	int sum;
+	int sum_temp;
+	int temp;
+begin	
+	x := 15;
+	n := 14;
+	sum := 0;
+	sum_temp :=0;
+	while n>0 do
+		temp :=x;
+		while temp>0 do
+			sum_temp := sum_temp + temp;
+			temp := temp - 1;
+			if sum>100 then
+				sum := sum - 100;
+			fi
+		od
+		sum := sum + sum_temp;
+		n :=n-1;
+	od
+	
+	write sum;
+	write "\n";
+end
+		
+	

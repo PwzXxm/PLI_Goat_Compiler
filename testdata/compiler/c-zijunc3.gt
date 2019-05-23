@@ -1,0 +1,57 @@
+proc main ()
+    int n;
+    int a1;
+    int a2;
+begin
+    read n;
+    call fibonacci_recursion(n, a1);
+    call fibonacci_iteration(n, a2);
+    write "a1 = ";
+    write a1;
+    write ", a2 = ";
+    write a2;
+    write "\n";
+end
+
+proc fibonacci_recursion(val int n, ref int ans)
+int tmp[2];
+begin
+    if n < 0 then
+        write "Incorrect input\n";
+    else
+        if n <= 2 then
+            ans := 1;
+        else
+            call fibonacci_recursion(n-1, tmp[0]);
+            call fibonacci_recursion(n-1, tmp[1]);
+            ans := tmp[0] + tmp[1];
+        fi
+    fi
+end
+
+
+proc fibonacci_iteration(val int n, ref int ans)
+int a;
+int b;
+int c;
+int i;
+begin
+    if n < 0 then
+        write "Incorrect input\n";
+    else
+        if n <= 2 then
+            ans := 1;
+        else
+            a := 1;
+            b := 1;
+            i := 2;
+            while i < n do
+                c := a + b;
+                a := b;
+                b := c;
+                i := i + 1;
+            od
+            ans := c;
+        fi
+    fi
+end

@@ -1,0 +1,46 @@
+# Fibonacci (Dynamic Programming)
+# dbarrell (520704)
+#
+# Calculates the n-th number in the Fibonacci sequence, up to n=45.
+#
+# COMP90045 - Programming Language Implementation
+# Assignment 3a
+# 20/05/2019
+
+proc main ()
+    int result;
+    int n;
+begin
+    # Read number from stdin
+    write "Calculates the n-th number in the Fibonacci sequence\n";
+	write "Enter n (<= 45): \n";
+	read n;
+
+    # n > 45 results in integer overflow
+    if n <= 45 then
+        # Calculate fib(n)
+        call fib(n, result);
+
+        # Print result
+        write result;
+        write "\n";
+    else
+        write "Number must be less than or equal to 45\n";
+    fi
+end
+
+proc fib (val int n, ref int result)
+    int i;
+    int f[45];
+begin
+    f[0] := 0;
+    f[1] := 1;
+
+    i := 2;
+    while i <= n do
+        f[i] := f[i-1] + f[i-2];
+        i := i + 1;
+    od
+
+    result := f[n];
+end

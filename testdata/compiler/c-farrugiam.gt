@@ -1,0 +1,78 @@
+# This pogram does NOT divide by 0!
+# Hopefully, that is.
+
+# It attempts to modify the return address from the
+# close_call procedure to the return address of the
+# main procedure (i.e. the end of the program).
+
+# That way, the instructions to div by 0 are never
+# reached up the return of the 'close call' procedure.
+
+# It may not work if:
+# 1. you implement array bounds checking extension, or
+# 2. you compute offsets the opposite way it expects
+#    (with increasing array addresses allocated to
+#    decreasing slot numbers).
+
+# Good luck with the project!
+
+proc main ()
+    int x;
+begin
+    call close_call();
+    # divide by 0?
+    x := x / x;
+end
+
+proc close_call ()
+    int savior[1];
+begin
+    savior[2] := savior[5];
+end
+
+# P.S. I think the program should translate to Oz code
+# that looks something like this:
+#     call proc_main
+#     halt
+# proc_main:
+#   # prologue
+#     push_stack_frame 1
+#   # initialising int x;
+#     int_const r0, 0
+#     store 0, r0
+#   # procedure body
+#   # call close_call();
+#     call proc_close_call
+#   # x := x / x; (divide by 0)
+#     load r0, 0
+#     load r1, 0
+#     div_int r0, r0, r1
+#     store 0, r0
+#   # epilogue
+#     pop_stack_frame 1
+#     return
+# proc_close_call:
+#   # prologue
+#     push_stack_frame 1
+#   # initialising int savior[1];
+#     int_const r0, 0
+#     store 0, r0
+#   # procedure body
+#   # savior[2] := savior[5];
+#   # compute savior[5] (return address of main)
+#     int_const r0, 5
+#     load_address r1, 0
+#     sub_offset r0, r1, r0
+#     load_indirect r0, r0
+#   # store at savior[2] (close_call return address)
+#     int_const r1, 2
+#     load_address r2, 0
+#     sub_offset r1, r2, r1
+#     store_indirect r1, r0
+#   # epilogue
+#     pop_stack_frame 1
+#     # now when we return, oz emulator will use the
+#     # return address of main, and go right to 'halt'
+#     # (up the top of the program).
+#     return
+

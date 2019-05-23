@@ -1,0 +1,49 @@
+# A sorting program for a fixed size array
+
+proc main()
+    int h;
+    int j;
+    int k;
+    int tmp;
+    int x[8];
+begin
+    write "Provide 8 integers:\n";
+    write "> ";
+    read x[0];
+    write "> ";
+    read x[1];
+    write "> ";
+    read x[2];
+    write "> ";
+    read x[3];
+    write "> ";
+    read x[4];
+    write "> ";
+    read x[5];
+    write "> ";
+    read x[6];
+    write "> ";
+    read x[7];
+    
+    h := 0;
+    while h < 7 do
+        j := h;
+        k := h+1;
+        while k <= 7 do
+            if x[k] > x[j] then j := k; fi
+            k := k+1;
+        od
+        # swap x[h] and x[j]
+        tmp := x[h]; x[h] := x[j]; x[j] := tmp;
+        h := h+1;
+    od
+    write "\nThe integers, in descending order:\n\n";
+    h := 0;
+    while h < 8 do
+        write x[h];
+        write "  ";
+        h := h+1;
+    od
+    write "\n";
+end
+

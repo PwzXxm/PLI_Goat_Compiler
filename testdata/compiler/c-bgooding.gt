@@ -1,0 +1,36 @@
+# Testing focused on bools and reference passing (also valid proc name)
+
+proc main()
+	int n[2, 4];
+	bool t;
+	bool f;
+begin
+	t := true;
+	write "Boolean Testing: ";
+	if (f < t) && !((!f) != t) && (f >= (f != (f = t))) then
+	    write "Passed\n";
+	else
+		write "Failed\n";
+	fi
+	
+	write "Reference Testing: ";
+	n[1, 2] := 5;
+	n[0, 3] := n[1, 2];
+	call ref_test(n[1, 2]);
+	if n[1, 2] = 2 * (n[0, 3] + 1) then
+		write "Passed\n";
+	else
+		write "Failed\n";
+	fi
+end
+
+proc ref_test(ref int n)
+begin
+	call ref_test01'(n);
+	n := n + n;
+end
+
+proc ref_test01'(ref int n)
+begin
+	n := n + 1;
+end

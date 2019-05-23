@@ -1,0 +1,20 @@
+proc main()
+    int a;
+
+    begin
+    write "This is a test file for everyone\n";
+    a := 100;
+    if (3>4) || (10 != 1) then
+        call sum(a);
+    fi
+    end
+
+proc sum(val int x)
+int result;
+begin
+while x >= 0 do
+    result := result + x;
+    x := x -1;
+od
+write x;
+    end
