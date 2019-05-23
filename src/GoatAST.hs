@@ -106,8 +106,12 @@ data DIdx
   | DIdxMat DExpr DExpr
     deriving (Show, Eq)
 
+data DVarInfo
+  = DVarInfo SlotNum Shape DBaseType
+    deriving (Show, Eq)
+
 data DVar
-  = DVar SlotNum Shape DBaseType
+  = DVar SlotNum DIdx DBaseType
     deriving (Show, Eq)
 
 data DExpr
@@ -115,7 +119,7 @@ data DExpr
   | DIntConst Int
   | DFloatConst Float
   | DStrConst String
-  | DEvar SlotNum DIdx DBaseType 
+  | DEvar DVar
   | DBinaryOp Binop DExpr DExpr DBaseType -- Binary Operator
   | DUnaryMinus DExpr DBaseType -- Unary operator
   | DUnaryNot DExpr DBaseType

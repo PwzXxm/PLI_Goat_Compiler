@@ -16,7 +16,7 @@ import Text.Parsec.Pos
 
 data Astate = Astate
   { procs :: M.Map String DProcProto
-  , varibles :: M.Map String DVar
+  , varibles :: M.Map String DVarInfo
   , slotCounter :: Int
   , procCounter :: Int
   }
@@ -51,15 +51,15 @@ putProcProto name dProcProto sourcePos
         then throwSemanticErr sourcePos ("Procedure named " ++ name ++ " already exists")
         else put st {procs = M.insert name dProcProto (procs st)}
 
-getVar :: String -> SourcePos -> Analyzer DVar
-getVar name sourcePos
+getVarInfo :: String -> SourcePos -> Analyzer DVarInfo
+getVarInfo name sourcePos
   = do
       st <- get
       if M.member name (varibles st)
         then return $ (varibles st) M.! name
         else throwSemanticErr sourcePos ("Variable named " ++ name ++ " does not exist")
 
-putVar :: String -> DVar -> SourcePos -> Analyzer ()
+putVar :: String -> DVarInfo -> SourcePos -> Analyzer ()
 putVar name var sourcePos
   = do
       st <- get
@@ -157,14 +157,14 @@ checkProc (Proc sourcePos ident paras decls stmts)
       dParas <- mapM (\(Para sourcePos ident baseType indi) -> 
         do
           sc <- getSlotCounter 1
-          putVar ident (DVar sc (ShapeVar) (convType baseType)) sourcePos
+          putVar ident (DVarInfo sc (ShapeVar) (convType baseType)) sourcePos
           return (DPara sc indi (convType baseType))
         ) paras
       -- declarations
       mapM_ (\(Decl sourcePos ident baseType shape) -> 
         do
           sc <- getSlotCounter (getVarSizeByShape shape)
-          putVar ident (DVar sc shape (convType baseType)) sourcePos
+          putVar ident (DVarInfo sc shape (convType baseType)) sourcePos
           return ()
         ) decls
       -- the current counter + 1 is the total size
@@ -176,15 +176,19 @@ checkProc (Proc sourcePos ident paras decls stmts)
       return (DProc pid dParas dStmts totalSize)
 
 checkStat :: Stmt -> Analyzer DStmt
-checkStat (Assign sourcePos (Var _ ident _) expr)
+checkStat (Assign _ (Var sourcePos ident idx) expr)
   = do
-      dVar <- getVar ident sourcePos
+    -- TODO: check type
+      (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
       dExpr <- checkExpr expr
-      return $ DAssign dVar dExpr
-checkStat (Read sourcePos (Var _ ident _))
+      dIdx <- checkIdx idx
+      return $ DAssign (DVar slotNum dIdx dBaseType) dExpr
+checkStat (Read _ (Var sourcePos ident idx))
   = do
-      dVar <- getVar ident sourcePos
-      return $ DRead dVar
+    -- TODO: check type
+      (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
+      dIdx <- checkIdx idx
+      return $ DRead (DVar slotNum dIdx dBaseType)
 checkStat (Write sourcePos expr)
   = do
       dExpr <- checkExpr expr
@@ -221,10 +225,10 @@ checkExpr (StrConst _ string)
       return $ DStrConst string
 checkExpr (Evar sourcePos (Var _ ident idx))
   = do
-      (DVar slotNum shape dBaseType) <- getVar ident sourcePos
+      (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
       dIdx <- checkIdx idx
       -- check shape and idx
-      return $ DEvar slotNum dIdx dBaseType
+      return $ DEvar (DVar slotNum dIdx dBaseType)
 checkExpr (BinaryOp sourcePos binop expr1 expr2)
   = do
       dExpr1 <- checkExpr expr1
@@ -245,7 +249,7 @@ getBaseType (DBoolConst bool) = DBoolType
 getBaseType (DIntConst int) = DIntType
 getBaseType (DFloatConst float) = DFloatType
 getBaseType (DStrConst string) = DStringType
-getBaseType (DEvar _ _ dBaseType) = dBaseType
+getBaseType (DEvar (DVar _ _ dBaseType)) = dBaseType
 getBaseType (DBinaryOp _ _ _ dBaseType) = dBaseType
 getBaseType (DUnaryMinus _ dBaseType) = dBaseType
 getBaseType (DUnaryNot _ dBaseType) = dBaseType
