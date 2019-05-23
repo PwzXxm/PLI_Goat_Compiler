@@ -243,16 +243,6 @@ checkExpr (UnaryNot _ expr)
       dExpr <- checkExpr expr
       return $ DUnaryNot dExpr (getBaseType dExpr)
 
-getBaseType :: DExpr -> DBaseType
-getBaseType (DBoolConst bool)            = DBoolType
-getBaseType (DIntConst int)              = DIntType
-getBaseType (DFloatConst float)          = DFloatType
-getBaseType (DStrConst string)           = DStringType
-getBaseType (DEvar (DVar _ _ dBaseType)) = dBaseType
-getBaseType (DBinaryOp _ _ _ dBaseType)  = dBaseType
-getBaseType (DUnaryMinus _ dBaseType)    = dBaseType
-getBaseType (DUnaryNot _ dBaseType)      = dBaseType
-
 checkBaseType :: DExpr -> DExpr -> Binop -> SourcePos -> Analyzer DBaseType
 checkBaseType e1 e2 binop sourcePos
   | binop == Op_add || binop == Op_sub || binop == Op_mul || binop == Op_div
