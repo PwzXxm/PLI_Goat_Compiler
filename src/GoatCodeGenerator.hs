@@ -58,14 +58,24 @@ genProc (DProc procId dParas dStmts slotSize)
       -- statement
       mapM_ genStmt dStmts
 
+      appendIns (IComment $ "end of procedure")
       appendIns (IPopStack slotSize)
       appendIns (IReturn)
 
 genStmt :: DStmt -> Generator ()
+genStmt (DAssign dVar dExpr)
+  = do
+      appendIns (IComment $ "stmt: assignment")
+      reg0 <- getReg
+      evalExpr reg0 dExpr
+      saveToVar reg0 dVar
+      setNextUnusedReg reg0
+
 genStmt (DWrite dExpr)
   = do
-      reg0 <- getReg
+      appendIns (IComment $ "stmt: write")
       let dBaseType = getBaseType dExpr
+      reg0 <- getReg
       evalExpr reg0 dExpr
       let cmd = case dBaseType of DStringType -> "print_string"
                                   DBoolType   -> "print_bool"
@@ -76,6 +86,7 @@ genStmt (DWrite dExpr)
 
 genStmt (DRead dVar)
   = do
+      appendIns (IComment $ "stmt: read")
       let (DVar _ _ dBaseType) = dVar
       let cmd = case dBaseType of DBoolType  -> "read_bool"
                                   DIntType   -> "read_int"
