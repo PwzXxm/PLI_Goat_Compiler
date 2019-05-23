@@ -115,7 +115,10 @@ semanticCheckDGoatProgram (Program procs)
   = do
       loadProcProto procs
       dProcs <- mapM checkProc procs
-      return $ DProgram 0 dProcs
+      (DProcProto mainId _) <- getProcProto "main" (newPos "" 0 0)
+      return $ DProgram mainId dProcs
+
+
 
 -- load all procedure's prototype and check for duplicate identity
 loadProcProto :: [Proc] -> Analyzer ()
