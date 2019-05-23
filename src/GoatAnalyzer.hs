@@ -245,27 +245,29 @@ checkExpr (UnaryNot _ expr)
       return $ DUnaryNot dExpr (getBaseType dExpr)
 
 getBaseType :: DExpr -> DBaseType
-getBaseType (DBoolConst bool) = DBoolType
-getBaseType (DIntConst int) = DIntType
-getBaseType (DFloatConst float) = DFloatType
-getBaseType (DStrConst string) = DStringType
+getBaseType (DBoolConst bool)            = DBoolType
+getBaseType (DIntConst int)              = DIntType
+getBaseType (DFloatConst float)          = DFloatType
+getBaseType (DStrConst string)           = DStringType
 getBaseType (DEvar (DVar _ _ dBaseType)) = dBaseType
-getBaseType (DBinaryOp _ _ _ dBaseType) = dBaseType
-getBaseType (DUnaryMinus _ dBaseType) = dBaseType
-getBaseType (DUnaryNot _ dBaseType) = dBaseType
+getBaseType (DBinaryOp _ _ _ dBaseType)  = dBaseType
+getBaseType (DUnaryMinus _ dBaseType)    = dBaseType
+getBaseType (DUnaryNot _ dBaseType)      = dBaseType
 
 checkBaseType :: DExpr -> DExpr -> Binop -> SourcePos -> Analyzer DBaseType
 checkBaseType e1 e2 binop sourcePos
   | binop == Op_add || binop == Op_sub || binop == Op_mul || binop == Op_div
   = do
-      if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType
+      if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType || (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
         then throwSemanticErr sourcePos ("binary arithmetic operator must have numeric type")
         else
           if (getBaseType e1) == DFloatType || (getBaseType e2) == DFloatType
             then return DFloatType
             else return DIntType
 -- checkBaseType e1 e2 binop sourcePos
---   | binop == 
+--   | binop == Op_eq || binop == Op_ne
+--   = do
+--       if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
 
 -- check index int
 checkIdx :: Idx -> Analyzer DIdx
