@@ -66,11 +66,11 @@ genStmt (DWrite dExpr)
   = do
       reg0 <- getReg
       let dBaseType = getBaseType dExpr
-      loadExpr reg0 dExpr
+      evalExpr reg0 dExpr
       let cmd = case dBaseType of DStringType -> "print_string"
-                                  DBoolType -> "print_bool"
-                                  DIntType -> "print_int"
-                                  DFloatType -> "print_real"
+                                  DBoolType   -> "print_bool"
+                                  DIntType    -> "print_int"
+                                  DFloatType  -> "print_real"
       appendIns (ICall_bt cmd)
       setNextUnusedReg reg0
 
@@ -78,11 +78,22 @@ genStmt _
   = do
       return ()
 
+boolToInt :: Bool -> Int
+boolToInt True  = 1
+boolToInt False = 0
 
-loadExpr :: Int -> DExpr -> Generator ()
-loadExpr tReg (DStrConst str)
-  = appendIns (IConstant $ ConsString tReg str)
+evalExpr :: Int -> DExpr -> Generator ()
+evalExpr tReg (DBoolConst v)
+  = appendIns (IConstant $ ConsInt tReg $ boolToInt v)
 
+evalExpr tReg (DIntConst v)
+  = appendIns (IConstant $ ConsInt tReg v)
+
+evalExpr tReg (DFloatConst v)
+  = appendIns (IConstant $ ConsFloat tReg v)
+
+evalExpr tReg (DStrConst v)
+  = appendIns (IConstant $ ConsString tReg v)
 
 runCodeGenerator :: DGoatProgram -> [Instruction]
 runCodeGenerator dGoatProgram
