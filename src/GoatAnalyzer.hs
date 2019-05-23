@@ -16,7 +16,7 @@ import Text.Parsec.Pos
 
 data Astate = Astate
   { procs :: M.Map String DProcProto
-  , varibles :: M.Map String DVar
+  , varibles :: M.Map String DVarInfo
   , slotCounter :: Int
   , procCounter :: Int
   }
@@ -51,15 +51,15 @@ putProcProto name dProcProto sourcePos
         then throwSemanticErr sourcePos ("Procedure named " ++ name ++ " already exists")
         else put st {procs = M.insert name dProcProto (procs st)}
 
-getVar :: String -> SourcePos -> Analyzer DVar
-getVar name sourcePos
+getVarInfo :: String -> SourcePos -> Analyzer DVarInfo
+getVarInfo name sourcePos
   = do
       st <- get
       if M.member name (varibles st)
         then return $ (varibles st) M.! name
         else throwSemanticErr sourcePos ("Variable named " ++ name ++ " does not exist")
 
-putVar :: String -> DVar -> SourcePos -> Analyzer ()
+putVar :: String -> DVarInfo -> SourcePos -> Analyzer ()
 putVar name var sourcePos
   = do
       st <- get
@@ -134,11 +134,18 @@ loadProcProto procs
         do 
           -- do not check the parameter for now
           -- will be checked when analysing the procedure
-          let dParas = map (\(Para _ _ baseType indi) -> (DProcProtoPara indi baseType)) paras
+          let dParas = map (\(Para _ _ baseType indi) -> (DProcProtoPara indi (convType baseType))) paras
           pid <- getProcCounter
           putProcProto ident (DProcProto pid dParas) sourcePos
           return ()
         ) procs
+
+
+convType :: BaseType -> DBaseType
+convType BoolType  = DBoolType
+convType IntType   = DIntType
+convType FloatType = DFloatType
+
 
 checkProc :: Proc -> Analyzer DProc
 checkProc (Proc sourcePos ident paras decls stmts)
@@ -150,14 +157,14 @@ checkProc (Proc sourcePos ident paras decls stmts)
       dParas <- mapM (\(Para sourcePos ident baseType indi) -> 
         do
           sc <- getSlotCounter 1
-          putVar ident (DVar sc (ShapeVar) baseType) sourcePos
-          return (DPara sc indi baseType)
+          putVar ident (DVarInfo sc (ShapeVar) (convType baseType)) sourcePos
+          return (DPara sc indi (convType baseType))
         ) paras
       -- declarations
       mapM_ (\(Decl sourcePos ident baseType shape) -> 
         do
           sc <- getSlotCounter (getVarSizeByShape shape)
-          putVar ident (DVar sc shape baseType) sourcePos
+          putVar ident (DVarInfo sc shape (convType baseType)) sourcePos
           return ()
         ) decls
       -- the current counter + 1 is the total size
@@ -169,15 +176,19 @@ checkProc (Proc sourcePos ident paras decls stmts)
       return (DProc pid dParas dStmts totalSize)
 
 checkStat :: Stmt -> Analyzer DStmt
-checkStat (Assign sourcePos (Var _ ident _) expr)
+checkStat (Assign _ (Var sourcePos ident idx) expr)
   = do
-      dVar <- getVar ident sourcePos
+    -- TODO: check type
+      (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
       dExpr <- checkExpr expr
-      return $ DAssign dVar dExpr
-checkStat (Read sourcePos (Var _ ident _))
+      dIdx <- checkIdx idx
+      return $ DAssign (DVar slotNum dIdx dBaseType) dExpr
+checkStat (Read _ (Var sourcePos ident idx))
   = do
-      dVar <- getVar ident sourcePos
-      return $ DRead dVar
+    -- TODO: check type
+      (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
+      dIdx <- checkIdx idx
+      return $ DRead (DVar slotNum dIdx dBaseType)
 checkStat (Write sourcePos expr)
   = do
       dExpr <- checkExpr expr
@@ -212,17 +223,18 @@ checkExpr (FloatConst _ float)
 checkExpr (StrConst _ string)
   = do
       return $ DStrConst string
-checkExpr (Evar sourcePos (Var _ ident _))
+checkExpr (Evar sourcePos (Var _ ident idx))
   = do
-      dVar <- getVar ident sourcePos
-      return $ DEvar dVar
+      (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
+      dIdx <- checkIdx idx
+      -- check shape and idx
+      return $ DEvar (DVar slotNum dIdx dBaseType)
 checkExpr (BinaryOp sourcePos binop expr1 expr2)
   = do
       dExpr1 <- checkExpr expr1
       dExpr2 <- checkExpr expr2
-      if cmpBaseType dExpr1 dExpr2
-        then return $ DBinaryOp binop dExpr1 dExpr2 (getBaseType dExpr1)
-        else throwSemanticErr sourcePos ("different type varibles")
+      dBaseType <- checkBaseType dExpr1 dExpr2 binop sourcePos
+      return $ DBinaryOp binop dExpr1 dExpr2 dBaseType
 checkExpr (UnaryMinus _ expr)
   = do
       dExpr <- checkExpr expr
@@ -232,24 +244,46 @@ checkExpr (UnaryNot _ expr)
       dExpr <- checkExpr expr
       return $ DUnaryNot dExpr (getBaseType dExpr)
 
--- test :: Analyzer DPara
--- test
+getBaseType :: DExpr -> DBaseType
+getBaseType (DBoolConst bool)            = DBoolType
+getBaseType (DIntConst int)              = DIntType
+getBaseType (DFloatConst float)          = DFloatType
+getBaseType (DStrConst string)           = DStringType
+getBaseType (DEvar (DVar _ _ dBaseType)) = dBaseType
+getBaseType (DBinaryOp _ _ _ dBaseType)  = dBaseType
+getBaseType (DUnaryMinus _ dBaseType)    = dBaseType
+getBaseType (DUnaryNot _ dBaseType)      = dBaseType
+
+checkBaseType :: DExpr -> DExpr -> Binop -> SourcePos -> Analyzer DBaseType
+checkBaseType e1 e2 binop sourcePos
+  | binop == Op_add || binop == Op_sub || binop == Op_mul || binop == Op_div
+  = do
+      if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType || (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
+        then throwSemanticErr sourcePos ("binary arithmetic operator must have numeric type")
+        else
+          if (getBaseType e1) == DFloatType || (getBaseType e2) == DFloatType
+            then return DFloatType
+            else return DIntType
+-- checkBaseType e1 e2 binop sourcePos
+--   | binop == Op_eq || binop == Op_ne
 --   = do
---     s <- getSlotCounter 1
---     return (DPara s InVal BoolType)
+--       if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
 
-getBaseType :: DExpr -> BaseType
-getBaseType (DBoolConst bool) = BoolType
-getBaseType (DIntConst int) = IntType
-getBaseType (DFloatConst float) = FloatType
--- getBaseType (StrConst string) = DStrConst string
-getBaseType (DEvar (DVar _ _ baseType)) = baseType
-getBaseType (DBinaryOp _ _ _ baseType) = baseType
-getBaseType (DUnaryMinus _ baseType) = baseType
-getBaseType (DUnaryNot _ baseType) = baseType
+-- check index int
+checkIdx :: Idx -> Analyzer DIdx
+checkIdx IdxVar
+  = do
+      return DIdxVar
+checkIdx (IdxArr expr)
+  = do
+      dExpr <- checkExpr expr
+      return $ DIdxArr dExpr
+checkIdx (IdxMat expr1 expr2)
+  = do
+      dExpr1 <- checkExpr expr1
+      dExpr2 <- checkExpr expr2
+      return $ DIdxMat dExpr1 dExpr2
 
-cmpBaseType :: DExpr -> DExpr -> Bool
-cmpBaseType e1 e2 = (getBaseType e1) == (getBaseType e2)
 
 getVarSizeByShape :: Shape -> Int
 getVarSizeByShape (ShapeVar) = 1
