@@ -7,7 +7,8 @@ import GoatAST
 import GoatAnalyzer
 
 
-data Gstate = Gstate { regCounter :: Int, instructions :: Endo [Instruction]}
+data Gstate = Gstate 
+  { regCounter :: Int, labelCounter :: Int, instructions :: Endo [Instruction]}
 
 type Generator a = State Gstate a
 
@@ -32,6 +33,12 @@ setNextUnusedReg n
       st <- get
       put st{regCounter = n}
 
+getLabel :: String -> Generator String
+getLabel prefix
+  = do
+      st <- get
+      put st{labelCounter = (labelCounter st) + 1}
+      return $ prefix ++ show (labelCounter st)
 ----------------------------------------------
 
 genProgram :: DGoatProgram -> Generator ()
@@ -96,7 +103,39 @@ genStmt (DRead dVar)
       saveToVar reg0 dVar
       setNextUnusedReg reg0
 
+-- genStmt (DCall procId dExprs)
+--   = do
+--     appendIns (IComment $ "stmt: call" ++ (show procId))
 
+genStmt (DIf dExpr dStmts dEStmts)
+  = do
+      appendIns (IComment $ "stmt: if_condition")
+      reg0 <- getReg
+      label_then <- getLabel "if_"
+      label_else <- getLabel "if_"
+      label_end <- getLabel "if_"
+
+      evalExpr reg0 dExpr
+      appendIns (IBranch $ Cond True reg0 label_then)
+      appendIns (IBranch $ Uncond label_else)
+      setNextUnusedReg reg0
+
+      -- then case
+      appendIns (ILabel $ label_then)
+      appendIns (IComment $ "stmt: if_then")
+      mapM_ genStmt dStmts
+      appendIns (IBranch $ Uncond label_end)
+
+      -- else case
+      appendIns (ILabel $ label_else)
+      appendIns (IComment $ "stmt: if_else")
+      mapM_ genStmt dEStmts
+      appendIns (IBranch $ Uncond label_end)
+
+      appendIns (ILabel $ label_end)
+      appendIns (IComment $ "stmt: if_end")      
+
+    
 genStmt _
   = do
       return ()
@@ -124,7 +163,7 @@ evalExpr tReg (DStrConst v)
 
 runCodeGenerator :: DGoatProgram -> [Instruction]
 runCodeGenerator dGoatProgram
-  = let state = Gstate { regCounter = 0, instructions = Endo ([]<>) }
+  = let state = Gstate { regCounter = 0, labelCounter = 0, instructions = Endo ([]<>) }
         s = execState (genProgram dGoatProgram) state
     in (appEndo (instructions s)) []
 
