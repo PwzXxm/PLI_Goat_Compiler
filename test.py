@@ -17,7 +17,6 @@ def run_test_case(input_file: str) -> None:
     input_file = "./testdata/" + input_file
     file_name = os.path.splitext(os.path.basename(input_file))[0]
     file_path = os.path.dirname(input_file)
-    is_correct = file_name[:2] == 'c-'
 
     # run process
     cp = subprocess.run(["./Goat", "-p", input_file], stdout=subprocess.PIPE)
@@ -32,7 +31,6 @@ def run_test_case(input_file: str) -> None:
 
     print("File: " + "\033[0;31m" + file_name + "\033[0m") # comment this line
     print("Fail !!!!")
-    print("Is correct case:", is_correct)
     print("Return code:", cp.returncode)
     print("-----------------")
     if diff_cp:
@@ -50,7 +48,7 @@ def run_compiler_test_case(input_file: str) -> None:
     file_path = os.path.dirname(input_file)
     goat_output_path = os.path.join(file_path, file_name + '.oz')
     stdin_path = os.path.join(file_path, file_name + '.in')
-    oz_output_path = os.path.join(file_path, file_name + '.in')
+    sample_output = os.path.join(file_path, file_name + '.out')
     prefix = file_name[:2]
 
     with open(goat_output_path, 'w') as fp:
@@ -70,19 +68,32 @@ def run_compiler_test_case(input_file: str) -> None:
         is_stdin_file_path = os.path.isfile(stdin_path)
         oz_location = './resources/oz/oz'
 
-        with open(oz_output_path, 'w') as fout:
-            if is_stdin_file_path:
-                with open(stdin_path, 'w') as fin:
-                    oz_cp = subprocess.run([oz_location], stdin=fin, stdout=fout)
-            else:
-                oz_cp = subprocess.run([oz_location], stdout=file_name)
+        if is_stdin_file_path:
+            with open(stdin_path, 'w') as fin:
+                oz_cp = subprocess.run([oz_location], input=fin, stdout=subprocess.PIPE)
+        else:
+            oz_cp = subprocess.run([oz_location], stdout=subprocess.PIPE)
         
         if oz_cp.returncode != 0 and prefix == 'r-':
             return
 
         if oz_cp.returncode == 0:
-            # maybe checkout output?
-            return
+            diff_cp = subprocess.run(["diff", sample_output, "-"], input=oz_cp.stdout, stdout=subprocess.PIPE)
+            if diff_cp.returncode == 0:
+                return
+
+            print("File: " + "\033[0;31m" + file_name + "\033[0m")
+            print("Failed")
+            print("Return code:", cp.returncode)
+            print("-----------------")
+            if diff_cp:
+                print("Diff:")
+                print((diff_cp.stdout).decode("utf-8"))
+            else:
+                print("Stdout: ")
+                print(cp.stdout)
+                print()
+            exit(1)
         
         print("Running Oz emulator failure")
         exit(1)
