@@ -94,6 +94,8 @@ data GoatProgram
 type SlotNum = Int
 type SlotSize = Int
 type ProcId = Int
+type SecDimSize = Int
+type IsAddress = Bool
 
 data DBaseType
   = DBoolType | DIntType | DFloatType | DStringType
@@ -101,13 +103,19 @@ data DBaseType
 
 -- | for variable index
 data DIdx
-  = DIdxVar
+  = DIdxVar IsAddress
   | DIdxArr DExpr
-  | DIdxMat DExpr DExpr
+  | DIdxMat DExpr DExpr SecDimSize
+    deriving (Show, Eq)
+
+data DShape
+  = DShapeVar IsAddress
+  | DShapeArr Int
+  | DShapeMat Int Int
     deriving (Show, Eq)
 
 data DVarInfo
-  = DVarInfo SlotNum Shape DBaseType
+  = DVarInfo SlotNum DShape DBaseType 
     deriving (Show, Eq)
 
 data DVar
@@ -129,9 +137,14 @@ data DStmt
   = DAssign DVar DExpr
   | DRead DVar
   | DWrite DExpr
-  | DCall ProcId [DExpr]
+  | DCall ProcId [DCallPara]
   | DIf DExpr [DStmt] [DStmt]
   | DWhile DExpr [DStmt]
+    deriving (Show, Eq)
+
+data DCallPara
+  = DCallParaVal DExpr
+  | DCallParaRef DVar
     deriving (Show, Eq)
 
 data DPara
@@ -152,3 +165,13 @@ data DProcProto
 data DProcProtoPara
   = DProcProtoPara Indi DBaseType
     deriving (Show, Eq)
+
+getBaseType :: DExpr -> DBaseType
+getBaseType (DBoolConst bool)            = DBoolType
+getBaseType (DIntConst int)              = DIntType
+getBaseType (DFloatConst float)          = DFloatType
+getBaseType (DStrConst string)           = DStringType
+getBaseType (DEvar (DVar _ _ dBaseType)) = dBaseType
+getBaseType (DBinaryOp _ _ _ dBaseType)  = dBaseType
+getBaseType (DUnaryMinus _ dBaseType)    = dBaseType
+getBaseType (DUnaryNot _ dBaseType)      = dBaseType
