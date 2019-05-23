@@ -111,7 +111,7 @@ data DExpr
   | DIntConst Int
   | DFloatConst Float
   | DStrConst String
-  | DEvar DVar
+  | DEvar SlotNum Shape DIdx BaseType 
   | DBinaryOp Binop DExpr DExpr BaseType -- Binary Operator
   | DUnaryMinus DExpr BaseType -- Unary operator
   | DUnaryNot DExpr BaseType
