@@ -62,10 +62,17 @@ genProc (DProc procId dParas dStmts slotSize)
       appendIns (IReturn)
 
 genStmt :: DStmt -> Generator ()
-genStmt (DWrite dExpr)
+genStmt (DAssign dVar dExpr)
   = do
       reg0 <- getReg
+      evalExpr reg0 dExpr
+      saveToVar reg0 dVar
+      setNextUnusedReg reg0
+
+genStmt (DWrite dExpr)
+  = do
       let dBaseType = getBaseType dExpr
+      reg0 <- getReg
       evalExpr reg0 dExpr
       let cmd = case dBaseType of DStringType -> "print_string"
                                   DBoolType   -> "print_bool"
