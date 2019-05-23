@@ -74,6 +74,18 @@ genStmt (DWrite dExpr)
       appendIns (ICall_bt cmd)
       setNextUnusedReg reg0
 
+genStmt (DRead dVar)
+  = do
+      let (DVar _ _ dBaseType) = dVar
+      let cmd = case dBaseType of DBoolType  -> "read_bool"
+                                  DIntType   -> "read_int"
+                                  DFloatType -> "read_real"
+      appendIns (ICall_bt cmd)
+      reg0 <- getReg
+      saveToVar reg0 dVar
+      setNextUnusedReg reg0
+
+
 genStmt _
   = do
       return ()
@@ -81,6 +93,10 @@ genStmt _
 boolToInt :: Bool -> Int
 boolToInt True  = 1
 boolToInt False = 0
+
+saveToVar ::Int -> DVar -> Generator ()
+saveToVar tReg (DVar slotNum (DIdxVar) dBaseType)
+  = appendIns (IStatement $ Store slotNum tReg )
 
 evalExpr :: Int -> DExpr -> Generator ()
 evalExpr tReg (DBoolConst v)
