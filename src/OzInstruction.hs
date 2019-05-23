@@ -8,7 +8,7 @@
 module OzInstruction where
 
 type Reg = Int
-type Label = Int
+type Label = String
 
 data BinaryOp
   = ADD | SUB | MUL | DIV | NEG
@@ -55,12 +55,12 @@ data Instruction
   | IOperation Operation
   | IStatement Statement
   | IDebug Debug
-  | Call Label
-  | Call_bt String
+  | ICall Label
+  | ICall_bt String
   | IBranch Branch
-  | Push Int
-  | Pop Int
-  | Comment String
+  | IPush Int
+  | IPop Int
+  | IComment String
     deriving (Show, Eq)
 
 data Branch
@@ -112,11 +112,11 @@ instructionFormatter (IOperation o) = operationFormatter o
 instructionFormatter (IStatement s) = statementFormatter s
 instructionFormatter (IDebug d) = debugFormatter d
 instructionFormatter (IBranch b) = branchFormatter b
-instructionFormatter (Call l) = "call " ++ (lshow l)
-instructionFormatter (Call_bt bt) = "call_builtin " ++ bt
-instructionFormatter (Push i) = "push_stack_frame " ++ (show i)
-instructionFormatter (Pop i) = "pop_stack_frame " ++ (show i)
-instructionFormatter (Comment str) = "# " ++ str
+instructionFormatter (ICall l) = "call " ++ (lshow l)
+instructionFormatter (ICall_bt bt) = "call_builtin " ++ bt
+instructionFormatter (IPush i) = "push_stack_frame " ++ (show i)
+instructionFormatter (IPop i) = "pop_stack_frame " ++ (show i)
+instructionFormatter (IComment str) = "# " ++ str
 
 
 constantFormatter :: Constant -> String
