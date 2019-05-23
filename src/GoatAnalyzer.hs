@@ -154,11 +154,11 @@ checkProc (Proc sourcePos ident paras decls stmts)
           return (DPara sc indi baseType)
         ) paras
       -- declarations
-      dDecls <- mapM (\(Decl sourcePos ident baseType shape) -> 
+      mapM_ (\(Decl sourcePos ident baseType shape) -> 
         do
           sc <- getSlotCounter (getVarSizeByShape shape)
           putVar ident (DVar sc shape baseType) sourcePos
-          return (DDecl sc baseType shape)
+          return ()
         ) decls
       -- the current counter + 1 is the total size
       totalSize <- getSlotCounter 1
@@ -166,7 +166,7 @@ checkProc (Proc sourcePos ident paras decls stmts)
       -- statements
       dStmts <- mapM checkStat stmts
 
-      return (DProc pid dParas dDecls dStmts totalSize)
+      return (DProc pid dParas dStmts totalSize)
 
 checkStat :: Stmt -> Analyzer DStmt
 checkStat (Assign sourcePos (Var _ ident _) expr)

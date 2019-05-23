@@ -126,16 +126,12 @@ data DStmt
   | DWhile DExpr [DStmt]
     deriving (Show, Eq)
 
-data DDecl
-  = DDecl SlotNum BaseType Shape
-    deriving (Show, Eq)
-
 data DPara
   = DPara SlotNum Indi BaseType
     deriving (Show, Eq)
 
 data DProc
-  = DProc ProcId [DPara] [DDecl] [DStmt] SlotSize
+  = DProc ProcId [DPara] [DStmt] SlotSize
     deriving (Show, Eq)
 
 data DGoatProgram
