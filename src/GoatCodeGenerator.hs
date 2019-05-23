@@ -28,7 +28,7 @@ genProgram _
 runCodeGenerator :: DGoatProgram -> [Instruction]
 runCodeGenerator dGoatProgram
   = let state = Gstate { regCounter = 0, instructions = Endo ([]<>) }
-        (_, s) = runState (genProgram dGoatProgram) state
+        s = execState (genProgram dGoatProgram) state
     in (appEndo (instructions s)) []
 
 test = runCodeGenerator (DProgram 0 [])
