@@ -4,7 +4,6 @@ import Control.Monad.State
 import           Data.Monoid
 import OzInstruction
 import GoatAST
-import GoatAnalyzer
 
 
 data Gstate = Gstate 
@@ -105,7 +104,8 @@ genStmt (DRead dVar)
 
 -- genStmt (DCall procId dExprs)
 --   = do
---     appendIns (IComment $ "stmt: call" ++ (show procId))
+--       appendIns (IComment $ "stmt: call" ++ (show procId))
+
 
 genStmt (DIf dExpr dStmts dEStmts)
   = do
@@ -159,9 +159,49 @@ boolToInt :: Bool -> Int
 boolToInt True  = 1
 boolToInt False = 0
 
-saveToVar ::Int -> DVar -> Generator ()
-saveToVar tReg (DVar slotNum (DIdxVar) dBaseType)
-  = appendIns (IStatement $ Store slotNum tReg )
+saveToVar :: Int -> DVar -> Generator ()
+saveToVar tReg (DVar slotNum (DIdxVar False) _)
+  = appendIns (IStatement $ Store slotNum tReg)
+
+saveToVar tReg dVar
+  = do 
+      addrReg <- getReg
+      getVarAddress addrReg dVar
+      appendIns (IStatement $ Store_in addrReg tReg)
+      setNextUnusedReg addrReg
+
+
+getVarAddress :: Int -> DVar -> Generator ()
+getVarAddress tReg (DVar slotNum (DIdxVar isAddress) _)
+  = do if isAddress
+          then appendIns (IStatement $ Load tReg slotNum)
+          else appendIns (IStatement $ Load_ad tReg slotNum)
+-- 1d
+getVarAddress tReg (DVar slotNum (DIdxArr dExpr) _)
+  = do
+      appendIns (IStatement $ Load_ad tReg slotNum)
+      offsetReg <- getReg
+      evalExpr offsetReg dExpr
+      appendIns (IOperation $ Sub_off tReg tReg offsetReg)
+      setNextUnusedReg offsetReg
+-- 2d
+getVarAddress tReg (DVar slotNum (DIdxMat dExpr1 dExpr2 secDimSize) _)
+  = do
+      appendIns (IStatement $ Load_ad tReg slotNum)
+      -- dExpr1 * (secDimSize-1) + dExpr2
+      offsetReg <- getReg
+      evalExpr offsetReg dExpr1
+      tmpReg <- getReg
+      -- *
+      appendIns (IConstant $ ConsInt tmpReg (secDimSize-1))
+      appendIns (IOperation $ Binary MUL INT offsetReg offsetReg tmpReg)
+      -- +
+      evalExpr tmpReg dExpr2
+      appendIns (IOperation $ Binary ADD INT offsetReg offsetReg tmpReg)
+      -- 
+      appendIns (IOperation $ Sub_off tReg tReg offsetReg)
+      setNextUnusedReg offsetReg
+
 
 evalExpr :: Int -> DExpr -> Generator ()
 evalExpr tReg (DBoolConst v)

@@ -164,7 +164,7 @@ operationFormatter (Binary op t r1 r2 r3)
     ++ " " ++
     (threeFormatter r1 r2 r3)
 operationFormatter (Unary op t r1 r2)
-  = (binaryOpFormatter op)
+  = (unaryOpFormatter op)
     ++ "_" ++
     (typeFormatter t)
     ++ " " ++
@@ -182,7 +182,10 @@ binaryOpFormatter ADD = "add"
 binaryOpFormatter SUB = "sub"
 binaryOpFormatter MUL = "mul"
 binaryOpFormatter DIV = "div"
-binaryOpFormatter NEG = "neg"
+
+unaryOpFormatter :: UnaryOp -> String
+unaryOpFormatter NEG = "neg"
+
 
 typeFormatter :: RegType -> String
 typeFormatter INT = "int"
