@@ -21,12 +21,19 @@ data Astate = Astate
   , procCounter :: Int
   }
 
+type Analyzer a = StateT Astate (Either SemanticError) a
+
+-----------------------------------
+
 data SemanticError = SemanticError SourcePos String
 
 instance Show SemanticError where
-  show (SemanticError pos str) = (show pos) ++ " " ++ str
+  show (SemanticError pos str) = "Semantic error at " ++ (show pos) ++ ": " ++ str
 
-type Analyzer a = StateT Astate (Either SemanticError) a
+throwSemanticErr :: SourcePos -> String -> Analyzer a
+throwSemanticErr sourcePos msg = liftEither $ throwError (SemanticError sourcePos msg)
+
+-----------------------------------
 
 getProcProto :: String -> SourcePos -> Analyzer DProcProto
 getProcProto name sourcePos
@@ -34,14 +41,14 @@ getProcProto name sourcePos
       st <- get
       if M.member name (procs st)
         then return $ (procs st) M.! name
-        else lift $ throwError (SemanticError sourcePos ("Procedure named " ++ name ++ " does not exist"))
+        else throwSemanticErr sourcePos ("Procedure named " ++ name ++ " does not exist")
 
 putProcProto :: String -> DProcProto -> SourcePos -> Analyzer ()
 putProcProto name dProcProto sourcePos
   = do
       st <- get
       if M.member name (procs st)
-        then lift $ throwError (SemanticError sourcePos ("Procedure named " ++ name ++ " already exists"))
+        then throwSemanticErr sourcePos ("Procedure named " ++ name ++ " already exists")
         else put st {procs = M.insert name dProcProto (procs st)}
 
 getVar :: String -> SourcePos -> Analyzer DVar
@@ -50,14 +57,14 @@ getVar name sourcePos
       st <- get
       if M.member name (varibles st)
         then return $ (varibles st) M.! name
-        else lift $ throwError (SemanticError sourcePos ("Variable named " ++ name ++ " does not exist"))
+        else throwSemanticErr sourcePos ("Variable named " ++ name ++ " does not exist")
 
 putVar :: String -> DVar -> SourcePos -> Analyzer ()
 putVar name var sourcePos
   = do
       st <- get
       if M.member name (varibles st)
-        then lift $ throwError (SemanticError sourcePos ("Variable named " ++ name ++ " already exists"))
+        then throwSemanticErr sourcePos ("Variable named " ++ name ++ " already exists")
         else put st{varibles = M.insert name var (varibles st)}
 
 resetVar :: Analyzer ()
@@ -215,7 +222,7 @@ checkExpr (BinaryOp sourcePos binop expr1 expr2)
       dExpr2 <- checkExpr expr2
       if cmpBaseType dExpr1 dExpr2
         then return $ DBinaryOp binop dExpr1 dExpr2 (getBaseType dExpr1)
-        else lift $ throwError (SemanticError sourcePos ("different type varibles"))
+        else throwSemanticErr sourcePos ("different type varibles")
 checkExpr (UnaryMinus _ expr)
   = do
       dExpr <- checkExpr expr

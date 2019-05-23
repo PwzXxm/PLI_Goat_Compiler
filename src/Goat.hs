@@ -61,7 +61,6 @@ execute job source_file
                               putStrLn(show decoratedAST)
                           Left err ->
                             do
-                              putStr "Semantic error: "
                               putStrLn (show err)
                               exitWith (ExitFailure 3)
                         return ()
