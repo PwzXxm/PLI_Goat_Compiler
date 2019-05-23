@@ -29,7 +29,7 @@ def run_test_case(input_file: str) -> None:
         # print("Pass")
         return
 
-    print("File: " + "\033[0;31m" + file_name + "\033[0m") # comment this line
+    print("\033[0;31m" + "Error: " + "\033[0m" + file_name)
     print("Fail !!!!")
     print("Return code:", cp.returncode)
     print("-----------------")
@@ -43,7 +43,7 @@ def run_test_case(input_file: str) -> None:
     exit(1)
 
 def run_compiler_test_case(input_file: str) -> None:
-    input_file = "./compiler/" + input_file
+    input_file = "./testdata/" + input_file
     file_name = os.path.splitext(os.path.basename(input_file))[0]
     file_path = os.path.dirname(input_file)
     goat_output_path = os.path.join(file_path, file_name + '.oz')
@@ -65,10 +65,10 @@ def run_compiler_test_case(input_file: str) -> None:
         return
     
     if cp.returncode == 0:
-        is_stdin_file_path = os.path.isfile(stdin_path)
+        is_stdin_exist = os.path.isfile(stdin_path)
         oz_location = './resources/oz/oz'
 
-        if is_stdin_file_path:
+        if is_stdin_exist:
             with open(stdin_path, 'w') as fin:
                 oz_cp = subprocess.run([oz_location], input=fin, stdout=subprocess.PIPE)
         else:
@@ -78,11 +78,17 @@ def run_compiler_test_case(input_file: str) -> None:
             return
 
         if oz_cp.returncode == 0:
+            is_out_exist = os.path.isfile(sample_output)
+
+            if not is_out_exist:
+                print("\033[1;33m" + "Warning: " + "\033[0m" + file_name + " does not have a sample output file")
+                return
+
             diff_cp = subprocess.run(["diff", sample_output, "-"], input=oz_cp.stdout, stdout=subprocess.PIPE)
             if diff_cp.returncode == 0:
                 return
 
-            print("File: " + "\033[0;31m" + file_name + "\033[0m")
+            print("\033[0;31m" + "Error: " + "\033[0m" + file_name)
             print("Failed")
             print("Return code:", cp.returncode)
             print("-----------------")
@@ -95,10 +101,10 @@ def run_compiler_test_case(input_file: str) -> None:
                 print()
             exit(1)
         
-        print("Running Oz emulator failure")
+        print("\033[0;31m" + "Error: " + "\033[0m" + "Running Oz emulator failure")
         exit(1)
     
-    print("Compilation exits with error code" + cp.returncode)
+    print("\033[0;31m" + "Error: " + "\033[0m" + "Compilation exits with error code" + cp.returncode)
     exit(1)
     
 
@@ -122,7 +128,7 @@ def test_compiler() -> None:
     test_cases = get_all_test_case("compiler")
 
     for i in tqdm(range(len(test_cases))): # comment these lines
-        run_test_case(test_cases[i])
+        run_compiler_test_case(test_cases[i])
 
 def build() -> None:
     print("\n==================")
@@ -151,11 +157,11 @@ def buildOz() -> None:
 def main() -> None:
     print("Using Error code:\n\t1 -> Command line arguments error\n\t2 -> Synatax error\n\t3 -> Semantic error\n")
 
-    build()
+    # build()
     # test_prettier()
 
     buildOz()
-    # test_compiler()
+    test_compiler()
 
   
 if __name__== "__main__":
