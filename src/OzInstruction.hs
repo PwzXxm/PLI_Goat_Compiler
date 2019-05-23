@@ -120,7 +120,9 @@ instructionFormatter (ICall_bt bt) = "call_builtin " ++ bt
 instructionFormatter (IPushStack i) = "push_stack_frame " ++ (show i)
 instructionFormatter (IPopStack i) = "pop_stack_frame " ++ (show i)
 instructionFormatter (IComment str) = "# " ++ str
-
+instructionFormatter (IHalt) = "halt"
+instructionFormatter (IReturn) = "return"
+instructionFormatter (ILabel l) = (lshow l) ++ ":"
 
 constantFormatter :: Constant -> String
 constantFormatter (ConsInt r i) = "int_const " ++ (rshow r) ++ ", " ++ (show i)
