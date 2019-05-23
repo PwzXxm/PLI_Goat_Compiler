@@ -113,7 +113,7 @@ genStmt (DIf dExpr dStmts dEStmts)
       reg0 <- getReg
       label_then <- getLabel "if_"
       label_else <- getLabel "if_"
-      label_end <- getLabel "if_"
+      label_end  <- getLabel "if_"
 
       evalExpr reg0 dExpr
       appendIns (IBranch $ Cond True reg0 label_then)
@@ -133,12 +133,27 @@ genStmt (DIf dExpr dStmts dEStmts)
       appendIns (IBranch $ Uncond label_end)
 
       appendIns (ILabel $ label_end)
-      appendIns (IComment $ "stmt: if_end")      
+      appendIns (IComment $ "stmt: if_end")
 
-    
-genStmt _
+genStmt (DWhile dExpr dStmts)
   = do
-      return ()
+      label_cond <- getLabel "while_"
+      label_end  <- getLabel "while_"
+
+      appendIns (ILabel $ label_cond)
+      appendIns (IComment $ "stmt: while")
+
+      reg0 <- getReg
+      evalExpr reg0 dExpr
+      appendIns (IBranch $ Cond False reg0 label_end)
+      setNextUnusedReg reg0
+
+      appendIns (IComment $ "stmt: while_body")
+      mapM_ genStmt dStmts
+      appendIns (IBranch $ Uncond label_cond)
+
+      appendIns (ILabel $ label_end)
+      appendIns (IComment $ "stmt: while_end")
 
 boolToInt :: Bool -> Int
 boolToInt True  = 1
@@ -169,5 +184,5 @@ runCodeGenerator dGoatProgram
 
 test 
   = do 
-      let ins = runCodeGenerator (DProgram 0 [DProc 0 [] [DWrite (DStrConst "asd\\nsadfasdfa"),DWrite (DStrConst "Test\\n")] 0])
+      let ins = runCodeGenerator (DProgram 0 [DProc 0 [] [DIf (DBoolConst True) [DAssign (DVar 0 DIdxVar DIntType) (DIntConst 1)] [DAssign (DVar 1 DIdxVar DIntType) (DIntConst 1)]] 2])
       mapM_ putStrLn (map instructionFormatter ins)
