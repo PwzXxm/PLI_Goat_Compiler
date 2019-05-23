@@ -11,7 +11,11 @@ type Reg = Int
 type Label = String
 
 data BinaryOp
-  = ADD | SUB | MUL | DIV | NEG
+  = ADD | SUB | MUL | DIV
+    deriving (Show, Eq)
+
+data UnaryOp
+  = NEG
     deriving (Show, Eq)
 
 data RegType
@@ -38,8 +42,8 @@ data Constant
 
 
 data Operation
-  = Op3 BinaryOp RegType Reg Reg Reg
-  | Op2 BinaryOp RegType Reg Reg
+  = Binary BinaryOp RegType Reg Reg Reg
+  | Unary BinaryOp RegType Reg Reg
   | Cmp CmpOp RegType Reg Reg Reg 
   | Add_off Reg Reg Reg
   | Sub_off Reg Reg Reg
@@ -153,13 +157,13 @@ operationFormatter (Or_ r1 r2 r3) = "or " ++ (threeFormatter r1 r2 r3)
 operationFormatter (Not_ r1 r2) = "not " ++ (twoFormatter r1 r2)
 operationFormatter (Int2real r1 r2) = "int_to_real " ++ (twoFormatter r1 r2)
 operationFormatter (Move r1 r2) = "move " ++ (twoFormatter r1 r2)
-operationFormatter (Op3 op t r1 r2 r3)
+operationFormatter (Binary op t r1 r2 r3)
   = (binaryOpFormatter op)
     ++ "_" ++
     (typeFormatter t)
     ++ " " ++
     (threeFormatter r1 r2 r3)
-operationFormatter (Op2 op t r1 r2)
+operationFormatter (Unary op t r1 r2)
   = (binaryOpFormatter op)
     ++ "_" ++
     (typeFormatter t)
