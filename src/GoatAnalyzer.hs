@@ -157,14 +157,14 @@ checkProc (Proc sourcePos ident paras decls stmts)
       dParas <- mapM (\(Para sourcePos ident baseType indi) -> 
         do
           sc <- getSlotCounter 1
-          putVar ident (DVarInfo sc (ShapeVar) (convType baseType)) sourcePos
+          putVar ident (DVarInfo sc (getDShape ShapeVar indi) (convType baseType)) sourcePos
           return (DPara sc indi (convType baseType))
         ) paras
       -- declarations
       mapM_ (\(Decl sourcePos ident baseType shape) -> 
         do
           sc <- getSlotCounter (getVarSizeByShape shape)
-          putVar ident (DVarInfo sc shape (convType baseType)) sourcePos
+          putVar ident (DVarInfo sc (getDShape shape InVal) (convType baseType)) sourcePos
           return ()
         ) decls
       -- the current counter + 1 is the total size
@@ -196,8 +196,9 @@ checkStat (Write sourcePos expr)
 checkStat (Call sourcePos ident exprs)
   = do
       dExprs <- mapM checkExpr exprs
-      (DProcProto procId _) <- getProcProto ident sourcePos
-      return $ DCall procId dExprs
+      (DProcProto procId paras) <- getProcProto ident sourcePos
+      dCallParas <- checkProcAndExpr paras dExprs sourcePos
+      return $ DCall procId dCallParas
 checkStat (If sourcePos expr stmts1 stmts2)
   = do
       dExpr <- checkExpr expr
@@ -282,26 +283,64 @@ checkBaseType e1 e2 binop sourcePos
               else throwSemanticErr sourcePos ("The two operands of && and || must be Boolean type")
 
 
-checkShapeAndIdx :: Shape -> Idx -> SourcePos -> Analyzer DIdx
-checkShapeAndIdx ShapeVar IdxVar _
+checkShapeAndIdx :: DShape -> Idx -> SourcePos -> Analyzer DIdx
+checkShapeAndIdx (DShapeVar isAddress) IdxVar _
   = do
-      return DIdxVar
-checkShapeAndIdx (ShapeArr _) (IdxArr expr) sourcePos
+      return (DIdxVar isAddress)
+checkShapeAndIdx (DShapeArr _) (IdxArr expr) sourcePos
   = do
       dExpr <- checkExpr expr
       if (getBaseType dExpr) == DIntType
         then return $ DIdxArr dExpr
         else throwSemanticErr sourcePos ("Index should be Int not " ++ (show (getBaseType dExpr)))
-checkShapeAndIdx (ShapeMat _ _) (IdxMat expr1 expr2) sourcePos
+checkShapeAndIdx (DShapeMat _ sec) (IdxMat expr1 expr2) sourcePos
   = do
       dExpr1 <- checkExpr expr1
       dExpr2 <- checkExpr expr2
       if (getBaseType dExpr1) == DIntType && (getBaseType dExpr2) == DIntType
-        then return $ DIdxMat dExpr1 dExpr2
+        then return $ DIdxMat dExpr1 dExpr2 sec
         else throwSemanticErr sourcePos ("Index should be Int not " ++ (show (getBaseType dExpr1)) ++ " and " ++ (show (getBaseType dExpr2)))
 checkShapeAndIdx _ _ sourcePos
   = do
       throwSemanticErr sourcePos ("Index type and shape type are different")
+
+
+checkProcAndExpr :: [DProcProtoPara] -> [DExpr] -> SourcePos -> Analyzer [DCallPara]
+checkProcAndExpr [] [] _
+  = do
+      return []
+checkProcAndExpr [] (x:xs) sourcePos
+  = do
+    throwSemanticErr sourcePos ("number of parameters not match")
+checkProcAndExpr (x:xs) [] sourcePos
+  = do
+    throwSemanticErr sourcePos ("number of parameters not match")
+checkProcAndExpr ((DProcProtoPara InRef dBaseType1):xs) ((DEvar (DVar slotNum (DIdxVar True) dBaseType2)):ys) sourcePos
+  = do
+      if dBaseType1 == dBaseType2
+        then return $ (DCallParaRef (DVar slotNum (DIdxVar True) dBaseType2)):(checkProcAndExpr xs ys sourcePos)
+        else throwSemanticErr sourcePos ("types not match")
+checkProcAndExpr ((DProcProtoPara InRef dBaseType1):xs) _ sourcePos
+  = do
+      throwSemanticErr sourcePos ("types not match")
+checkProcAndExpr _ ((DEvar (DVar slotNum (DIdxVar True) dBaseType2)):ys) sourcePos
+  = do
+      throwSemanticErr sourcePos ("types not match")
+checkProcAndExpr ((DProcProtoPara InVal dBaseType):xs) (dExpr:ys) sourcePos
+  = do
+    if dBaseType == (getBaseType dExpr)
+      then return $ (DCallParaVal dExpr):(checkProcAndExpr xs ys sourcePos)
+      else throwSemanticErr sourcePos ("types not match")
+
+-- checkDCallPara :: DExpr -> DCallPara
+-- checkDCallPara (DEvar (DVar slotNum (DIdxVar True) dBaseType)) = DCallParaRef (DVar slotNum (DIdxVar True) dBaseType)
+-- checkDCallPara dExpr = DCallParaVal dExpr
+
+getDShape :: Shape -> Indi -> DShape
+getDShape ShapeVar InVal = DShapeVar False
+getDShape ShapeVar InRef = DShapeVar True
+getDShape (ShapeArr i) _ = DShapeArr i
+getDShape (ShapeMat i1 i2) _ = DShapeMat i1 i2
 
 getVarSizeByShape :: Shape -> Int
 getVarSizeByShape (ShapeVar) = 1
