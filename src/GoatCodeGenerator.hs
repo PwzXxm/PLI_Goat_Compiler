@@ -245,13 +245,25 @@ evalExpr tReg (DBinaryOp binop e0 e1 dBaseType)
       setNextUnusedReg r0
 
 evalExpr tReg (DUnaryMinus e0 DFloatType)
-  = appendIns (IOperation $ Unary NEG REAL tReg tReg)
+  = do
+      e0Reg <- getReg
+      evalExpr e0Reg e0
+      appendIns (IOperation $ Unary NEG REAL tReg e0Reg)
+      setNextUnusedReg e0Reg
 
 evalExpr tReg (DUnaryMinus e0 DIntType)
-  = appendIns (IOperation $ Unary NEG INT tReg tReg)
+  = do
+      e0Reg <- getReg
+      evalExpr e0Reg e0
+      appendIns (IOperation $ Unary NEG INT tReg e0Reg)
+      setNextUnusedReg e0Reg
 
 evalExpr tReg (DUnaryNot e0 _)
-  = appendIns (IOperation $ Not_ tReg tReg)
+  = do
+      e0Reg <- getReg
+      evalExpr e0Reg e0
+      appendIns (IOperation $ Not_ tReg e0Reg)
+      setNextUnusedReg e0Reg
 
 checkBinaryType :: Int -> Int -> DExpr -> DExpr -> Generator ()
 checkBinaryType r0 r1 e0 e1
