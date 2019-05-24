@@ -315,7 +315,7 @@ checkProcAndExpr ((DProcProtoPara InRef dBaseType1), expr)
         let (DEvar (DVar slotNum dIdx dBaseType2)) = dExpr
 
         if dBaseType1 == dBaseType2
-          then return $ DCallParaRef (DVar slotNum (DIdxVar True) dBaseType2)
+          then return $ DCallParaRef (DVar slotNum dIdx dBaseType2)
           else throwSemanticErr sourcePos ("Types not match, expected type: " ++ (show dBaseType1) ++ "\nactual type: " ++ (show dBaseType2))
       _ -> 
         throwSemanticErr (getExprSourcePos expr) ("Reference here")
