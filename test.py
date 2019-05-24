@@ -1,9 +1,24 @@
 from typing import *
 import os
+import sys
 import subprocess
 import difflib
+import re
 
 from tqdm import tqdm #comment this line if in test env
+
+
+
+
+############# Helper #################
+
+def printError() -> None:
+    print("\033[0;31m" + "Error: " + "\033[0m", end='')
+
+def printWarning() -> None:
+    print("\033[1;33m" + "Warning: " + "\033[0m", end='')
+
+######################################
 
 def get_all_test_case(folder: str) -> List[str]:
     ans = []
@@ -57,6 +72,7 @@ def run_compiler_test_case(input_file: str) -> None:
         cp = subprocess.run(["./Goat", input_file], stdout=fp)
 
     if cp.returncode == 1:
+        printError()
         print("Invalid command line arguments")
         exit(1)
     
@@ -83,15 +99,16 @@ def run_compiler_test_case(input_file: str) -> None:
             is_out_exist = os.path.isfile(sample_output)
 
             if not is_out_exist:
-                print("\033[1;33m" + "Warning: " + "\033[0m" + file_name + " does not have a sample output file")
+                printWarning()
+                print(file_name + " does not have a sample output file")
                 return
 
             diff_cp = subprocess.run(["diff", sample_output, "-"], input=oz_cp.stdout, stdout=subprocess.PIPE)
             if diff_cp.returncode == 0:
                 return
 
-            print("\033[0;31m" + "Error: " + "\033[0m" + file_name)
-            print("Failed")
+            printError()
+            print("File: " + file_name)
             print("Return code:", cp.returncode)
             print("-----------------")
             if diff_cp:
@@ -103,11 +120,13 @@ def run_compiler_test_case(input_file: str) -> None:
                 print()
             exit(1)
         
-        print("\033[0;31m" + "Error: " + "\033[0m" + "Running Oz emulator failure")
+        printError()
+        print("Running Oz emulator failure")
         print((oz_cp.stdout).decode("utf-8"))
         exit(1)
     
-    print("\033[0;31m" + "Error: " + "\033[0m" + "Compilation exits with error code" + cp.returncode)
+    printError()
+    print("Compilation exits with error code" + cp.returncode)
     exit(1)
     
 
@@ -128,7 +147,27 @@ def test_compiler() -> None:
     print("\n==================")
     print(" Testing: compiler")
     print("------------------")
-    test_cases = get_all_test_case("compiler")
+
+    args = sys.argv[1:]
+
+    if len(args) == 1:
+        rst = re.search("(?<=testdata/)compiler/.*\.gt", args[0])
+        if rst is None:
+            printError()
+            print("Invalid Goat program path. Should be something like 'testdata/compiler/example.gt")
+            exit(1)
+        test_cases = [rst.group(0)]
+        print("Using test case: " + test_cases[0])
+    elif len(args) == 0:
+        print("Using all of the test cases")
+        test_cases = get_all_test_case("compiler")
+    else:
+        printError()
+        print("Invalid arguments.")
+        print("Usage: python test.py")
+        print("Usage: python test.py testcase")
+        exit(1)
+
 
     for i in tqdm(range(len(test_cases))): # comment these lines
         run_compiler_test_case(test_cases[i])
@@ -139,8 +178,8 @@ def build() -> None:
     print("------------------")
     cp = subprocess.run(["make"])
     if cp.returncode != 0:
-        print()
-        print("Build Error !!!!")
+        printError()
+        print("Build failed !!!!")
         exit(1)
     else:
         print("Build successfully")
@@ -151,8 +190,8 @@ def buildOz() -> None:
     print("------------------")
     cp = subprocess.run(["make"], stderr=subprocess.DEVNULL, cwd="./resources/oz")
     if cp.returncode != 0:
-        print()
-        print("Build Error !!!!")
+        printError()
+        print("Build failed !!!!")
         exit(1)
     else:
         print("Build successfully")
@@ -160,7 +199,7 @@ def buildOz() -> None:
 def main() -> None:
     print("Using Error code:\n\t1 -> Command line arguments error\n\t2 -> Synatax error\n\t3 -> Semantic error\n")
 
-    # build()
+    build()
     # test_prettier()
 
     buildOz()
