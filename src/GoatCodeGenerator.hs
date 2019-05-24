@@ -222,14 +222,10 @@ evalExpr tReg (DEvar dVar)
 evalExpr tReg (DBinaryOp binop e0 e1 dBaseType)
   = do
       r0 <- getReg
-
       evalExpr tReg e0
       evalExpr r0 e1
-
       checkBinaryType tReg r0 e0 e1
-
       genBinop binop tReg r0 dBaseType
-
       setNextUnusedReg r0
 
 evalExpr tReg (DUnaryMinus e0 DFloatType)
@@ -263,12 +259,36 @@ genBinop :: Binop -> Int -> Int -> DBaseType -> Generator()
 genBinop binop r0 r1 dBaseType
   | isLogicalBinop binop
     = do
-        return ()
+        l0 <- getLabel "bool_op_"
+
+        if binop == Op_and
+          then do
+            appendIns (IComment $ "logical operation AND")
+            appendIns (IBranch $ Cond False r0 l0)
+            appendIns (IOperation $ And_ r0 r0 r1)
+          else do
+            appendIns (IComment $ "logical operation OR")
+            appendIns (IBranch $ Cond True r0 l0)
+            appendIns (IOperation $ Or_ r0 r0 r1)
+
+        appendIns (ILabel $ l0)
+
   | otherwise
-    = do
-        return ()
+    = if dBaseType == DFloatType
+        then appendIns (IOperation $ Binary (getOzBinaryOp binop) REAL r0 r0 r1)
+        else appendIns (IOperation $ Binary (getOzBinaryOp binop) INT r0 r0 r1)
 
-
+getOzBinaryOp :: Binop -> BinaryOp
+getOzBinaryOp Op_and = Add
+getOzBinaryOp Op_sub = Sub
+getOzBinaryOp Op_mul = Mul
+getOzBinaryOp Op_div = Div
+getOzBinaryOp Op_eq = Eq
+getOzBinaryOp Op_ne = Ne
+getOzBinaryOp Op_lt = Gt
+getOzBinaryOp Op_le = Ge
+getOzBinaryOp Op_gt = Lt
+getOzBinaryOp Op_ge = Le
 
 isLogicalBinop :: Binop -> Bool
 isLogicalBinop Op_and = True
