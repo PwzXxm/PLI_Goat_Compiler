@@ -102,10 +102,21 @@ genStmt (DRead dVar)
       saveToVar reg0 dVar
       setNextUnusedReg reg0
 
--- genStmt (DCall procId dExprs)
---   = do
---       appendIns (IComment $ "stmt: call" ++ (show procId))
+genStmt (DCall procId dCallParas)
+  = do
+      appendIns (IComment $ "stmt: call" ++ (show procId))
+      mapM_ (
+        \x -> do
+          -- get registers from 0 to (length dCallParas) - 1
+          reg <- getReg
+          case x of 
+            DCallParaVal dExpr -> evalExpr reg dExpr
+            DCallParaRef dVar  -> getVarAddress reg dVar
+          return ()) dCallParas
 
+      appendIns (ICall $ "proc_" ++ (show procId))
+      -- set back to 0
+      setNextUnusedReg 0
 
 genStmt (DIf dExpr dStmts dEStmts)
   = do
@@ -313,7 +324,7 @@ loadFromVar tReg dVar
   = do
       r0 <- getReg
       getVarAddress r0 dVar
-      appendIns (IStatement Load_in tReg r0)
+      appendIns (IStatement $ Load_in tReg r0)
       setNextUnusedReg r0
 
 runCodeGenerator :: DGoatProgram -> [Instruction]
