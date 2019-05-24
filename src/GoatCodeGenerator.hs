@@ -4,6 +4,7 @@ import Control.Monad.State
 import           Data.Monoid
 import OzInstruction
 import GoatAST
+import Text.ParserCombinators.Parsec.Pos
 
 
 data Gstate = Gstate 
@@ -48,7 +49,7 @@ genProgram (DProgram mainId dProcs)
       mapM_ genProc dProcs
 
 genProc :: DProc -> Generator ()
-genProc (DProc procId dParas dStmts slotSize)
+genProc (DProc procId numOfParas dStmts slotSize)
   = do
       appendIns (ILabel $ "proc_" ++ (show procId))
       appendIns (IComment $ "code for procedure " ++ (show procId))
@@ -56,7 +57,7 @@ genProc (DProc procId dParas dStmts slotSize)
 
       appendIns (IComment $ "load parameter")
       -- TODO: only need parameterSlotSize
-      let paraSlotSize = length dParas
+      let paraSlotSize = numOfParas
       mapM_ (\i -> do appendIns (IStatement $ Store i i)) [0..(paraSlotSize-1)]
 
       appendIns (IComment $ "init variable")
@@ -73,17 +74,25 @@ genProc (DProc procId dParas dStmts slotSize)
       appendIns (IPopStack slotSize)
       appendIns (IReturn)
 
-genStmt :: DStmt -> Generator ()
-genStmt (DAssign dVar dExpr)
+sourcePosComment :: SourcePos -> Generator ()
+sourcePosComment sp
   = do
+    appendIns (IComment $ "line: " ++ (show $ sourceLine sp) ++ ", column: " ++ (show $ sourceLine sp) )
+
+
+genStmt :: DStmt -> Generator ()
+genStmt (DAssign sourcePos dVar dExpr)
+  = do
+      sourcePosComment sourcePos
       appendIns (IComment $ "stmt: assignment")
       reg0 <- getReg
       evalExpr reg0 dExpr
       saveToVar reg0 dVar
       setNextUnusedReg reg0
 
-genStmt (DWrite dExpr)
+genStmt (DWrite sourcePos dExpr)
   = do
+      sourcePosComment sourcePos
       appendIns (IComment $ "stmt: write")
       let dBaseType = getBaseType dExpr
       reg0 <- getReg
@@ -95,8 +104,9 @@ genStmt (DWrite dExpr)
       appendIns (ICall_bt cmd)
       setNextUnusedReg reg0
 
-genStmt (DRead dVar)
+genStmt (DRead sourcePos dVar)
   = do
+      sourcePosComment sourcePos
       appendIns (IComment $ "stmt: read")
       let (DVar _ _ dBaseType) = dVar
       let cmd = case dBaseType of DBoolType  -> "read_bool"
@@ -107,8 +117,9 @@ genStmt (DRead dVar)
       saveToVar reg0 dVar
       setNextUnusedReg reg0
 
-genStmt (DCall procId dCallParas)
+genStmt (DCall sourcePos procId dCallParas)
   = do
+      sourcePosComment sourcePos
       appendIns (IComment $ "stmt: call" ++ (show procId))
       mapM_ (
         \x -> do
@@ -123,8 +134,9 @@ genStmt (DCall procId dCallParas)
       -- set back to 0
       setNextUnusedReg 0
 
-genStmt (DIf dExpr dStmts dEStmts)
+genStmt (DIf sourcePos dExpr dStmts dEStmts)
   = do
+      sourcePosComment sourcePos
       appendIns (IComment $ "stmt: if_condition")
       reg0 <- getReg
       label_then <- getLabel "if_"
@@ -151,8 +163,9 @@ genStmt (DIf dExpr dStmts dEStmts)
       appendIns (ILabel $ label_end)
       appendIns (IComment $ "stmt: if_end")
 
-genStmt (DWhile dExpr dStmts)
+genStmt (DWhile sourcePos dExpr dStmts)
   = do
+      sourcePosComment sourcePos
       label_cond <- getLabel "while_"
       label_end  <- getLabel "while_"
 
