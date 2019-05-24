@@ -311,11 +311,13 @@ checkProcAndExpr :: (DProcProtoPara,Expr) -> Analyzer DCallPara
 checkProcAndExpr ((DProcProtoPara InRef dBaseType1), expr)
   = case expr of
       (Evar sourcePos _) -> do
-        (DEvar (DVar slotNum dIdx dBaseType2)) <- checkExpr expr 
+        dExpr <- checkExpr expr 
+        let (DEvar (DVar slotNum dIdx dBaseType2)) = dExpr
+
         if dBaseType1 == dBaseType2
           then return $ DCallParaRef (DVar slotNum (DIdxVar True) dBaseType2)
           else throwSemanticErr sourcePos ("Types not match, expected type: " ++ (show dBaseType1) ++ "\nactual type: " ++ (show dBaseType2))
-      _          -> 
+      _ -> 
         throwSemanticErr (getExprSourcePos expr) ("Reference here")
 
 checkProcAndExpr ((DProcProtoPara InVal dBaseType), expr)
