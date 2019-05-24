@@ -194,10 +194,10 @@ getVarAddress tReg (DVar slotNum (DIdxMat dExpr1 dExpr2 secDimSize) _)
       tmpReg <- getReg
       -- *
       appendIns (IConstant $ ConsInt tmpReg (secDimSize-1))
-      appendIns (IOperation $ Binary MUL INT offsetReg offsetReg tmpReg)
+      appendIns (IOperation $ Binary Mul INT offsetReg offsetReg tmpReg)
       -- +
       evalExpr tmpReg dExpr2
-      appendIns (IOperation $ Binary ADD INT offsetReg offsetReg tmpReg)
+      appendIns (IOperation $ Binary Add INT offsetReg offsetReg tmpReg)
       -- 
       appendIns (IOperation $ Sub_off tReg tReg offsetReg)
       setNextUnusedReg offsetReg

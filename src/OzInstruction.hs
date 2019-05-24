@@ -11,7 +11,16 @@ type Reg = Int
 type Label = String
 
 data BinaryOp
-  = ADD | SUB | MUL | DIV
+  = Add
+  | Sub
+  | Mul
+  | Div
+  | Eq
+  | Ne
+  | Gt
+  | Ge
+  | Lt
+  | Le
     deriving (Show, Eq)
 
 data UnaryOp
@@ -21,10 +30,6 @@ data UnaryOp
 data RegType
   = INT | REAL
   deriving (Show, Eq)
-
-data CmpOp
-  = Eq | Ne | Gt | Ge | Lt | Le
-    deriving (Show, Eq)
 
 data Statement
   = Store Int Reg
@@ -44,7 +49,6 @@ data Constant
 data Operation
   = Binary BinaryOp RegType Reg Reg Reg
   | Unary UnaryOp RegType Reg Reg
-  | Cmp CmpOp RegType Reg Reg Reg 
   | Add_off Reg Reg Reg
   | Sub_off Reg Reg Reg
   | And_ Reg Reg Reg
@@ -169,19 +173,18 @@ operationFormatter (Unary op t r1 r2)
     (typeFormatter t)
     ++ " " ++
     (twoFormatter r1 r2)
-operationFormatter (Cmp op t r1 r2 r3)
-  = "cmp_" ++ (cmpFormatter op)
-    ++ "_" ++
-    (typeFormatter t)
-    ++ " " ++
-    (threeFormatter r1 r2 r3)
-
 
 binaryOpFormatter :: BinaryOp -> String
-binaryOpFormatter ADD = "add"
-binaryOpFormatter SUB = "sub"
-binaryOpFormatter MUL = "mul"
-binaryOpFormatter DIV = "div"
+binaryOpFormatter Add = "add"
+binaryOpFormatter Sub = "sub"
+binaryOpFormatter Mul = "mul"
+binaryOpFormatter Div = "div"
+binaryOpFormatter Eq = "cmp_eq"
+binaryOpFormatter Ne = "cmp_ne"
+binaryOpFormatter Gt = "cmp_gt"
+binaryOpFormatter Ge = "cmp_ge"
+binaryOpFormatter Lt = "cmp_lt"
+binaryOpFormatter Le = "cmp_le"
 
 unaryOpFormatter :: UnaryOp -> String
 unaryOpFormatter NEG = "neg"
@@ -216,11 +219,3 @@ branchFormatter (Cond False r l)
   = "branch_on_false " ++ (rshow r) ++ ", " ++ (lshow l)
 branchFormatter (Uncond l)
   = "branch_uncond " ++ (lshow l)
-
-cmpFormatter :: CmpOp -> String
-cmpFormatter Eq = "eq"
-cmpFormatter Ne = "ne"
-cmpFormatter Gt = "gt"
-cmpFormatter Ge = "ge"
-cmpFormatter Lt = "lt"
-cmpFormatter Le = "le"
