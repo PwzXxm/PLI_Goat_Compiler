@@ -65,10 +65,11 @@ genProc (DProc procId dParas dStmts slotSize)
       mapM_ (\i -> do appendIns (IStatement $ Store i reg0)) [paraSlotSize..(slotSize-1)]
       setNextUnusedReg reg0
 
+      appendIns (IComment $ "procedure begin")
       -- statement
       mapM_ genStmt dStmts
 
-      appendIns (IComment $ "end of procedure")
+      appendIns (IComment $ "procedure end")
       appendIns (IPopStack slotSize)
       appendIns (IReturn)
 

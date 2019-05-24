@@ -11,6 +11,8 @@ import GoatParser
 import GoatLexer
 import GoatFormatter
 import GoatAnalyzer
+import GoatCodeGenerator
+import OzInstruction
 
 import Data.Char
 import Text.Parsec
@@ -58,7 +60,8 @@ execute job source_file
                         case semanticResult of
                           Right decoratedAST ->
                             do
-                              putStrLn(show decoratedAST)
+                              let ins = runCodeGenerator decoratedAST
+                              mapM_ putStrLn (map instructionFormatter ins)
                           Left err ->
                             do
                               putStrLn (show err)
