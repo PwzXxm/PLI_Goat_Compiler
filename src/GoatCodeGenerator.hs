@@ -245,6 +245,11 @@ evalExpr tReg (DFloatConst v)
 evalExpr tReg (DStrConst v)
   = appendIns (IConstant $ ConsString tReg v)
 
+evalExpr tReg (DIntToFloat e0)
+  = do
+      evalExpr tReg e0
+      appendIns (IOperation $ Int2real tReg tReg)
+
 evalExpr tReg (DEvar dVar)
   = loadFromVar tReg dVar
 
@@ -253,40 +258,23 @@ evalExpr tReg (DBinaryOp binop e0 e1 dBaseType)
       r0 <- getReg
       evalExpr tReg e0
       evalExpr r0 e1
-      checkBinaryType tReg r0 e0 e1
       genBinop binop tReg r0 dBaseType
       setNextUnusedReg r0
 
 evalExpr tReg (DUnaryMinus e0 DFloatType)
   = do
-      e0Reg <- getReg
-      evalExpr e0Reg e0
-      appendIns (IOperation $ Unary NEG REAL tReg e0Reg)
-      setNextUnusedReg e0Reg
+      evalExpr tReg e0
+      appendIns (IOperation $ Unary NEG REAL tReg tReg)
 
 evalExpr tReg (DUnaryMinus e0 DIntType)
   = do
-      e0Reg <- getReg
-      evalExpr e0Reg e0
-      appendIns (IOperation $ Unary NEG INT tReg e0Reg)
-      setNextUnusedReg e0Reg
+      evalExpr tReg e0
+      appendIns (IOperation $ Unary NEG INT tReg tReg)
 
 evalExpr tReg (DUnaryNot e0 _)
   = do
-      e0Reg <- getReg
-      evalExpr e0Reg e0
-      appendIns (IOperation $ Not_ tReg e0Reg)
-      setNextUnusedReg e0Reg
-
-checkBinaryType :: Int -> Int -> DExpr -> DExpr -> Generator ()
-checkBinaryType r0 r1 e0 e1
-  = do
-      if getBaseType e0 /= getBaseType e1
-        then do
-          genIntToFloat r0 e0
-          genIntToFloat r1 e1
-      else
-        return ()
+      evalExpr tReg e0
+      appendIns (IOperation $ Not_ tReg tReg)
 
 genIntToFloat :: Int -> DExpr -> Generator ()
 genIntToFloat r e
