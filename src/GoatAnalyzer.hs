@@ -154,7 +154,7 @@ checkProc (Proc sourcePos ident paras decls stmts)
       resetSlotCounter
       (DProcProto pid _) <- getProcProto ident sourcePos
       -- parameters
-      dParas <- mapM (\(Para sourcePos ident baseType indi) -> 
+      mapM_ (\(Para sourcePos ident baseType indi) -> 
         do
           sc <- getSlotCounter 1
           putVar ident (DVarInfo sc (getDShape ShapeVar indi) (convType baseType)) sourcePos
@@ -173,7 +173,7 @@ checkProc (Proc sourcePos ident paras decls stmts)
       -- statements
       dStmts <- mapM checkStat stmts
 
-      return (DProc pid dParas dStmts totalSize)
+      return (DProc pid (length paras) dStmts totalSize)
 
 checkStat :: Stmt -> Analyzer DStmt
 checkStat (Assign _ (Var sourcePos ident idx) expr)
