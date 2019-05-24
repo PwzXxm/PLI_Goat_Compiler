@@ -337,8 +337,3 @@ runCodeGenerator dGoatProgram
   = let state = Gstate { regCounter = 0, labelCounter = 0, instructions = Endo ([]<>) }
         s = execState (genProgram dGoatProgram) state
     in (appEndo (instructions s)) []
-
-test 
-  = do 
-      let ins = runCodeGenerator (DProgram 0 [DProc 0 [] [DIf (DBoolConst True) [DAssign (DVar 0 (DIdxVar False) DIntType) (DIntConst 1)] [DAssign (DVar 1 (DIdxVar False) DIntType) (DIntConst 1)]] 2])
-      mapM_ putStrLn (map instructionFormatter ins)
