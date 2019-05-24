@@ -18,6 +18,7 @@ $(TARGET)/GoatLexer.hs: $(SRC)/GoatLexer.x
 
 oz:
 	cd ./resources/oz && make
+	cp ./resources/oz/oz ./
 
 clean:
 	rm -f $(TARGET)/* ./Goat ./oz

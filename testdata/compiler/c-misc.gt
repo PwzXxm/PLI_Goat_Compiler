@@ -1,0 +1,47 @@
+proc main()
+
+int
+id;
+bool
+f;
+
+begin
+
+id := 5 * 2 + 1;
+f := ! (false && true) || false;
+read f;
+write "strings allowed in write";
+
+	if f != false then
+	id:= (((9 - 1))) * 3;
+	f := ! false;
+	else f:= true || true;
+        fi
+
+# Now some procedure calls:
+
+call boo() ; call foo(1.08) ; call goo(true, 55, 90058.783);
+end
+proc boo()
+	int a[3];
+	int b[18];
+begin
+    while b[5] >= 0 do read a[b[1]]; od
+end
+
+proc foo (val float k)
+  int ifigenia; 	bool t;
+begin
+  ifigenia := 4+ 5 - 9 *(-1 + 3);
+end
+
+proc goo (ref bool q,
+ 	 ref int m,
+	 val float n)
+	float arr[9];
+	int matrix[0,4]; # Syntactically okay
+begin
+if m - 2 < 3 *8 then matrix[1,2] := 7; 
+fi
+end
+

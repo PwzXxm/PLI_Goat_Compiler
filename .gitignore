@@ -5,6 +5,7 @@
 # Build
 /build/*
 /Goat
+/oz
 
 ### Haskell ###
 dist

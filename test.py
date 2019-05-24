@@ -7,8 +7,7 @@ import re
 
 from tqdm import tqdm #comment this line if in test env
 
-
-
+test_single = False
 
 ############# Helper #################
 
@@ -84,7 +83,7 @@ def run_compiler_test_case(input_file: str) -> None:
     
     if cp.returncode == 0:
         is_stdin_exist = os.path.isfile(stdin_path)
-        oz_location = './resources/oz/oz'
+        oz_location = './oz'
 
         if is_stdin_exist:
             with open(stdin_path, 'rb') as fin:
@@ -96,6 +95,12 @@ def run_compiler_test_case(input_file: str) -> None:
             return
 
         if oz_cp.returncode == 0:
+            if test_single:
+                print("-----")
+                print("Oz emulator output:")
+                print("-----")
+                print((oz_cp.stdout).decode("utf-8"))
+
             is_out_exist = os.path.isfile(sample_output)
 
             if not is_out_exist:
@@ -126,7 +131,7 @@ def run_compiler_test_case(input_file: str) -> None:
         exit(1)
     
     printError()
-    print("Compilation exits with error code" + cp.returncode)
+    print("Compilation exits with error code", cp.returncode)
     exit(1)
     
 
@@ -144,6 +149,7 @@ def test_prettier() -> None:
         run_test_case(test_cases[i])
 
 def test_compiler() -> None:
+    global test_single
     print("\n==================")
     print(" Testing: compiler")
     print("------------------")
@@ -156,6 +162,7 @@ def test_compiler() -> None:
             printError()
             print("Invalid Goat program path. Should be something like 'testdata/compiler/example.gt")
             exit(1)
+        test_single = True
         test_cases = [rst.group(0)]
         print("Using test case: " + test_cases[0])
     elif len(args) == 0:
@@ -168,9 +175,11 @@ def test_compiler() -> None:
         print("Usage: python test.py testcase")
         exit(1)
 
-
-    for i in tqdm(range(len(test_cases))): # comment these lines
-        run_compiler_test_case(test_cases[i])
+    if test_single:
+        run_compiler_test_case(test_cases[0])
+    else:
+        for i in tqdm(range(len(test_cases))): # comment these lines
+            run_compiler_test_case(test_cases[i])
 
 def build() -> None:
     print("\n==================")
@@ -202,7 +211,7 @@ def main() -> None:
     build()
     # test_prettier()
 
-    buildOz()
+    # buildOz()
     test_compiler()
 
   
