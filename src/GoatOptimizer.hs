@@ -9,3 +9,5 @@ isComment :: Instruction -> Bool
 isComment (IComment _) = True
 isComment _ = False
 
+runOptimizer :: [Instruction] -> [Instruction]
+runOptimizer ins = ins 
