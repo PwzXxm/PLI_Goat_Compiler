@@ -306,8 +306,15 @@ isRelationalBinop _ = False
 
 -- TODO: load
 loadFromVar :: Int -> DVar -> Generator()
-loadFromVar tReg (DVar slotNum (DIdxVar _) dBaseType)
+loadFromVar tReg (DVar slotNum (DIdxVar False) _)
   = appendIns (IStatement $ Load tReg slotNum)
+
+loadFromVar tReg dVar
+  = do
+      r0 <- getReg
+      getVarAddress r0 dVar
+      appendIns (IStatement Load_in tReg r0)
+      setNextUnusedReg r0
 
 runCodeGenerator :: DGoatProgram -> [Instruction]
 runCodeGenerator dGoatProgram
