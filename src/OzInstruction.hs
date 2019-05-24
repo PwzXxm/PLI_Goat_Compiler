@@ -143,7 +143,7 @@ instructionFormatter_ (ILabel l) = (lshow l) ++ ":"
 constantFormatter :: Constant -> String
 constantFormatter (ConsInt r i) = "int_const " ++ (rshow r) ++ ", " ++ (show i)
 constantFormatter (ConsFloat r f) = "real_const " ++ (rshow r) ++ ", " ++ (show f)
-constantFormatter (ConsString r s) = "string_const " ++ (rshow r) ++ ", " ++ (show s)
+constantFormatter (ConsString r s) = "string_const " ++ (rshow r) ++ ", \"" ++ s ++ "\""
 
 
 twoFormatter :: Reg -> Reg -> String
