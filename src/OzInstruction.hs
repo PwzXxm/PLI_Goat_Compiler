@@ -197,9 +197,9 @@ typeFormatter REAL = "real"
 statementFormatter :: Statement -> String
 statementFormatter (Store i r) = "store " ++ (show i) ++ ", " ++ (rshow r)
 statementFormatter (Load r i) = "load " ++ (rshow r) ++ ", " ++ (show i)
-statementFormatter (Load_ad r i) = "load_address" ++ (rshow r) ++ ", " ++ (show i)
-statementFormatter (Load_in r1 r2) = "load_indirect" ++ (twoFormatter r1 r2)
-statementFormatter (Store_in r1 r2) = "store_indirect" ++ (twoFormatter r1 r2)
+statementFormatter (Load_ad r i) = "load_address " ++ (rshow r) ++ ", " ++ (show i)
+statementFormatter (Load_in r1 r2) = "load_indirect " ++ (twoFormatter r1 r2)
+statementFormatter (Store_in r1 r2) = "store_indirect " ++ (twoFormatter r1 r2)
 
 rshow :: Reg -> String
 rshow r = "r" ++ (show r)
