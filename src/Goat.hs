@@ -13,6 +13,7 @@ import GoatFormatter
 import GoatAnalyzer
 import GoatCodeGenerator
 import OzInstruction
+import GoatOptimizer
 
 import Data.Char
 import Text.Parsec
@@ -24,7 +25,7 @@ import qualified Data.Map as M
 
 -- | Job type
 data Job
-  = JobToken | JobAST | JobPrettier | JobCompile
+  = JobToken | JobAST | JobPrettier | JobDAST | JobRawIns | JobIns | JobTrimIns
   deriving (Eq)
 
 -- | Execute lexer, parser ... in order and output the result based on job type
@@ -60,8 +61,18 @@ execute job source_file
                         case semanticResult of
                           Right decoratedAST ->
                             do
-                              let ins = runCodeGenerator decoratedAST
-                              mapM_ putStrLn (map instructionFormatter ins)
+                              if job == JobDAST
+                                then do
+                                  putStrLn (show decoratedAST)
+                                  return ()
+                                else do
+                                  let ins = runCodeGenerator decoratedAST
+                                  let fins = case job of
+                                              JobRawIns  -> runOptimizer ins
+                                              JobIns     -> ins
+                                              JobTrimIns -> runOptimizer $ removeComments ins
+                                  mapM_ putStrLn (map instructionFormatter fins)
+                                  return ()
                           Left err ->
                             do
                               putStrLn (show err)
@@ -80,23 +91,31 @@ main
       progname <- getProgName
       args <- getArgs
 
-      let usageMsg = "usage: " ++ progname ++ " [-st | -sa | -p | -h] file"
+      let usageMsg = "usage: " ++ progname ++ " [-st | -sa | -sd | -p | -d | -r | -h] file"
 
       case args of
 
         ["-st", source_file] -> execute JobToken source_file
         ["-sa", source_file] -> execute JobAST source_file
-        ["-p", source_file] -> execute JobPrettier source_file
+        ["-sd", source_file] -> execute JobDAST source_file
+        ["-p",  source_file] -> execute JobPrettier source_file
+        ["-d",  source_file] -> execute JobRawIns source_file
+        ["-r",  source_file] -> execute JobTrimIns source_file
         ["-h"] ->
           do
             putStrLn usageMsg
             putStrLn ("Options and arguments:")
             putStrLn ("-st    : display secret tokens")
             putStrLn ("-sa    : display secret Abstract Syntax Tree")
+            putStrLn ("-sd    : display secret Decorated Abstract Syntax Tree")
             putStrLn ("-p     : pretty print the source file")
+            putStrLn ("-d     : debug build (no optimization)")
+            putStrLn ("-r     : release build (full optimization and remove comments)")
             putStrLn ("-h     : display the help menu")
             putStrLn ("file   : the file to be processed")
-        [source_file] -> execute JobCompile source_file
+            putStrLn ("")
+            putStrLn ("default build (full optimization and keep comments)")
+        [source_file] -> execute JobIns source_file
         _ ->
           do
             putStrLn usageMsg
