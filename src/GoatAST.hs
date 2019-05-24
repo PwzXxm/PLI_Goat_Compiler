@@ -95,6 +95,7 @@ type SlotNum = Int
 type SlotSize = Int
 type ProcId = Int
 type SecDimSize = Int
+type NumOfParas = Int
 type IsAddress = Bool
 
 data DBaseType
@@ -127,6 +128,7 @@ data DExpr
   | DIntConst Int
   | DFloatConst Float
   | DStrConst String
+  | DIntToFloat DExpr
   | DEvar DVar
   | DBinaryOp Binop DExpr DExpr DBaseType -- Binary Operator
   | DUnaryMinus DExpr DBaseType -- Unary operator
@@ -134,12 +136,12 @@ data DExpr
     deriving (Show, Eq)
 
 data DStmt
-  = DAssign DVar DExpr
-  | DRead DVar
-  | DWrite DExpr
-  | DCall ProcId [DCallPara]
-  | DIf DExpr [DStmt] [DStmt]
-  | DWhile DExpr [DStmt]
+  = DAssign SourcePos DVar DExpr
+  | DRead SourcePos DVar
+  | DWrite SourcePos DExpr
+  | DCall SourcePos ProcId [DCallPara]
+  | DIf SourcePos DExpr [DStmt] [DStmt]
+  | DWhile SourcePos DExpr [DStmt]
     deriving (Show, Eq)
 
 data DCallPara
@@ -147,12 +149,8 @@ data DCallPara
   | DCallParaRef DVar
     deriving (Show, Eq)
 
-data DPara
-  = DPara SlotNum Indi DBaseType
-    deriving (Show, Eq)
-
 data DProc
-  = DProc ProcId [DPara] [DStmt] SlotSize
+  = DProc ProcId NumOfParas [DStmt] SlotSize
     deriving (Show, Eq)
 
 data DGoatProgram
