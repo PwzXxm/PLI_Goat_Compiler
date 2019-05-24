@@ -195,10 +195,12 @@ checkStat (Write sourcePos expr)
       return $ DWrite dExpr
 checkStat (Call sourcePos ident exprs)
   = do
-      dExprs <- mapM checkExpr exprs
       (DProcProto procId paras) <- getProcProto ident sourcePos
-      dCallParas <- checkProcAndExpr paras dExprs sourcePos
-      return $ DCall procId dCallParas
+      if (length exprs) /= (length paras)
+        then throwSemanticErr sourcePos ("The function " ++ ident ++ " need " ++ (show (length paras)) ++ " parameter, but input have " ++ (show (length exprs)))
+        else do
+          dCallParas <- mapM checkProcAndExpr (zip paras exprs)
+          return $ DCall procId dCallParas
 checkStat (If sourcePos expr stmts1 stmts2)
   = do
       dExpr <- checkExpr expr
@@ -260,7 +262,7 @@ checkBaseType e1 e2 binop sourcePos
           then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
           else
             if (getBaseType e1) == (getBaseType e1)
-              then return $ getBaseType e1
+              then return $ DBoolType
               else throwSemanticErr sourcePos ("The two operands of = and != must be same type")
   | binop == Op_lt || binop == Op_le || binop == Op_gt || binop == Op_ge
     = do
@@ -305,44 +307,24 @@ checkShapeAndIdx _ _ sourcePos
       throwSemanticErr sourcePos ("Index type and shape type are different")
 
 
-checkProcAndExpr :: [DProcProtoPara] -> [DExpr] -> SourcePos -> Analyzer [DCallPara]
-checkProcAndExpr [] [] _
-  = do
-      return []
-checkProcAndExpr [] (x:xs) sourcePos
-  = do
-    throwSemanticErr sourcePos ("number of parameters not match")
-checkProcAndExpr (x:xs) [] sourcePos
-  = do
-    throwSemanticErr sourcePos ("number of parameters not match")
+checkProcAndExpr :: (DProcProtoPara,Expr) -> Analyzer DCallPara
+checkProcAndExpr ((DProcProtoPara InRef dBaseType1), expr)
+  = case expr of
+      (Evar sourcePos _) -> do
+        (DEvar (DVar slotNum dIdx dBaseType2)) <- checkExpr expr 
+        if dBaseType1 == dBaseType2
+          then return $ DCallParaRef (DVar slotNum (DIdxVar True) dBaseType2)
+          else throwSemanticErr sourcePos ("Types not match, expected type: " ++ (show dBaseType1) ++ "\nactual type: " ++ (show dBaseType2))
+      _          -> 
+        throwSemanticErr (getExprSourcePos expr) ("Reference here")
 
-checkProcAndExpr ((DProcProtoPara InRef dBaseType1):xs) ((DEvar (DVar slotNum (DIdxVar True) dBaseType2)):ys) sourcePos
+checkProcAndExpr ((DProcProtoPara InVal dBaseType), expr)
   = do
-    -- TODO: refactor
-      if dBaseType1 == dBaseType2
-        then do 
-              tmp <- (checkProcAndExpr xs ys sourcePos)
-              return $ (DCallParaRef (DVar slotNum (DIdxVar True) dBaseType2)):tmp
-        else throwSemanticErr sourcePos ("types not match")
-checkProcAndExpr ((DProcProtoPara InRef dBaseType1):xs) _ sourcePos
-  = do
-      throwSemanticErr sourcePos ("types not match")
-checkProcAndExpr _ ((DEvar (DVar slotNum (DIdxVar True) dBaseType2)):ys) sourcePos
-  = do
-      throwSemanticErr sourcePos ("types not match")
-checkProcAndExpr ((DProcProtoPara InVal dBaseType):xs) (dExpr:ys) sourcePos
-  = do
-    if dBaseType == (getBaseType dExpr)
-      then do 
-        tmp <- (checkProcAndExpr xs ys sourcePos)
-        return $ (DCallParaVal dExpr):tmp
-      else throwSemanticErr sourcePos ("types not match")
+      dExpr <- checkExpr expr
+      if dBaseType == (getBaseType dExpr)
+        then return $ DCallParaVal dExpr
+        else throwSemanticErr (getExprSourcePos expr) ("Types not match")
 
-
-
--- checkDCallPara :: DExpr -> DCallPara
--- checkDCallPara (DEvar (DVar slotNum (DIdxVar True) dBaseType)) = DCallParaRef (DVar slotNum (DIdxVar True) dBaseType)
--- checkDCallPara dExpr = DCallParaVal dExpr
 
 getDShape :: Shape -> Indi -> DShape
 getDShape ShapeVar InVal = DShapeVar False
