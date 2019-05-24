@@ -89,7 +89,12 @@ def run_compiler_test_case(input_file: str) -> None:
             with open(stdin_path, 'rb') as fin:
                 oz_cp = subprocess.run([oz_location, goat_output_path], input=fin.read(), stdout=subprocess.PIPE)
         else:
-            oz_cp = subprocess.run([oz_location, goat_output_path], stdout=subprocess.PIPE)
+            try:
+                oz_cp = subprocess.run([oz_location, goat_output_path], stdout=subprocess.PIPE, timeout=30)
+            except TimeoutExpired:
+                printWarning()
+                print(filename + " has no input file or it runs for too long")
+
         
         if oz_cp.returncode != 0 and prefix == 'r-':
             return
