@@ -301,9 +301,9 @@ getOzBinaryOp Op_mul = Mul
 getOzBinaryOp Op_div = Div
 getOzBinaryOp Op_eq = Eq
 getOzBinaryOp Op_ne = Ne
-getOzBinaryOp Op_lt = Gt
+getOzBinaryOp Op_lt = Lt
 getOzBinaryOp Op_le = Le
-getOzBinaryOp Op_gt = Lt
+getOzBinaryOp Op_gt = Gt
 getOzBinaryOp Op_ge = Ge
 
 isLogicalBinop :: Binop -> Bool
