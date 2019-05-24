@@ -53,12 +53,16 @@ genProc (DProc procId dParas dStmts slotSize)
       appendIns (ILabel $ "proc_" ++ (show procId))
       appendIns (IComment $ "code for procedure " ++ (show procId))
       appendIns (IPushStack slotSize)
-      -- TODO: handle parameters
+
+      appendIns (IComment $ "load parameter")
+      -- TODO: only need parameterSlotSize
+      let paraSlotSize = length dParas
+      mapM_ (\i -> do appendIns (IStatement $ Store i i)) [0..(paraSlotSize-1)]
+
       appendIns (IComment $ "init variable")
       reg0 <- getReg
-      -- init value
       appendIns (IConstant $ ConsInt reg0 0)
-      mapM_ (\i -> do appendIns (IStatement $ Store i reg0)) [0..(slotSize-1)]
+      mapM_ (\i -> do appendIns (IStatement $ Store i reg0)) [paraSlotSize..(slotSize-1)]
       setNextUnusedReg reg0
 
       -- statement
