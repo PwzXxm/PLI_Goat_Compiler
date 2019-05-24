@@ -158,7 +158,6 @@ checkProc (Proc sourcePos ident paras decls stmts)
         do
           sc <- getSlotCounter 1
           putVar ident (DVarInfo sc (getDShape ShapeVar indi) (convType baseType)) sourcePos
-          return (DPara sc indi (convType baseType))
         ) paras
       -- declarations
       mapM_ (\(Decl sourcePos ident baseType shape) -> 
@@ -182,17 +181,17 @@ checkStat (Assign _ (Var sourcePos ident idx) expr)
       (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
       dExpr <- checkExpr expr
       dIdx <- checkShapeAndIdx shape idx sourcePos
-      return $ DAssign (DVar slotNum dIdx dBaseType) dExpr
+      return $ DAssign sourcePos (DVar slotNum dIdx dBaseType) dExpr
 checkStat (Read _ (Var sourcePos ident idx))
   = do
     -- TODO: check type
       (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
       dIdx <- checkShapeAndIdx shape idx sourcePos
-      return $ DRead (DVar slotNum dIdx dBaseType)
+      return $ DRead sourcePos (DVar slotNum dIdx dBaseType)
 checkStat (Write sourcePos expr)
   = do
       dExpr <- checkExpr expr
-      return $ DWrite dExpr
+      return $ DWrite sourcePos dExpr
 checkStat (Call sourcePos ident exprs)
   = do
       (DProcProto procId paras) <- getProcProto ident sourcePos
@@ -200,18 +199,18 @@ checkStat (Call sourcePos ident exprs)
         then throwSemanticErr sourcePos ("The function " ++ ident ++ " need " ++ (show (length paras)) ++ " parameter, but input have " ++ (show (length exprs)))
         else do
           dCallParas <- mapM checkProcAndExpr (zip paras exprs)
-          return $ DCall procId dCallParas
+          return $ DCall sourcePos procId dCallParas
 checkStat (If sourcePos expr stmts1 stmts2)
   = do
       dExpr <- checkExpr expr
       dStmts1 <- mapM checkStat stmts1
       dStmts2 <- mapM checkStat stmts2
-      return $ DIf dExpr dStmts1 dStmts2
+      return $ DIf sourcePos dExpr dStmts1 dStmts2
 checkStat (While sourcePos expr stmts)
   = do
       dExpr <- checkExpr expr
       dStmts <- mapM checkStat stmts
-      return $ DWhile dExpr dStmts
+      return $ DWhile sourcePos dExpr dStmts
 
 checkExpr :: Expr -> Analyzer DExpr
 checkExpr (BoolConst _ bool)
