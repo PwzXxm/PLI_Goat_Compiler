@@ -315,10 +315,14 @@ checkProcAndExpr [] (x:xs) sourcePos
 checkProcAndExpr (x:xs) [] sourcePos
   = do
     throwSemanticErr sourcePos ("number of parameters not match")
+
 checkProcAndExpr ((DProcProtoPara InRef dBaseType1):xs) ((DEvar (DVar slotNum (DIdxVar True) dBaseType2)):ys) sourcePos
   = do
+    -- TODO: refactor
       if dBaseType1 == dBaseType2
-        then return $ (DCallParaRef (DVar slotNum (DIdxVar True) dBaseType2)):(checkProcAndExpr xs ys sourcePos)
+        then do 
+              tmp <- (checkProcAndExpr xs ys sourcePos)
+              return $ (DCallParaRef (DVar slotNum (DIdxVar True) dBaseType2)):tmp
         else throwSemanticErr sourcePos ("types not match")
 checkProcAndExpr ((DProcProtoPara InRef dBaseType1):xs) _ sourcePos
   = do
@@ -329,8 +333,12 @@ checkProcAndExpr _ ((DEvar (DVar slotNum (DIdxVar True) dBaseType2)):ys) sourceP
 checkProcAndExpr ((DProcProtoPara InVal dBaseType):xs) (dExpr:ys) sourcePos
   = do
     if dBaseType == (getBaseType dExpr)
-      then return $ (DCallParaVal dExpr):(checkProcAndExpr xs ys sourcePos)
+      then do 
+        tmp <- (checkProcAndExpr xs ys sourcePos)
+        return $ (DCallParaVal dExpr):tmp
       else throwSemanticErr sourcePos ("types not match")
+
+
 
 -- checkDCallPara :: DExpr -> DCallPara
 -- checkDCallPara (DEvar (DVar slotNum (DIdxVar True) dBaseType)) = DCallParaRef (DVar slotNum (DIdxVar True) dBaseType)
