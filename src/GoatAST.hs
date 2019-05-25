@@ -173,6 +173,7 @@ getBaseType (DEvar (DVar _ _ dBaseType)) = dBaseType
 getBaseType (DBinaryOp _ _ _ dBaseType)  = dBaseType
 getBaseType (DUnaryMinus _ dBaseType)    = dBaseType
 getBaseType (DUnaryNot _ dBaseType)      = dBaseType
+getBaseType (DIntToFloat (DVar _ _ dBaseType)) = dBaseType
 
 getExprSourcePos :: Expr -> SourcePos
 getExprSourcePos (BoolConst sourcePos _)   = sourcePos
