@@ -271,7 +271,13 @@ checkBaseType e1 e2 binop sourcePos
           else
             if (getBaseType e1) == (getBaseType e1)
               then return (DBoolType, e1, e2)
-              else throwSemanticErr sourcePos ("The two operands of = and != must be same type")
+              else
+                if (getBaseType e1) == DFloatType && (getBaseType e2) == DIntType
+                  then return (DBoolType, e1, (DIntToFloat e2))
+                  else
+                    if (getBaseType e1) == DIntType && (getBaseType e2) == DFloatType
+                      then return (DBoolType, (DIntToFloat e1), e2)
+                      else throwSemanticErr sourcePos ("The two operands of = and != must be same type")
   | binop == Op_lt || binop == Op_le || binop == Op_gt || binop == Op_ge
     = do
         if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
@@ -282,7 +288,10 @@ checkBaseType e1 e2 binop sourcePos
               else 
                 if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType
                   then throwSemanticErr sourcePos ("Cannot campare a Boolean type and a numeric type")
-                  else return (DBoolType, e1, e2)
+                  else 
+                    if (getBaseType e1) == DFloatType
+                      then return (DBoolType, e1, (DIntToFloat e2))
+                      else return (DBoolType, (DIntToFloat e1), e2)
   | otherwise
     = do
         if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
