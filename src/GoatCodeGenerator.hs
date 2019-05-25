@@ -61,7 +61,6 @@ genProc (DProc procId numOfParas dStmts dVarInfos slotSize)
       appendIns (IPushStack slotSize)
 
       appendIns (IComment $ "load parameter")
-      -- TODO: only need parameterSlotSize
       let paraSlotSize = numOfParas
       mapM_ (\i -> do appendIns (IStatement $ Store i i)) [0..(paraSlotSize-1)]
 
@@ -73,7 +72,8 @@ genProc (DProc procId numOfParas dStmts dVarInfos slotSize)
       mapM_ (\(DVarInfo slotNum dShape dBaseType) -> 
               do 
                 let reg_init = if dBaseType == DFloatType then reg_float_0 else reg_int_0
-                mapM_ (\i -> appendIns (IStatement $ Store i reg_init)) [slotNum..(getVarSizeByDShape dShape -1)]
+                let endSlotNum = ((getVarSizeByDShape dShape) - 1)
+                mapM_ (\i -> appendIns (IStatement $ Store i reg_init)) [slotNum..endSlotNum]
               ) dVarInfos
       setNextUnusedReg reg_int_0
 
