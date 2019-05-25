@@ -327,13 +327,15 @@ checkProcAndExpr ((DProcProtoPara InRef dBaseType1), expr)
           else throwSemanticErr sourcePos ("Types not match, expected type: " ++ (show dBaseType1) ++ "\nactual type: " ++ (show dBaseType2))
       _ -> 
         throwSemanticErr (getExprSourcePos expr) ("Reference here")
-
 checkProcAndExpr ((DProcProtoPara InVal dBaseType), expr)
   = do
       dExpr <- checkExpr expr
       if dBaseType == (getBaseType dExpr)
         then return $ DCallParaVal dExpr
-        else throwSemanticErr (getExprSourcePos expr) ("Types not match")
+        else 
+          if dBaseType == DFloatType && (getBaseType dExpr) == DIntType
+            then return $ DCallParaVal (DIntToFloat dExpr)
+            else throwSemanticErr (getExprSourcePos expr) ("Types not match")
 
 
 getDShape :: Shape -> Indi -> DShape
