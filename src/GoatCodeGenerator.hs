@@ -228,12 +228,12 @@ getVarAddress tReg (DVar slotNum (DIdxArr dExpr) _)
 getVarAddress tReg (DVar slotNum (DIdxMat dExpr1 dExpr2 secDimSize) _)
   = do
       appendIns (IStatement $ Load_ad tReg slotNum)
-      -- dExpr1 * (secDimSize-1) + dExpr2
+      -- dExpr1 * secDimSize + dExpr2
       offsetReg <- getReg
       evalExpr offsetReg dExpr1
       tmpReg <- getReg
       -- *
-      appendIns (IConstant $ ConsInt tmpReg (secDimSize-1))
+      appendIns (IConstant $ ConsInt tmpReg secDimSize)
       appendIns (IOperation $ Binary Mul INT offsetReg offsetReg tmpReg)
       -- +
       evalExpr tmpReg dExpr2
