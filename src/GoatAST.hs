@@ -150,7 +150,7 @@ data DCallPara
     deriving (Show, Eq)
 
 data DProc
-  = DProc ProcId NumOfParas [DStmt] SlotSize
+  = DProc ProcId NumOfParas [DStmt] [DVarInfo] SlotSize
     deriving (Show, Eq)
 
 data DGoatProgram

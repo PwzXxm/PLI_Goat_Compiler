@@ -48,8 +48,13 @@ genProgram (DProgram mainId dProcs)
       appendIns (IHalt)
       mapM_ genProc dProcs
 
+getVarSizeByDShape :: DShape -> Int
+getVarSizeByDShape (DShapeVar _) = 1
+getVarSizeByDShape (DShapeArr a) = a
+getVarSizeByDShape (DShapeMat a b) = a * b
+
 genProc :: DProc -> Generator ()
-genProc (DProc procId numOfParas dStmts slotSize)
+genProc (DProc procId numOfParas dStmts dVarInfos slotSize)
   = do
       appendIns (ILabel $ "proc_" ++ (show procId))
       appendIns (IComment $ "code for procedure " ++ (show procId))
@@ -61,10 +66,16 @@ genProc (DProc procId numOfParas dStmts slotSize)
       mapM_ (\i -> do appendIns (IStatement $ Store i i)) [0..(paraSlotSize-1)]
 
       appendIns (IComment $ "init variable")
-      reg0 <- getReg
-      appendIns (IConstant $ ConsInt reg0 0)
-      mapM_ (\i -> do appendIns (IStatement $ Store i reg0)) [paraSlotSize..(slotSize-1)]
-      setNextUnusedReg reg0
+      reg_int_0 <- getReg
+      reg_float_0 <- getReg
+      appendIns (IConstant $ ConsInt reg_int_0 0)
+      appendIns (IConstant $ ConsFloat reg_float_0 0.0)
+      mapM_ (\(DVarInfo slotNum dShape dBaseType) -> 
+              do 
+                let reg_init = if dBaseType == DFloatType then reg_float_0 else reg_int_0
+                mapM_ (\i -> appendIns (IStatement $ Store i reg_init)) [slotNum..(getVarSizeByDShape dShape -1)]
+              ) dVarInfos
+      setNextUnusedReg reg_int_0
 
       appendIns (IComment $ "procedure begin")
       -- statement
