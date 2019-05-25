@@ -1,1 +1,6 @@
-42
+This program is going to calculate the value of ((a+b)*c)/d.
+Please type in the value of a: 
+Please type in the value of b: 
+Please type in the value of c: 
+Please type in the value of d: 
+The result is: 42

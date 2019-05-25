@@ -269,7 +269,7 @@ evalExpr tReg (DBinaryOp binop e0 e1 dBaseType)
       r0 <- getReg
       evalExpr tReg e0
       evalExpr r0 e1
-      genBinop binop tReg r0 dBaseType
+      genBinop binop tReg r0 (getBaseType e0)
       setNextUnusedReg r0
 
 evalExpr tReg (DUnaryMinus e0 DFloatType)
