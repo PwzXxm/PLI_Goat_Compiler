@@ -25,7 +25,9 @@ getReg
   = do
       st <- get
       put st{regCounter = (regCounter st) + 1}
-      return (regCounter st)
+      if (regCounter st) > 1023
+        then error "Register exceed 1023"
+        else return (regCounter st)
 
 setNextUnusedReg :: Int -> Generator ()
 setNextUnusedReg n
