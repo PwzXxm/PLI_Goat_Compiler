@@ -181,7 +181,13 @@ checkStat (Assign _ (Var sourcePos ident idx) expr)
       (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
       dExpr <- checkExpr expr
       dIdx <- checkShapeAndIdx shape idx sourcePos
-      return $ DAssign sourcePos (DVar slotNum dIdx dBaseType) dExpr
+      if dBaseType == (getBaseType dExpr)
+        then return $ DAssign sourcePos (DVar slotNum dIdx dBaseType) dExpr
+        else
+          if dBaseType == DFloatType && (getBaseType dExpr) == DIntType
+            then return $ DAssign sourcePos (DVar slotNum dIdx dBaseType) (DIntToFloat dExpr)
+            else throwSemanticErr sourcePos ("Two sides of the expression have different types")
+      
 checkStat (Read _ (Var sourcePos ident idx))
   = do
     -- TODO: check type
@@ -234,7 +240,7 @@ checkExpr (BinaryOp sourcePos binop expr1 expr2)
   = do
       dExpr1 <- checkExpr expr1
       dExpr2 <- checkExpr expr2
-      dBaseType <- checkBaseType dExpr1 dExpr2 binop sourcePos
+      (dBaseType, dExpr1, dExpr2) <- checkBaseType dExpr1 dExpr2 binop sourcePos
       return $ DBinaryOp binop dExpr1 dExpr2 dBaseType
 checkExpr (UnaryMinus _ expr)
   = do
@@ -245,23 +251,26 @@ checkExpr (UnaryNot _ expr)
       dExpr <- checkExpr expr
       return $ DUnaryNot dExpr (getBaseType dExpr)
 
-checkBaseType :: DExpr -> DExpr -> Binop -> SourcePos -> Analyzer DBaseType
+checkBaseType :: DExpr -> DExpr -> Binop -> SourcePos -> Analyzer (DBaseType,DExpr,DExpr)
 checkBaseType e1 e2 binop sourcePos
   | binop == Op_add || binop == Op_sub || binop == Op_mul || binop == Op_div
     = do
         if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType || (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
           then throwSemanticErr sourcePos ("The two operands of a binary arithmetic operator must have numeric type")
           else
-            if (getBaseType e1) == DFloatType || (getBaseType e2) == DFloatType
-              then return DFloatType
-              else return DIntType
+            if (getBaseType e1) == (getBaseType e2)
+              then return ((getBaseType e1), e1, e2)
+              else
+                if (getBaseType e1) == DFloatType
+                  then return (DFloatType, e1, (DIntToFloat e2))
+                  else return (DFloatType, (DIntToFloat e1), e2)
   | binop == Op_eq || binop == Op_ne
     = do
         if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
           then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
           else
             if (getBaseType e1) == (getBaseType e1)
-              then return $ DBoolType
+              then return (DBoolType, e1, e2)
               else throwSemanticErr sourcePos ("The two operands of = and != must be same type")
   | binop == Op_lt || binop == Op_le || binop == Op_gt || binop == Op_ge
     = do
@@ -269,18 +278,18 @@ checkBaseType e1 e2 binop sourcePos
           then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
           else
             if (getBaseType e1) == (getBaseType e2)
-              then return DBoolType
+              then return (DBoolType, e1, e2)
               else 
                 if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType
                   then throwSemanticErr sourcePos ("Cannot campare a Boolean type and a numeric type")
-                  else return DBoolType
+                  else return (DBoolType, e1, e2)
   | otherwise
     = do
         if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
           then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
           else
             if (getBaseType e1) == DBoolType && (getBaseType e2) == DBoolType
-              then return DBoolType
+              then return (DBoolType, e1, e2)
               else throwSemanticErr sourcePos ("The two operands of && and || must be Boolean type")
 
 
@@ -318,13 +327,15 @@ checkProcAndExpr ((DProcProtoPara InRef dBaseType1), expr)
           else throwSemanticErr sourcePos ("Types not match, expected type: " ++ (show dBaseType1) ++ "\nactual type: " ++ (show dBaseType2))
       _ -> 
         throwSemanticErr (getExprSourcePos expr) ("Reference here")
-
 checkProcAndExpr ((DProcProtoPara InVal dBaseType), expr)
   = do
       dExpr <- checkExpr expr
       if dBaseType == (getBaseType dExpr)
         then return $ DCallParaVal dExpr
-        else throwSemanticErr (getExprSourcePos expr) ("Types not match")
+        else 
+          if dBaseType == DFloatType && (getBaseType dExpr) == DIntType
+            then return $ DCallParaVal (DIntToFloat dExpr)
+            else throwSemanticErr (getExprSourcePos expr) ("Types not match")
 
 
 getDShape :: Shape -> Indi -> DShape
