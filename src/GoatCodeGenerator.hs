@@ -72,7 +72,7 @@ genProc (DProc procId numOfParas dStmts dVarInfos slotSize)
       mapM_ (\(DVarInfo slotNum dShape dBaseType) -> 
               do 
                 let reg_init = if dBaseType == DFloatType then reg_float_0 else reg_int_0
-                let endSlotNum = ((getVarSizeByDShape dShape) - 1)
+                let endSlotNum = slotNum + ((getVarSizeByDShape dShape) - 1)
                 mapM_ (\i -> appendIns (IStatement $ Store i reg_init)) [slotNum..endSlotNum]
               ) dVarInfos
       setNextUnusedReg reg_int_0
