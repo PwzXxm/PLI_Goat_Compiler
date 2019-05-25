@@ -1,0 +1,6 @@
+int value i = 90045
+float value f = 21.450001
+boolean value b = true
+input base (non-negative int): input pow (positive int): 
+----------------------------------
+The last digit of (base ^ pow) is 6.
