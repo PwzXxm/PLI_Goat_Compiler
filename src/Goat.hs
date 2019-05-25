@@ -33,7 +33,8 @@ execute :: Job -> String -> IO ()
 execute job source_file
   = do
       input <- readFile source_file
-      let tokens = runGoatLexer source_file input
+      -- add \n for fix comment
+      let tokens = runGoatLexer source_file (input ++ "\n")
       if job == JobToken
         then do
           -- tokens from lexer
