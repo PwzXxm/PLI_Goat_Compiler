@@ -65,10 +65,11 @@ def run_compiler_test_case(input_file: str) -> None:
     sample_output = os.path.join(file_path, file_name + '.out')
     prefix = file_name[:2]
 
-    print("Checking " + file_name)
+    if test_single:
+        print("Checking " + file_name)
 
     with open(goat_output_path, 'w') as fp:
-        cp = subprocess.run(["./Goat", input_file], stdout=fp)
+        cp = subprocess.run(["./Goat", input_file], stdout=fp, stderr=subprocess.PIPE)
 
     if cp.returncode == 1:
         printError()
@@ -113,7 +114,7 @@ def run_compiler_test_case(input_file: str) -> None:
                 print(file_name + " does not have a sample output file")
                 return
 
-            diff_cp = subprocess.run(["diff", sample_output, "-"], input=oz_cp.stdout, stdout=subprocess.PIPE)
+            diff_cp = subprocess.run(["diff", sample_output, "-"], input=oz_cp.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if diff_cp.returncode == 0:
                 return
 
@@ -131,15 +132,14 @@ def run_compiler_test_case(input_file: str) -> None:
             exit(1)
         
         printError()
-        print("Running Oz emulator failure")
-        print((oz_cp.stdout).decode("utf-8"))
+        print(file_name + ": running Oz emulator failure")
         exit(1)
     
     printError()
-    print("Compilation exits with error code", cp.returncode)
+    print(file_name + ": compilation exits with error code", cp.returncode)
+    with open(goat_output_path, 'r') as f:
+        print(f.read())
     exit(1)
-    
-
 
 def test_prettier() -> None:
     print("\n==================")
@@ -176,8 +176,8 @@ def test_compiler() -> None:
     else:
         printError()
         print("Invalid arguments.")
-        print("Usage: python test.py")
-        print("Usage: python test.py testcase")
+        print("Usage: python3 test.py")
+        print("Usage: python3 test.py testdata/compiler/testcase.gt")
         exit(1)
 
     if test_single:
