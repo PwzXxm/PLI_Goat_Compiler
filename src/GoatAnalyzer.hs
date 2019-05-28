@@ -282,7 +282,7 @@ checkBaseType e1 e2 binop sourcePos
         if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
           then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
           else
-            if (getBaseType e1) == (getBaseType e1)
+            if (getBaseType e1) == (getBaseType e2)
               then return (DBoolType, e1, e2)
               else throwSemanticErr sourcePos ("The two operands of = and != must be same type")
   | binop == Op_lt || binop == Op_le || binop == Op_gt || binop == Op_ge
