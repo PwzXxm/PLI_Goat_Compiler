@@ -26,7 +26,7 @@ then
 
     # modify .goat test file
     wait $!
-    vi_sth $file ".goat"
+    vi_sth $file ".gt"
 
     # run ./Goat
     wait $!
