@@ -1,4 +1,9 @@
 -- | The formatter (printer) for Oz instruction
+--
+-- Authors:
+--   Weizhi Xu  (752454)
+--   Zijun Chen (813190)
+--   Zhe Tang   (743398)
 
 module OzInstructionFormatter(instructionFormatter) where
 
@@ -36,14 +41,15 @@ constantFormatter (ConsInt r i)    = "int_const " ++ (rshow r) ++ ", " ++ (show 
 constantFormatter (ConsFloat r f)  = "real_const " ++ (rshow r) ++ ", " ++ (show f)
 constantFormatter (ConsString r s) = "string_const " ++ (rshow r) ++ ", \"" ++ s ++ "\""
 
-
+-- | Print registers in thoese instructions involve two registers
 twoFormatter :: Reg -> Reg -> String
 twoFormatter r1 r2 = (rshow r1) ++ ", " ++ (rshow r2)
 
-
+-- | Print registers in thoese instructions involve three registers
 threeFormatter :: Reg -> Reg -> Reg -> String
 threeFormatter r1 r2 r3 = (rshow r1) ++ ", " ++ (rshow r2) ++ ", " ++ (rshow r3)
 
+-- | Print instructions involve binary operations
 operationFormatter :: Operation -> String
 operationFormatter (Add_off r1 r2 r3) = "add_offset " ++ (threeFormatter r1 r2 r3)
 operationFormatter (Sub_off r1 r2 r3) = "sub_offset " ++ (threeFormatter r1 r2 r3)
@@ -65,6 +71,7 @@ operationFormatter (Unary op t r1 r2)
     ++ " " ++
     (twoFormatter r1 r2)
 
+-- | Print the binary operation name
 binaryOpFormatter :: BinaryOp -> String
 binaryOpFormatter Add = "add"
 binaryOpFormatter Sub = "sub"
@@ -77,14 +84,16 @@ binaryOpFormatter Ge  = "cmp_ge"
 binaryOpFormatter Lt  = "cmp_lt"
 binaryOpFormatter Le  = "cmp_le"
 
+-- | Print the unary operation name
 unaryOpFormatter :: UnaryOp -> String
 unaryOpFormatter NEG = "neg"
 
-
+-- | Print the register type
 typeFormatter :: RegType -> String
 typeFormatter INT = "int"
 typeFormatter REAL = "real"
 
+-- | Print one statement
 statementFormatter :: Statement -> String
 statementFormatter (Store i r)      = "store " ++ (show i) ++ ", " ++ (rshow r)
 statementFormatter (Load r i)       = "load " ++ (rshow r) ++ ", " ++ (show i)
@@ -92,17 +101,21 @@ statementFormatter (Load_ad r i)    = "load_address " ++ (rshow r) ++ ", " ++ (s
 statementFormatter (Load_in r1 r2)  = "load_indirect " ++ (twoFormatter r1 r2)
 statementFormatter (Store_in r1 r2) = "store_indirect " ++ (twoFormatter r1 r2)
 
+-- | Print one register
 rshow :: Reg -> String
 rshow r = "r" ++ (show r)
 
+-- | Print one label name
 lshow :: Label -> String
 lshow l = "label_" ++ l
 
+-- | Print the debug instruction
 debugFormatter :: Debug -> String
 debugFormatter (DebugReg r)  = "debug_reg " ++ (rshow r)
 debugFormatter (DebugSlot i) = "debug_slot " ++ (show i)
 debugFormatter DebugStack = "debug_stack"
 
+-- | Print the branch
 branchFormatter :: Branch -> String
 branchFormatter (Cond True r l)
   = "branch_on_true " ++ (rshow r) ++ ", " ++ (lshow l)
