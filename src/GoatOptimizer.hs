@@ -10,7 +10,7 @@ module GoatOptimizer(
   removeComments
 ) where
 
-import OzInstruction
+import           OzInstruction
 
 -- | remove all comment instructions
 removeComments :: [Instruction] -> [Instruction]
@@ -22,25 +22,25 @@ runOptimizer insList
   = backwardScanner $ forwardScanner insList
 
 -------------
---  Private 
+--  Private
 -------------
 
 -- | return True if the given instruction is a comment
 isComment :: Instruction -> Bool
 isComment (IComment _) = True
-isComment _ = False
+isComment _            = False
 
 -- | run the forward scanner (update an insturction based on the previous one)
 forwardScanner :: [Instruction] -> [Instruction]
 forwardScanner insList
   = forwardScanner_ (IComment "placeholder") insList
 
--- | the actual forward scanner 
+-- | the actual forward scanner
 --   lastInstruction -> remainingInstructions
 forwardScanner_ :: Instruction -> [Instruction] -> [Instruction]
 forwardScanner_ lastIns (ins:insList)
-  = let 
-      newLast = case ins of 
+  = let
+      newLast = case ins of
         -- do not update the lastIns with a comment
         (IComment _) -> lastIns
         _            -> ins
@@ -63,11 +63,11 @@ forwardScanner_ _ [] = []
 backwardScanner :: [Instruction] -> [Instruction]
 backwardScanner (ins:insList)
   -- (current, next)
-  = let 
+  = let
       insPair = (ins, nextActualIns insList)
       recursion = backwardScanner insList
     in
-      case insPair of 
+      case insPair of
         (IBranch (Uncond label0), ILabel label1) | label0 == label1
           -> recursion
         _

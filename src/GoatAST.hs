@@ -89,7 +89,7 @@ data GoatProgram
 
 -- | get the sourcePos of a given Expr
 getExprSourcePos :: Expr -> SourcePos
-getExprSourcePos (BoolConst sourcePos _)   = sourcePos
+getExprSourcePos (BoolConst sourcePos _)    = sourcePos
 getExprSourcePos (IntConst sourcePos _)     = sourcePos
 getExprSourcePos (FloatConst sourcePos _)   = sourcePos
 getExprSourcePos (StrConst sourcePos _)     = sourcePos
@@ -126,7 +126,7 @@ data DShape
     deriving (Show, Eq)
 
 data DVarInfo
-  = DVarInfo SlotNum DShape DBaseType 
+  = DVarInfo SlotNum DShape DBaseType
     deriving (Show, Eq)
 
 data DVar
@@ -184,4 +184,4 @@ getBaseType (DEvar (DVar _ _ dBaseType)) = dBaseType
 getBaseType (DBinaryOp _ _ _ dBaseType)  = dBaseType
 getBaseType (DUnaryMinus _ dBaseType)    = dBaseType
 getBaseType (DUnaryNot _ dBaseType)      = dBaseType
-getBaseType (DIntToFloat dExpr) = DFloatType
+getBaseType (DIntToFloat dExpr)          = DFloatType

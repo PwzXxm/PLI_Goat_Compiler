@@ -9,18 +9,18 @@ module Main(
   main
 ) where
 
-import GoatParser
-import GoatLexer
-import GoatFormatter
-import GoatAnalyzer
-import GoatCodeGenerator
-import GoatOptimizer
-import GoatAST
-import OzInstruction
-import OzInstructionFormatter
+import           GoatAnalyzer
+import           GoatAST
+import           GoatCodeGenerator
+import           GoatFormatter
+import           GoatLexer
+import           GoatOptimizer
+import           GoatParser
+import           OzInstruction
+import           OzInstructionFormatter
 
-import System.Environment
-import System.Exit
+import           System.Environment
+import           System.Exit
 
 -- | Job type
 data Job
@@ -92,7 +92,7 @@ executeParser job source_file
                     return ()
                   else do
                     if job == JobPrettier
-                      then do 
+                      then do
                         -- preitter
                         runGoatFormatterAndOutput tree
                         return ()

@@ -66,7 +66,7 @@ strLitConst
 
 
 -----------------------------------------------------------------
---  pExpr is the main parser for expressions. 
+--  pExpr is the main parser for expressions.
 --  Level is decided based on the precedence of each operator
 --  pStrLit is not a part of pExpr, it is only used in write statement
 -----------------------------------------------------------------
@@ -97,7 +97,7 @@ pExprL3 = choice [pUnaryNot, pExprL4]
 
 -- | Relational operators are non-associative
 pExprL4 :: Parser Expr
-pExprL4 = choice [try pRelationalOps, pExprL5] 
+pExprL4 = choice [try pRelationalOps, pExprL5]
 
 pExprL5 :: Parser Expr
 pExprL5 = choice [pBoolConst, (chainl1 pExprL6 pAddSub)]
@@ -359,7 +359,7 @@ pParaIndi
 -----------------------------------------------------------------
 
 -----------------------------------------------------------------
---  pStmt is the main parser for statment. 
+--  pStmt is the main parser for statment.
 -----------------------------------------------------------------
 
 pStmt, pStmtAtom, pStmtComp :: Parser Stmt
