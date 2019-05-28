@@ -328,9 +328,9 @@ checkProcAndExpr ((DProcProtoPara InRef dBaseType1), expr)
 
         if dBaseType1 == dBaseType2
           then return $ DCallParaRef (DVar slotNum dIdx dBaseType2)
-          else throwSemanticErr sourcePos ("Types not match, expected type: " ++ (show dBaseType1) ++ "\nactual type: " ++ (show dBaseType2))
+          else throwSemanticErr sourcePos ("Types are not match, expected type: " ++ (show dBaseType1) ++ "\nactual type: " ++ (show dBaseType2))
       _ -> 
-        throwSemanticErr (getExprSourcePos expr) ("Reference here")
+        throwSemanticErr (getExprSourcePos expr) ("Expected Reference varible here")
 checkProcAndExpr ((DProcProtoPara InVal dBaseType), expr)
   = do
       dExpr <- checkExpr expr
@@ -339,7 +339,7 @@ checkProcAndExpr ((DProcProtoPara InVal dBaseType), expr)
         else 
           if dBaseType == DFloatType && (getBaseType dExpr) == DIntType
             then return $ DCallParaVal (DIntToFloat dExpr)
-            else throwSemanticErr (getExprSourcePos expr) ("Types not match")
+            else throwSemanticErr (getExprSourcePos expr) ("Types are not match")
 
 
 getDShape :: Shape -> Indi -> DShape
