@@ -1,0 +1,13 @@
+proc main()
+int a;
+float b;
+begin
+write a < b;
+write "\n";
+write a <= b;
+write "\n";
+write a > b;
+write "\n";
+write a >= b;
+write "\n";
+end

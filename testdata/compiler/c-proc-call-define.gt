@@ -1,0 +1,9 @@
+proc main()
+begin
+    call f();
+end
+
+proc f()
+begin
+  write "Test\n";
+end

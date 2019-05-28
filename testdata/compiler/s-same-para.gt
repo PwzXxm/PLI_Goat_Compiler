@@ -1,0 +1,12 @@
+proc f(val int x, val int x)
+int a;
+begin
+a := 1;
+end
+
+proc main()
+int x;
+int y;
+begin
+    call f(x, y);
+end

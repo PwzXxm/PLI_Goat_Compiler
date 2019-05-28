@@ -1,0 +1,18 @@
+proc main()
+int a;
+int b;
+begin
+    b:= 1;
+    write a=b;
+    write "\n";
+    write a != b;
+    write "\n";
+    write a < b;
+    write "\n";
+    write a<=b;
+    write "\n";
+    write a>b;
+    write "\n";
+    write a>=b;
+    write "\n";
+end

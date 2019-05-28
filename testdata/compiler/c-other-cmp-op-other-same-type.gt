@@ -1,0 +1,38 @@
+proc main()
+int i1;
+int i2;
+
+float f1;
+float f2;
+
+bool b1;
+bool b2;
+
+begin
+write i1 <  i2;
+write "\n";
+write i1 <= i2;
+write "\n";
+write i1 >  i2;
+write "\n";
+write i1 >= i2;
+write "\n";
+
+write f1 <  f2;
+write "\n";
+write f1 <= f2;
+write "\n";
+write f1 >  f2;
+write "\n";
+write f1 >= f2;
+write "\n";
+
+write b1 <  b2;
+write "\n";
+write b1 <= b2;
+write "\n";
+write b1 >  b2;
+write "\n";
+write b1 >= b2;
+write "\n";
+end

@@ -1,0 +1,10 @@
+proc f(val int x, ref int y, val int a, ref int b)
+begin
+    x := 1;
+end
+proc main()
+int a[1,1];
+int b[1];
+begin
+    call f(a[0, 0], b[0], b[0], a[0, 0]);
+end

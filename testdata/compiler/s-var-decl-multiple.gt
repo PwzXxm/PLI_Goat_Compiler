@@ -1,0 +1,6 @@
+proc main()
+int a;
+int a;
+begin
+  write a;
+end
