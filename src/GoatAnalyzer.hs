@@ -243,10 +243,12 @@ checkExpr (BinaryOp sourcePos binop expr1 expr2)
       dExpr2 <- checkExpr expr2
       (dBaseType, dExpr1, dExpr2) <- checkBaseType dExpr1 dExpr2 binop sourcePos
       return $ DBinaryOp binop dExpr1 dExpr2 dBaseType
-checkExpr (UnaryMinus _ expr)
+checkExpr (UnaryMinus sourcePos expr)
   = do
       dExpr <- checkExpr expr
-      return $ DUnaryMinus dExpr (getBaseType dExpr)
+      if (getBaseType dExpr) == DIntType && (getBaseType dExpr) == DFloatType
+        then return $ DUnaryMinus dExpr (getBaseType dExpr)
+        else throwSemanticErr sourcePos ("The operand of unary minus must be of type int or float")
 checkExpr (UnaryNot _ expr)
   = do
       dExpr <- checkExpr expr
