@@ -1,3 +1,5 @@
+-- | The formatter (printer) for Oz instruction
+
 module OzInstructionFormatter(instructionFormatter) where
 
 import OzInstruction
@@ -6,11 +8,13 @@ import OzInstruction
 instructionFormatter :: Instruction -> String
 instructionFormatter x 
   = case x of
+    -- indentation
     (IComment _) -> "  " ++ instructionFormatter_ x
     (ILabel _)   -> instructionFormatter_ x
     _            -> "    " ++ instructionFormatter_ x
 
 
+-- | Print one instruction without indentation
 instructionFormatter_ :: Instruction -> String
 instructionFormatter_ (IConstant c) = constantFormatter c
 instructionFormatter_ (IOperation o) = operationFormatter o
@@ -26,6 +30,7 @@ instructionFormatter_ (IHalt) = "halt"
 instructionFormatter_ (IReturn) = "return"
 instructionFormatter_ (ILabel l) = (lshow l) ++ ":"
 
+-- | Print constant
 constantFormatter :: Constant -> String
 constantFormatter (ConsInt r i) = "int_const " ++ (rshow r) ++ ", " ++ (show i)
 constantFormatter (ConsFloat r f) = "real_const " ++ (rshow r) ++ ", " ++ (show f)
