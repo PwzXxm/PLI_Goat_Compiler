@@ -178,7 +178,6 @@ checkProc (Proc sourcePos ident paras decls stmts)
 checkStat :: Stmt -> Analyzer DStmt
 checkStat (Assign _ (Var sourcePos ident idx) expr)
   = do
-    -- TODO: check type
       (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
       dExpr <- checkExpr expr
       dIdx <- checkShapeAndIdx shape idx sourcePos
@@ -191,14 +190,15 @@ checkStat (Assign _ (Var sourcePos ident idx) expr)
       
 checkStat (Read _ (Var sourcePos ident idx))
   = do
-    -- TODO: check type
       (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
       dIdx <- checkShapeAndIdx shape idx sourcePos
       return $ DRead sourcePos (DVar slotNum dIdx dBaseType)
+
 checkStat (Write sourcePos expr)
   = do
       dExpr <- checkExpr expr
       return $ DWrite sourcePos dExpr
+
 checkStat (Call sourcePos ident exprs)
   = do
       (DProcProto procId paras) <- getProcProto ident sourcePos
@@ -207,17 +207,25 @@ checkStat (Call sourcePos ident exprs)
         else do
           dCallParas <- mapM checkProcAndExpr (zip paras exprs)
           return $ DCall sourcePos procId dCallParas
+
 checkStat (If sourcePos expr stmts1 stmts2)
   = do
       dExpr <- checkExpr expr
-      dStmts1 <- mapM checkStat stmts1
-      dStmts2 <- mapM checkStat stmts2
-      return $ DIf sourcePos dExpr dStmts1 dStmts2
+      if (getBaseType dExpr) /= DBoolType
+        then throwSemanticErr sourcePos ("TODO:")
+        else do
+          dStmts1 <- mapM checkStat stmts1
+          dStmts2 <- mapM checkStat stmts2
+          return $ DIf sourcePos dExpr dStmts1 dStmts2
+
 checkStat (While sourcePos expr stmts)
   = do
       dExpr <- checkExpr expr
-      dStmts <- mapM checkStat stmts
-      return $ DWhile sourcePos dExpr dStmts
+      if (getBaseType dExpr) /= DBoolType
+        then throwSemanticErr sourcePos ("TODO:")
+        else do
+          dStmts <- mapM checkStat stmts
+          return $ DWhile sourcePos dExpr dStmts
 
 checkExpr :: Expr -> Analyzer DExpr
 checkExpr (BoolConst _ bool)
