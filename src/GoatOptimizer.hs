@@ -1,20 +1,20 @@
-module GoatOptimizer where
-
-import Control.Monad.State
-import           Data.Monoid
+module GoatOptimizer(
+  runOptimizer,
+  removeComments
+) where
 
 import OzInstruction
 
 removeComments :: [Instruction] -> [Instruction]
 removeComments ins = filter (not . isComment) ins
 
-isComment :: Instruction -> Bool
-isComment (IComment _) = True
-isComment _ = False
-
 runOptimizer :: [Instruction] -> [Instruction]
 runOptimizer insList
   = backwardScanner $ forwardScanner insList
+
+isComment :: Instruction -> Bool
+isComment (IComment _) = True
+isComment _ = False
 
 forwardScanner :: [Instruction] -> [Instruction]
 forwardScanner insList

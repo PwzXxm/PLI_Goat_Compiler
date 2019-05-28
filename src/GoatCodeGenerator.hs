@@ -1,4 +1,4 @@
-module GoatCodeGenerator where
+module GoatCodeGenerator(runCodeGenerator) where
 
 import Control.Monad.State
 import           Data.Monoid

@@ -5,24 +5,22 @@
 --   Zijun Chen (813190)
 --   Zhe Tang   (743398)
 
-module Main where
+module Main(
+  main
+) where
 
 import GoatParser
 import GoatLexer
 import GoatFormatter
 import GoatAnalyzer
 import GoatCodeGenerator
-import OzInstruction
 import GoatOptimizer
 import GoatAST
+import OzInstruction
+import OzInstructionFormatter
 
-import Data.Char
-import Text.Parsec
 import System.Environment
 import System.Exit
-import Control.Monad.State
-import Data.Map (Map)
-import qualified Data.Map as M
 
 -- | Job type
 data Job
