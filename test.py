@@ -74,6 +74,7 @@ def run_compiler_test_case(input_file: str) -> None:
 
     if cp.returncode == 1:
         printError()
+        print("File: " + file_name)
         print("Invalid command line arguments")
         with open(goat_output_path, 'r') as f:
             print(f.read())
@@ -84,6 +85,7 @@ def run_compiler_test_case(input_file: str) -> None:
             return
         else:
             printError()
+            print("File: " + file_name)
             print("Expected to be syntax error with exit code 2")
             with open(goat_output_path, 'r') as f:
                 print(f.read())
@@ -94,6 +96,7 @@ def run_compiler_test_case(input_file: str) -> None:
             return
         else:
             printError()
+            print("File: " + file_name)
             print("Expected to be semantic error with exit code 3")
             with open(goat_output_path, 'r') as f:
                 print(f.read())
