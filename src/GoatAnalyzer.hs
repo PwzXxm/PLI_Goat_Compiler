@@ -121,8 +121,8 @@ semanticCheckDGoatProgram :: GoatProgram -> Analyzer DGoatProgram
 semanticCheckDGoatProgram (Program procs)
   = do
       loadProcProto procs
-      dProcs <- mapM checkProc procs
       (DProcProto mainId _) <- getProcProto "main" (newPos "" 0 0)
+      dProcs <- mapM checkProc procs
       return $ DProgram mainId dProcs
 
 
@@ -154,26 +154,29 @@ checkProc (Proc sourcePos ident paras decls stmts)
       resetSlotCounter
       (DProcProto pid _) <- getProcProto ident sourcePos
       -- parameters
-      mapM_ (\(Para sourcePos ident baseType indi) -> 
-        do
-          sc <- getSlotCounter 1
-          putVar ident (DVarInfo sc (getDShape ShapeVar indi) (convType baseType)) sourcePos
-        ) paras
-      -- declarations
-      dVarInfos <- mapM (\(Decl sourcePos ident baseType shape) -> 
-        do
-          sc <- getSlotCounter (getVarSizeByShape shape)
-          let dVarInfo = (DVarInfo sc (getDShape shape InVal) (convType baseType))
-          putVar ident dVarInfo sourcePos
-          return dVarInfo
-        ) decls
-      -- the current counter + 1 is the total size
-      totalSize <- getSlotCounter 1
+      if ident == "main" && length paras > 0
+        then throwSemanticErr sourcePos ("Main procedure can not have parameter")
+        else do
+          mapM_ (\(Para sourcePos ident baseType indi) -> 
+            do
+              sc <- getSlotCounter 1
+              putVar ident (DVarInfo sc (getDShape ShapeVar indi) (convType baseType)) sourcePos
+            ) paras
+          -- declarations
+          dVarInfos <- mapM (\(Decl sourcePos ident baseType shape) -> 
+            do
+              sc <- getSlotCounter (getVarSizeByShape shape)
+              let dVarInfo = (DVarInfo sc (getDShape shape InVal) (convType baseType))
+              putVar ident dVarInfo sourcePos
+              return dVarInfo
+            ) decls
+          -- the current counter + 1 is the total size
+          totalSize <- getSlotCounter 1
 
-      -- statements
-      dStmts <- mapM checkStat stmts
+          -- statements
+          dStmts <- mapM checkStat stmts
 
-      return (DProc pid (length paras) dStmts dVarInfos totalSize)
+          return (DProc pid (length paras) dStmts dVarInfos totalSize)
 
 checkStat :: Stmt -> Analyzer DStmt
 checkStat (Assign _ (Var sourcePos ident idx) expr)
@@ -299,7 +302,7 @@ checkBaseType e1 e2 binop sourcePos
                     if (getBaseType e1) == DFloatType
                       then return (DBoolType, e1, (DIntToFloat e2))
                       else return (DBoolType, (DIntToFloat e1), e2)
-  | otherwise -- Op_and Op_or
+  | otherwise -- Op_and, Op_or
     = do
         if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
           then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
