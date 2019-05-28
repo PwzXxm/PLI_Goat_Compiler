@@ -1,0 +1,11 @@
+proc main()
+int x;
+begin
+x := 1;
+call f();
+end
+
+proc f()
+begin
+  write x;
+end

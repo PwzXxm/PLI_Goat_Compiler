@@ -1,0 +1,11 @@
+proc f(ref int x)
+begin
+write x;
+write "\n";
+end
+proc main()
+int a;
+begin
+a := 1;
+call f(a + 5);
+end

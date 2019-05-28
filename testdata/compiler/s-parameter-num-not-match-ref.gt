@@ -1,0 +1,10 @@
+proc f(ref int y)
+int a;
+begin
+a := 1;
+
+end
+proc main()
+begin
+    call f();
+end

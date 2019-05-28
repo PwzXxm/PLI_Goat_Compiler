@@ -2,6 +2,7 @@ from typing import *
 import os
 import sys
 import subprocess
+from subprocess import TimeoutExpired
 import difflib
 import re
 
@@ -69,7 +70,7 @@ def run_compiler_test_case(input_file: str) -> None:
         print("Checking " + file_name)
 
     with open(goat_output_path, 'w') as fp:
-        cp = subprocess.run(["./Goat", input_file], stdout=fp, stderr=subprocess.PIPE)
+        cp = subprocess.run("./Goat " + input_file, shell=True, stdout=fp, stderr=subprocess.PIPE)
 
     if cp.returncode == 1:
         printError()
@@ -82,6 +83,8 @@ def run_compiler_test_case(input_file: str) -> None:
         else:
             printError()
             print("Expected to be syntax error with exit code 2")
+            with open(goat_output_path, 'r') as f:
+                print(f.read())
             exit(1)
     
     if prefix == 's-':
@@ -90,6 +93,8 @@ def run_compiler_test_case(input_file: str) -> None:
         else:
             printError()
             print("Expected to be semantic error with exit code 3")
+            with open(goat_output_path, 'r') as f:
+                print(f.read())
             exit(1)
 
     
@@ -105,7 +110,7 @@ def run_compiler_test_case(input_file: str) -> None:
                 oz_cp = subprocess.run([oz_location, goat_output_path], stdout=subprocess.PIPE, timeout=30)
             except TimeoutExpired:
                 printWarning()
-                print(filename + " has no input file or it runs for too long")
+                print(file_name + " has no input file or it runs for too long")
 
         
         if prefix == 'r-':

@@ -1,0 +1,15 @@
+proc main()
+int a;
+int b;
+begin
+a := -5;
+b := 3;
+write a + b;
+write "\n";
+write a - b;
+write "\n";
+write a * b;
+write "\n";
+write a / b;
+write "\n";
+end
