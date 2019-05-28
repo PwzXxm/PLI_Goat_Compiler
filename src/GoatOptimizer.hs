@@ -1,5 +1,8 @@
 module GoatOptimizer where
 
+import Control.Monad.State
+import           Data.Monoid
+
 import OzInstruction
 
 removeComments :: [Instruction] -> [Instruction]
@@ -10,19 +13,76 @@ isComment (IComment _) = True
 isComment _ = False
 
 runOptimizer :: [Instruction] -> [Instruction]
-runOptimizer ins
-  = optimizer1 ins 
+runOptimizer insList
+  = let state = Ostate { lastIns = IComment "placeholder", instructions = Endo ([]<>) }
+        s = execState (mainOptimizer insList) state
+    in backwardScanner ((appEndo (instructions s)) [])
 
--- remove case like: Store 1, r0  Load r0, 1
-optimizer1 :: [Instruction] -> [Instruction]
-optimizer1 ins = optimizer1_ (IComment "placeholder") ins
+data Ostate = Ostate 
+  { lastIns :: Instruction, instructions :: Endo [Instruction]}
 
-optimizer1_ :: Instruction -> [Instruction] -> [Instruction]
-optimizer1_ _ [] = []
-optimizer1_ (IStatement (Store slot0 reg0)) ((IStatement (Load reg1 slot1)):xs)
-  | slot0 == slot1 && reg0 == reg1 = optimizer1_ (IStatement (Store slot0 reg0)) xs
-  | otherwise = (IStatement (Load reg1 slot1)):(optimizer1_ (IStatement (Load reg1 slot1)) xs)
-optimizer1_ last ((IComment x):xs) -- skip comments
-  = (IComment x):(optimizer1_ last xs)
-optimizer1_ _ (x:xs)
-  = x:(optimizer1_ x xs)
+type Optimizer a = State Ostate a
+
+-- O(1) time complexity
+-- Idea from https://kseo.github.io/posts/2017-01-21-writer-monad.html
+appendIns :: Instruction -> Optimizer ()
+appendIns x
+  = do
+      st <- get
+      put st{instructions = (( (instructions st) <> (Endo ([x]<>))  )) }
+
+getLastIns :: Optimizer Instruction
+getLastIns
+  = do
+      st <- get
+      return (lastIns st)
+
+updateLastIns :: Instruction -> Optimizer ()
+updateLastIns ins
+  = case ins of
+      -- ignore comments
+      (IComment _) -> return ()
+      ins -> do
+        st <- get
+        put st{lastIns = ins}
+
+
+mainOptimizer :: [Instruction] -> Optimizer ()
+mainOptimizer insList0
+  = do
+      mapM_ forwardScanner insList0
+    
+forwardScanner :: Instruction -> Optimizer ()
+forwardScanner ins
+  = do
+      last <- getLastIns
+      updateLastIns ins
+
+      -- (last ins, current ins)
+      let insPair = (last, ins)
+      case insPair of
+        (IStatement (Store slot0 reg0), IStatement (Load reg1 slot1)) | slot0 == slot1
+          -> if reg0 == reg1
+              then return ()
+              else appendIns (IOperation (Move reg1 reg0))
+        _
+          -> appendIns ins
+
+
+backwardScanner :: [Instruction] -> [Instruction]
+backwardScanner (ins:insList)
+  -- (current, next)
+  = let insPair = (ins, nextActualIns insList) in
+    case insPair of 
+      (IBranch (Uncond label0), ILabel label1) | label0 == label1
+        -> backwardScanner insList
+      _
+        -> (ins:backwardScanner insList)
+
+backwardScanner [] = []
+
+nextActualIns :: [Instruction] -> Instruction
+nextActualIns (ins:insList)
+  | (isComment ins) == True = ins
+  | otherwise = nextActualIns insList
+nextActualIns [] = IComment "placeholder"

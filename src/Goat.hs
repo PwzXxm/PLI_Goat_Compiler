@@ -69,9 +69,9 @@ execute job source_file
                                 else do
                                   let ins = runCodeGenerator decoratedAST
                                   let fins = case job of
-                                              JobRawIns  -> runOptimizer ins
-                                              JobIns     -> ins
-                                              JobTrimIns -> runOptimizer $ removeComments ins
+                                              JobRawIns  -> ins
+                                              JobIns     -> runOptimizer ins
+                                              JobTrimIns -> removeComments $ runOptimizer ins
                                   mapM_ putStrLn (map instructionFormatter fins)
                                   return ()
                           Left err ->
