@@ -299,7 +299,7 @@ checkBaseType e1 e2 binop sourcePos
                     if (getBaseType e1) == DFloatType
                       then return (DBoolType, e1, (DIntToFloat e2))
                       else return (DBoolType, (DIntToFloat e1), e2)
-  | otherwise
+  | otherwise -- Op_and Op_or
     = do
         if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
           then throwSemanticErr sourcePos ("The two operands of operator cannot be String type")
