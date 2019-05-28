@@ -35,7 +35,7 @@ def run_test_case(input_file: str) -> None:
 
     # run process
     cp = subprocess.run(["./Goat", "-p", input_file], stdout=subprocess.PIPE)
-    
+
     diff_cp = None
 
     sample_output = os.path.join(file_path, file_name + '.out')
@@ -70,13 +70,15 @@ def run_compiler_test_case(input_file: str) -> None:
         print("Checking " + file_name)
 
     with open(goat_output_path, 'w') as fp:
-        cp = subprocess.run("./Goat " + input_file, shell=True, stdout=fp, stderr=subprocess.PIPE)
+        cp = subprocess.run(["./Goat", input_file], stdout=fp, stderr=subprocess.PIPE)
 
     if cp.returncode == 1:
         printError()
         print("Invalid command line arguments")
+        with open(goat_output_path, 'r') as f:
+            print(f.read())
         exit(1)
-    
+
     if prefix == 'w-':
         if cp.returncode == 2:
             return
@@ -86,7 +88,7 @@ def run_compiler_test_case(input_file: str) -> None:
             with open(goat_output_path, 'r') as f:
                 print(f.read())
             exit(1)
-    
+
     if prefix == 's-':
         if cp.returncode == 3:
             return
@@ -97,7 +99,7 @@ def run_compiler_test_case(input_file: str) -> None:
                 print(f.read())
             exit(1)
 
-    
+
     if cp.returncode == 0:
         is_stdin_exist = os.path.isfile(stdin_path)
         oz_location = './oz'
@@ -112,7 +114,7 @@ def run_compiler_test_case(input_file: str) -> None:
                 printWarning()
                 print(file_name + " has no input file or it runs for too long")
 
-        
+
         if prefix == 'r-':
             if oz_cp.returncode != 0:
                 return
@@ -153,11 +155,11 @@ def run_compiler_test_case(input_file: str) -> None:
                 print(cp.stdout)
                 print()
             exit(1)
-        
+
         printError()
         print(file_name + ": running Oz emulator failure")
         exit(1)
-    
+
     printError()
     print(file_name + ": compilation exits with error code", cp.returncode)
     with open(goat_output_path, 'r') as f:
@@ -169,7 +171,7 @@ def test_prettier() -> None:
     print(" Testing: prettier")
     print("------------------")
     test_cases = get_all_test_case("prettier")
-    
+
     #for i, case in enumerate(test_cases):
     #    print("({} / {}) {}:".format(i+1, len(test_cases), case))
     #    run_test_case(case)
@@ -242,6 +244,6 @@ def main() -> None:
     # buildOz()
     test_compiler()
 
-  
+
 if __name__== "__main__":
     main()

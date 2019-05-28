@@ -1,0 +1,12 @@
+proc main()
+int a;
+float b;
+bool c;
+begin
+    a := 1;
+    b := 1;
+    b := 1.0;
+    b := -1.0;
+    c := false;
+    c := true;
+end

@@ -1,0 +1,5 @@
+proc main()
+int a[-1, -1];
+begin
+    write "";
+end

@@ -1,0 +1,6 @@
+proc main()
+bool a;
+bool b;
+begin
+write a + b;
+end

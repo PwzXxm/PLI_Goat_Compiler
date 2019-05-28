@@ -1,0 +1,5 @@
+proc main()
+bool a;
+begin
+write -a;
+end
