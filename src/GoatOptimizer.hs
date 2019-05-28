@@ -56,6 +56,6 @@ backwardScanner [] = []
 
 nextActualIns :: [Instruction] -> Instruction
 nextActualIns (ins:insList)
-  | (isComment ins) == True = ins
+  | (isComment ins) == False = ins
   | otherwise = nextActualIns insList
 nextActualIns [] = IComment "placeholder"
