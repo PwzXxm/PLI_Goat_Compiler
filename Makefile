@@ -7,7 +7,7 @@
 SRC       = ./src
 TARGET    = ./build
 
-SRC_FILES = $(TARGET)/GoatLexer.hs $(SRC)/Goat.hs $(SRC)/GoatFormatter.hs $(SRC)/GoatToken.hs $(SRC)/GoatAST.hs $(SRC)/Makefile $(SRC)/GoatAnalyzer.hs $(SRC)/GoatOptimizer.hs $(SRC)/OzInstruction.hs $(SRC)/GoatCodeGenerator.hs $(SRC)/GoatParser.hs
+SRC_FILES = $(TARGET)/GoatLexer.hs $(SRC)/Goat.hs $(SRC)/GoatFormatter.hs $(SRC)/GoatToken.hs $(SRC)/GoatAST.hs $(SRC)/Makefile $(SRC)/GoatAnalyzer.hs $(SRC)/GoatOptimizer.hs $(SRC)/OzInstruction.hs $(SRC)/OzInstructionFormatter.hs $(SRC)/GoatCodeGenerator.hs $(SRC)/GoatParser.hs
 
 Goat: $(SRC_FILES) oz
 	ghc --make $(SRC)/Goat.hs -i$(SRC):$(TARGET) -hidir $(TARGET) -odir $(TARGET) -o ./Goat -O2

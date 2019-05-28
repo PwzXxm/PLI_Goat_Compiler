@@ -87,6 +87,15 @@ data GoatProgram
   = Program [Proc]
     deriving (Show, Eq)
 
+getExprSourcePos :: Expr -> SourcePos
+getExprSourcePos (BoolConst sourcePos _)   = sourcePos
+getExprSourcePos (IntConst sourcePos _)     = sourcePos
+getExprSourcePos (FloatConst sourcePos _)   = sourcePos
+getExprSourcePos (StrConst sourcePos _)     = sourcePos
+getExprSourcePos (Evar sourcePos _)         = sourcePos
+getExprSourcePos (UnaryMinus sourcePos _)   = sourcePos
+getExprSourcePos (UnaryNot sourcePos _)     = sourcePos
+getExprSourcePos (BinaryOp sourcePos _ _ _) = sourcePos
 
 --------------------------------------------------
 --  Decorated Asbtract Syntax Tree
@@ -174,13 +183,3 @@ getBaseType (DBinaryOp _ _ _ dBaseType)  = dBaseType
 getBaseType (DUnaryMinus _ dBaseType)    = dBaseType
 getBaseType (DUnaryNot _ dBaseType)      = dBaseType
 getBaseType (DIntToFloat dExpr) = DFloatType
-
-getExprSourcePos :: Expr -> SourcePos
-getExprSourcePos (BoolConst sourcePos _)   = sourcePos
-getExprSourcePos (IntConst sourcePos _)     = sourcePos
-getExprSourcePos (FloatConst sourcePos _)   = sourcePos
-getExprSourcePos (StrConst sourcePos _)     = sourcePos
-getExprSourcePos (Evar sourcePos _)         = sourcePos
-getExprSourcePos (UnaryMinus sourcePos _)   = sourcePos
-getExprSourcePos (UnaryNot sourcePos _)     = sourcePos
-getExprSourcePos (BinaryOp sourcePos _ _ _) = sourcePos
