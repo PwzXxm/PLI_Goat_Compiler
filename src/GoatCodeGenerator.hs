@@ -270,6 +270,7 @@ evalExpr tReg (DBinaryOp binop e0 e1 dBaseType)
   = do
       r0 <- getReg
       evalExpr tReg e0
+
       if isLogicalBinop binop == True
         then do
           l0 <- getLabel "bool_op_"
@@ -278,18 +279,18 @@ evalExpr tReg (DBinaryOp binop e0 e1 dBaseType)
             then do
               appendIns (IComment $ "logical operation AND")
               appendIns (IBranch $ Cond False tReg l0)
+              evalExpr r0 e1
               appendIns (IOperation $ And_ tReg tReg r0)
             else do
               appendIns (IComment $ "logical operation OR")
               appendIns (IBranch $ Cond True tReg l0)
+              evalExpr r0 e1
               appendIns (IOperation $ Or_ tReg tReg r0)
-
-          evalExpr r0 e1
 
           appendIns (ILabel $ l0)
         else do
           evalExpr r0 e1
-          if dBaseType == DFloatType
+          if (getBaseType e1) == DFloatType
             then appendIns (IOperation $ Binary (getOzBinaryOp binop) REAL tReg tReg r0)
             else appendIns (IOperation $ Binary (getOzBinaryOp binop) INT tReg tReg r0)
 
