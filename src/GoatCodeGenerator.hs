@@ -2,14 +2,14 @@
 
 module GoatCodeGenerator(runCodeGenerator) where
 
-import Control.Monad.State
+import           Control.Monad.State
 import           Data.Monoid
-import OzInstruction
-import GoatAST
-import Text.ParserCombinators.Parsec.Pos
+import           GoatAST
+import           OzInstruction
+import           Text.ParserCombinators.Parsec.Pos
 
 
-data Gstate = Gstate 
+data Gstate = Gstate
   { regCounter :: Int, labelCounter :: Int, instructions :: Endo [Instruction]}
 
 type Generator a = State Gstate a
@@ -67,8 +67,8 @@ getLabel prefix
 
 -- | get the slot size of a variable
 getVarSizeByDShape :: DShape -> Int
-getVarSizeByDShape (DShapeVar _) = 1
-getVarSizeByDShape (DShapeArr a) = a
+getVarSizeByDShape (DShapeVar _)   = 1
+getVarSizeByDShape (DShapeArr a)   = a
 getVarSizeByDShape (DShapeMat a b) = a * b
 
 -- | convert bool to int
@@ -76,22 +76,24 @@ boolToInt :: Bool -> Int
 boolToInt True  = 1
 boolToInt False = 0
 
+-- | get the binary operator data type from AST to Oz instruction
 getOzBinaryOp :: Binop -> BinaryOp
 getOzBinaryOp Op_add = Add
 getOzBinaryOp Op_sub = Sub
 getOzBinaryOp Op_mul = Mul
 getOzBinaryOp Op_div = Div
-getOzBinaryOp Op_eq = Eq
-getOzBinaryOp Op_ne = Ne
-getOzBinaryOp Op_lt = Lt
-getOzBinaryOp Op_le = Le
-getOzBinaryOp Op_gt = Gt
-getOzBinaryOp Op_ge = Ge
+getOzBinaryOp Op_eq  = Eq
+getOzBinaryOp Op_ne  = Ne
+getOzBinaryOp Op_lt  = Lt
+getOzBinaryOp Op_le  = Le
+getOzBinaryOp Op_gt  = Gt
+getOzBinaryOp Op_ge  = Ge
 
+-- | check whether the given binary operator is logical operator
 isLogicalBinop :: Binop -> Bool
 isLogicalBinop Op_and = True
-isLogicalBinop Op_or = True
-isLogicalBinop _ = False
+isLogicalBinop Op_or  = True
+isLogicalBinop _      = False
 
 ----------------------------------------------
 
@@ -101,7 +103,7 @@ isLogicalBinop _ = False
 -- | generate goat program
 genProgram :: DGoatProgram -> Generator ()
 genProgram (DProgram mainId dProcs)
-  = do 
+  = do
       appendIns (ICall $ "proc_" ++ (show mainId))
       appendIns (IHalt)
       mapM_ genProc dProcs
@@ -124,8 +126,8 @@ genProc (DProc procId numOfParas dStmts dVarInfos slotSize)
       reg_float_0 <- getReg
       appendIns (IConstant $ ConsInt reg_int_0 0)
       appendIns (IConstant $ ConsFloat reg_float_0 0.0)
-      mapM_ (\(DVarInfo slotNum dShape dBaseType) -> 
-              do 
+      mapM_ (\(DVarInfo slotNum dShape dBaseType) ->
+              do
                 -- int and bool -> 0 (reg_int_0), float -> 0.0 (reg_float_0)
                 let reg_init = if dBaseType == DFloatType then reg_float_0 else reg_int_0
                 let endSlotNum = slotNum + ((getVarSizeByDShape dShape) - 1)
@@ -145,7 +147,7 @@ genProc (DProc procId numOfParas dStmts dVarInfos slotSize)
 sourcePosComment :: SourcePos -> Generator ()
 sourcePosComment sp
   = do
-    appendIns (IComment $ "line: " ++ (show $ sourceLine sp) ++ ", column: " ++ (show $ sourceLine sp) )
+    appendIns (IComment $ "line: " ++ (show $ sourceLine sp) ++ ", column: " ++ (show $ sourceLine sp))
 
 -- | generate the given statement
 genStmt :: DStmt -> Generator ()
@@ -193,7 +195,7 @@ genStmt (DCall sourcePos procId dCallParas)
         \x -> do
           -- get registers from 0 to (length dCallParas) - 1
           reg <- getReg
-          case x of 
+          case x of
             DCallParaVal dExpr -> evalExpr reg dExpr
             DCallParaRef dVar  -> getVarAddress reg dVar
           return ()) dCallParas
@@ -262,7 +264,7 @@ saveToVar tReg (DVar slotNum (DIdxVar False) _)
   = appendIns (IStatement $ Store slotNum tReg)
 -- array matrix or reference
 saveToVar tReg dVar
-  = do 
+  = do
       addrReg <- getReg
       getVarAddress addrReg dVar
       appendIns (IStatement $ Store_in addrReg tReg)
@@ -311,7 +313,7 @@ getVarAddress tReg (DVar slotNum (DIdxMat dExpr1 dExpr2 secDimSize) _)
       -- +
       evalExpr tmpReg dExpr2
       appendIns (IOperation $ Binary Add INT offsetReg offsetReg tmpReg)
-      -- 
+      --
       appendIns (IOperation $ Sub_off tReg tReg offsetReg)
       setNextUnusedReg offsetReg
 
@@ -347,13 +349,18 @@ evalExpr tReg (DBinaryOp binop e0 e1 dBaseType)
         then do
           l0 <- getLabel "bool_op_"
 
+          -- short circuit
           if binop == Op_and
             then do
               appendIns (IComment $ "logical operation AND")
+              -- if first expression in a AND operation is evaluated as false
+              -- jump to the end of the evaluation process
               appendIns (IBranch $ Cond False tReg l0)
               evalExpr r0 e1
               appendIns (IOperation $ And_ tReg tReg r0)
             else do
+              -- if first expression in a OR operation is evaluated as true
+              -- jump to the end of the evaluation process
               appendIns (IComment $ "logical operation OR")
               appendIns (IBranch $ Cond True tReg l0)
               evalExpr r0 e1
@@ -361,28 +368,29 @@ evalExpr tReg (DBinaryOp binop e0 e1 dBaseType)
 
           appendIns (ILabel $ l0)
         else do
+          -- other binary operations other than logical opeartion
           evalExpr r0 e1
-          if (getBaseType e1) == DFloatType
-            then appendIns (IOperation $ Binary (getOzBinaryOp binop) REAL tReg tReg r0)
-            else appendIns (IOperation $ Binary (getOzBinaryOp binop) INT tReg tReg r0)
+          appendIns (IOperation $ Binary (getOzBinaryOp binop)
+            (getIntOrReal $ getBaseType e1) tReg tReg r0)
 
       setNextUnusedReg r0
 
-evalExpr tReg (DUnaryMinus e0 DFloatType)
+evalExpr tReg (DUnaryMinus e0 dBaseType)
   = do
       evalExpr tReg e0
-      appendIns (IOperation $ Unary NEG REAL tReg tReg)
-
-evalExpr tReg (DUnaryMinus e0 DIntType)
-  = do
-      evalExpr tReg e0
-      appendIns (IOperation $ Unary NEG INT tReg tReg)
+      appendIns (IOperation $ Unary NEG (getIntOrReal dBaseType) tReg tReg)
 
 evalExpr tReg (DUnaryNot e0 _)
   = do
       evalExpr tReg e0
       appendIns (IOperation $ Not_ tReg tReg)
 
+-- | Get the register type based on the type
+getIntOrReal :: DBaseType -> RegType
+getIntOrReal DFloatType = REAL
+getIntOrReal _          = INT
+
+-- | convert int to float in Oz instruction
 genIntToFloat :: Int -> DExpr -> Generator ()
 genIntToFloat r e
   = do
