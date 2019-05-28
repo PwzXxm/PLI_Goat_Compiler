@@ -1,3 +1,5 @@
+-- | IR code generator: generate Oz instructions using Decorated AST
+
 module GoatCodeGenerator(runCodeGenerator) where
 
 import Control.Monad.State
@@ -12,14 +14,26 @@ data Gstate = Gstate
 
 type Generator a = State Gstate a
 
--- O(1) time complexity
--- Idea from https://kseo.github.io/posts/2017-01-21-writer-monad.html
+runCodeGenerator :: DGoatProgram -> [Instruction]
+runCodeGenerator dGoatProgram
+  = let state = Gstate { regCounter = 0, labelCounter = 0, instructions = Endo ([]<>) }
+        s = execState (genProgram dGoatProgram) state
+    in (appEndo (instructions s)) []
+
+----------------------------------------------
+-- State Helper
+----------------------------------------------
+
+-- | append a new instruction
+--   O(1) time complexity
+--   idea from https://kseo.github.io/posts/2017-01-21-writer-monad.html
 appendIns :: Instruction -> Generator ()
 appendIns x
   = do
       st <- get
       put st{instructions = (( (instructions st) <> (Endo ([x]<>))  )) }
 
+-- | get an unused register
 getReg :: Generator Int
 getReg
   = do
@@ -29,12 +43,16 @@ getReg
         then error "Register exceed 1023"
         else return (regCounter st)
 
+-- | return used register
+--   all registers that >= n will be returned
 setNextUnusedReg :: Int -> Generator ()
 setNextUnusedReg n
   = do
       st <- get
       put st{regCounter = n}
 
+
+-- | get an unused branch label
 getLabel :: String -> Generator String
 getLabel prefix
   = do
@@ -43,6 +61,44 @@ getLabel prefix
       return $ prefix ++ show (labelCounter st)
 ----------------------------------------------
 
+----------------------------------------------
+-- Other Helper
+----------------------------------------------
+
+-- | get the slot size of a variable
+getVarSizeByDShape :: DShape -> Int
+getVarSizeByDShape (DShapeVar _) = 1
+getVarSizeByDShape (DShapeArr a) = a
+getVarSizeByDShape (DShapeMat a b) = a * b
+
+-- | convert bool to int
+boolToInt :: Bool -> Int
+boolToInt True  = 1
+boolToInt False = 0
+
+getOzBinaryOp :: Binop -> BinaryOp
+getOzBinaryOp Op_add = Add
+getOzBinaryOp Op_sub = Sub
+getOzBinaryOp Op_mul = Mul
+getOzBinaryOp Op_div = Div
+getOzBinaryOp Op_eq = Eq
+getOzBinaryOp Op_ne = Ne
+getOzBinaryOp Op_lt = Lt
+getOzBinaryOp Op_le = Le
+getOzBinaryOp Op_gt = Gt
+getOzBinaryOp Op_ge = Ge
+
+isLogicalBinop :: Binop -> Bool
+isLogicalBinop Op_and = True
+isLogicalBinop Op_or = True
+isLogicalBinop _ = False
+
+----------------------------------------------
+
+----------------------------------------------
+-- Generator
+----------------------------------------------
+-- | generate goat program
 genProgram :: DGoatProgram -> Generator ()
 genProgram (DProgram mainId dProcs)
   = do 
@@ -50,11 +106,8 @@ genProgram (DProgram mainId dProcs)
       appendIns (IHalt)
       mapM_ genProc dProcs
 
-getVarSizeByDShape :: DShape -> Int
-getVarSizeByDShape (DShapeVar _) = 1
-getVarSizeByDShape (DShapeArr a) = a
-getVarSizeByDShape (DShapeMat a b) = a * b
 
+-- | generate the given procedure
 genProc :: DProc -> Generator ()
 genProc (DProc procId numOfParas dStmts dVarInfos slotSize)
   = do
@@ -73,6 +126,7 @@ genProc (DProc procId numOfParas dStmts dVarInfos slotSize)
       appendIns (IConstant $ ConsFloat reg_float_0 0.0)
       mapM_ (\(DVarInfo slotNum dShape dBaseType) -> 
               do 
+                -- int and bool -> 0 (reg_int_0), float -> 0.0 (reg_float_0)
                 let reg_init = if dBaseType == DFloatType then reg_float_0 else reg_int_0
                 let endSlotNum = slotNum + ((getVarSizeByDShape dShape) - 1)
                 mapM_ (\i -> appendIns (IStatement $ Store i reg_init)) [slotNum..endSlotNum]
@@ -87,12 +141,13 @@ genProc (DProc procId numOfParas dStmts dVarInfos slotSize)
       appendIns (IPopStack slotSize)
       appendIns (IReturn)
 
+-- | add a comment with the given sourcePos
 sourcePosComment :: SourcePos -> Generator ()
 sourcePosComment sp
   = do
     appendIns (IComment $ "line: " ++ (show $ sourceLine sp) ++ ", column: " ++ (show $ sourceLine sp) )
 
-
+-- | generate the given statement
 genStmt :: DStmt -> Generator ()
 genStmt (DAssign sourcePos dVar dExpr)
   = do
@@ -185,26 +240,27 @@ genStmt (DWhile sourcePos dExpr dStmts)
       appendIns (ILabel $ label_cond)
       appendIns (IComment $ "stmt: while")
 
+      -- guard
       reg0 <- getReg
       evalExpr reg0 dExpr
       appendIns (IBranch $ Cond False reg0 label_end)
       setNextUnusedReg reg0
 
+      -- while body
       appendIns (IComment $ "stmt: while_body")
       mapM_ genStmt dStmts
       appendIns (IBranch $ Uncond label_cond)
 
+      -- after while
       appendIns (ILabel $ label_end)
       appendIns (IComment $ "stmt: while_end")
 
-boolToInt :: Bool -> Int
-boolToInt True  = 1
-boolToInt False = 0
-
+-- save the value in the given register to a variable
 saveToVar :: Int -> DVar -> Generator ()
+-- normal scalar
 saveToVar tReg (DVar slotNum (DIdxVar False) _)
   = appendIns (IStatement $ Store slotNum tReg)
-
+-- array matrix or reference
 saveToVar tReg dVar
   = do 
       addrReg <- getReg
@@ -213,12 +269,27 @@ saveToVar tReg dVar
       setNextUnusedReg addrReg
 
 
+-- load value from a given variable
+loadFromVar :: Int -> DVar -> Generator()
+-- normal scalar
+loadFromVar tReg (DVar slotNum (DIdxVar False) _)
+  = appendIns (IStatement $ Load tReg slotNum)
+-- array matrix or reference
+loadFromVar tReg dVar
+  = do
+      r0 <- getReg
+      getVarAddress r0 dVar
+      appendIns (IStatement $ Load_in tReg r0)
+      setNextUnusedReg r0
+
+-- get the address of a given variable
 getVarAddress :: Int -> DVar -> Generator ()
+-- scalar
 getVarAddress tReg (DVar slotNum (DIdxVar isAddress) _)
   = do if isAddress
           then appendIns (IStatement $ Load tReg slotNum)
           else appendIns (IStatement $ Load_ad tReg slotNum)
--- 1d
+-- array
 getVarAddress tReg (DVar slotNum (DIdxArr dExpr) _)
   = do
       appendIns (IStatement $ Load_ad tReg slotNum)
@@ -226,7 +297,7 @@ getVarAddress tReg (DVar slotNum (DIdxArr dExpr) _)
       evalExpr offsetReg dExpr
       appendIns (IOperation $ Sub_off tReg tReg offsetReg)
       setNextUnusedReg offsetReg
--- 2d
+-- matrix
 getVarAddress tReg (DVar slotNum (DIdxMat dExpr1 dExpr2 secDimSize) _)
   = do
       appendIns (IStatement $ Load_ad tReg slotNum)
@@ -245,6 +316,7 @@ getVarAddress tReg (DVar slotNum (DIdxMat dExpr1 dExpr2 secDimSize) _)
       setNextUnusedReg offsetReg
 
 
+-- evaluate the given expression and save the result to a register
 evalExpr :: Int -> DExpr -> Generator ()
 evalExpr tReg (DBoolConst v)
   = appendIns (IConstant $ ConsInt tReg $ boolToInt v)
@@ -318,46 +390,4 @@ genIntToFloat r e
         then appendIns (IOperation $ Int2real r r)
       else return ()
 
-getOzBinaryOp :: Binop -> BinaryOp
-getOzBinaryOp Op_add = Add
-getOzBinaryOp Op_sub = Sub
-getOzBinaryOp Op_mul = Mul
-getOzBinaryOp Op_div = Div
-getOzBinaryOp Op_eq = Eq
-getOzBinaryOp Op_ne = Ne
-getOzBinaryOp Op_lt = Lt
-getOzBinaryOp Op_le = Le
-getOzBinaryOp Op_gt = Gt
-getOzBinaryOp Op_ge = Ge
-
-isLogicalBinop :: Binop -> Bool
-isLogicalBinop Op_and = True
-isLogicalBinop Op_or = True
-isLogicalBinop _ = False
-
-isRelationalBinop :: Binop -> Bool
-isRelationalBinop Op_eq = True
-isRelationalBinop Op_ne = True
-isRelationalBinop Op_lt = True
-isRelationalBinop Op_le = True
-isRelationalBinop Op_gt = True
-isRelationalBinop Op_ge = True
-isRelationalBinop _ = False
-
--- TODO: load
-loadFromVar :: Int -> DVar -> Generator()
-loadFromVar tReg (DVar slotNum (DIdxVar False) _)
-  = appendIns (IStatement $ Load tReg slotNum)
-
-loadFromVar tReg dVar
-  = do
-      r0 <- getReg
-      getVarAddress r0 dVar
-      appendIns (IStatement $ Load_in tReg r0)
-      setNextUnusedReg r0
-
-runCodeGenerator :: DGoatProgram -> [Instruction]
-runCodeGenerator dGoatProgram
-  = let state = Gstate { regCounter = 0, labelCounter = 0, instructions = Endo ([]<>) }
-        s = execState (genProgram dGoatProgram) state
-    in (appEndo (instructions s)) []
+----------------------------------------------
