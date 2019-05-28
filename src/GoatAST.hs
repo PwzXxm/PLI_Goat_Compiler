@@ -87,6 +87,7 @@ data GoatProgram
   = Program [Proc]
     deriving (Show, Eq)
 
+-- | get the sourcePos of a given Expr
 getExprSourcePos :: Expr -> SourcePos
 getExprSourcePos (BoolConst sourcePos _)   = sourcePos
 getExprSourcePos (IntConst sourcePos _)     = sourcePos
@@ -163,7 +164,7 @@ data DProc
     deriving (Show, Eq)
 
 data DGoatProgram
-  = DProgram ProcId [DProc]
+  = DProgram ProcId [DProc] -- ProcId -> the procId of the main procedure
     deriving (Show, Eq)
 
 data DProcProto
@@ -173,6 +174,7 @@ data DProcProtoPara
   = DProcProtoPara Indi DBaseType
     deriving (Show, Eq)
 
+-- | get the base type of a given DExpr
 getBaseType :: DExpr -> DBaseType
 getBaseType (DBoolConst bool)            = DBoolType
 getBaseType (DIntConst int)              = DIntType
