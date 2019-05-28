@@ -1,0 +1,15 @@
+proc main()
+int z;
+begin
+z := 3;
+call p(z,z);
+write z;
+write "\n";
+end
+
+proc p(val int x, val int y)
+begin
+x := 4;
+y := y + x;
+end
+

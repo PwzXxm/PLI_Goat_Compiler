@@ -1,0 +1,12 @@
+proc f(val int x)
+begin
+ x := x+1;
+end
+proc main()
+int a;
+begin
+call f(a);
+write a;
+write "\n";
+
+end

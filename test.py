@@ -116,7 +116,7 @@ def run_compiler_test_case(input_file: str) -> None:
             except TimeoutExpired:
                 printWarning()
                 print(file_name + " has no input file or it runs for too long")
-
+                return
 
         if prefix == 'r-':
             if oz_cp.returncode != 0:

@@ -1,0 +1,20 @@
+proc f(ref int x)
+begin
+x := x + 1;
+end
+proc main()
+int a;
+int ar[1];
+int arr[1,1];
+begin
+
+call f(a);
+write a;
+write "\n";
+call f(ar[0]);
+write ar[0];
+write "\n";
+call f(arr[0, 0]);
+write arr[0,0];
+write "\n";
+end

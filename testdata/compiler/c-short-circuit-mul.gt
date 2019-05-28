@@ -1,0 +1,9 @@
+proc main()
+begin
+if 1 >2 || 1 > 1 || 1 > 0 || 5/0 > 5 then
+    write 5;
+    else
+        write 2;
+        fi
+        write "\n";
+end

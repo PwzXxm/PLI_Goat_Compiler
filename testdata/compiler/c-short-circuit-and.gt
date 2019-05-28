@@ -1,0 +1,9 @@
+proc main()
+begin
+if 5 > 8 && 5 > 5/0 then
+    write 10;
+    else
+        write 5;
+        fi
+        write "\n";
+end
