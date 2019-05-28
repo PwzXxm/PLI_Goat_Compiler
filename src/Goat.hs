@@ -14,6 +14,7 @@ import GoatAnalyzer
 import GoatCodeGenerator
 import OzInstruction
 import GoatOptimizer
+import GoatAST
 
 import Data.Char
 import Text.Parsec
@@ -30,7 +31,10 @@ data Job
 
 -- | Execute lexer, parser ... in order and output the result based on job type
 execute :: Job -> String -> IO ()
-execute job source_file
+execute = executeParser
+
+executeParser :: Job -> String -> IO ()
+executeParser job source_file
   = do
       input <- readFile source_file
       -- add \n for fix comment
@@ -58,32 +62,38 @@ execute job source_file
                         return ()
                       else do
                         -- compile
-                        let semanticResult = runSemanticCheck tree
-                        case semanticResult of
-                          Right decoratedAST ->
-                            do
-                              if job == JobDAST
-                                then do
-                                  putStrLn (show decoratedAST)
-                                  return ()
-                                else do
-                                  let ins = runCodeGenerator decoratedAST
-                                  let fins = case job of
-                                              JobRawIns  -> ins
-                                              JobIns     -> runOptimizer ins
-                                              JobTrimIns -> removeComments $ runOptimizer ins
-                                  mapM_ putStrLn (map instructionFormatter fins)
-                                  return ()
-                          Left err ->
-                            do
-                              putStrLn (show err)
-                              exitWith (ExitFailure 3)
-                        return ()
+                        executeCompiler job tree
             Left err ->
               do
                 putStr "Syntax error: "
                 putStrLn (show err)
                 exitWith (ExitFailure 2)
+
+
+executeCompiler :: Job -> GoatProgram -> IO ()
+executeCompiler job astTree
+  = do
+      let semanticResult = runSemanticCheck astTree
+      case semanticResult of
+        Right decoratedAST ->
+          do
+            if job == JobDAST
+              then do
+                putStrLn (show decoratedAST)
+                return ()
+              else do
+                let ins = runCodeGenerator decoratedAST
+                let fins = case job of
+                            JobRawIns  -> ins
+                            JobIns     -> runOptimizer ins
+                            JobTrimIns -> removeComments $ runOptimizer ins
+                mapM_ putStrLn (map instructionFormatter fins)
+                return ()
+        Left err ->
+          do
+            putStrLn (show err)
+            exitWith (ExitFailure 3)
+      return ()
 
 -- | Main function that handles the execution arguments
 main :: IO ()
