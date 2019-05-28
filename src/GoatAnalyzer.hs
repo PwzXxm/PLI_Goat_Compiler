@@ -178,7 +178,6 @@ checkProc (Proc sourcePos ident paras decls stmts)
 checkStat :: Stmt -> Analyzer DStmt
 checkStat (Assign _ (Var sourcePos ident idx) expr)
   = do
-    -- TODO: check type
       (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
       dExpr <- checkExpr expr
       dIdx <- checkShapeAndIdx shape idx sourcePos
@@ -191,14 +190,15 @@ checkStat (Assign _ (Var sourcePos ident idx) expr)
       
 checkStat (Read _ (Var sourcePos ident idx))
   = do
-    -- TODO: check type
       (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
       dIdx <- checkShapeAndIdx shape idx sourcePos
       return $ DRead sourcePos (DVar slotNum dIdx dBaseType)
+
 checkStat (Write sourcePos expr)
   = do
       dExpr <- checkExpr expr
       return $ DWrite sourcePos dExpr
+
 checkStat (Call sourcePos ident exprs)
   = do
       (DProcProto procId paras) <- getProcProto ident sourcePos
@@ -207,17 +207,25 @@ checkStat (Call sourcePos ident exprs)
         else do
           dCallParas <- mapM checkProcAndExpr (zip paras exprs)
           return $ DCall sourcePos procId dCallParas
+
 checkStat (If sourcePos expr stmts1 stmts2)
   = do
       dExpr <- checkExpr expr
-      dStmts1 <- mapM checkStat stmts1
-      dStmts2 <- mapM checkStat stmts2
-      return $ DIf sourcePos dExpr dStmts1 dStmts2
+      if (getBaseType dExpr) /= DBoolType
+        then throwSemanticErr sourcePos ("TODO:")
+        else do
+          dStmts1 <- mapM checkStat stmts1
+          dStmts2 <- mapM checkStat stmts2
+          return $ DIf sourcePos dExpr dStmts1 dStmts2
+
 checkStat (While sourcePos expr stmts)
   = do
       dExpr <- checkExpr expr
-      dStmts <- mapM checkStat stmts
-      return $ DWhile sourcePos dExpr dStmts
+      if (getBaseType dExpr) /= DBoolType
+        then throwSemanticErr sourcePos ("TODO:")
+        else do
+          dStmts <- mapM checkStat stmts
+          return $ DWhile sourcePos dExpr dStmts
 
 checkExpr :: Expr -> Analyzer DExpr
 checkExpr (BoolConst _ bool)
@@ -243,14 +251,18 @@ checkExpr (BinaryOp sourcePos binop expr1 expr2)
       dExpr2 <- checkExpr expr2
       (dBaseType, dExpr1, dExpr2) <- checkBaseType dExpr1 dExpr2 binop sourcePos
       return $ DBinaryOp binop dExpr1 dExpr2 dBaseType
-checkExpr (UnaryMinus _ expr)
+checkExpr (UnaryMinus sourcePos expr)
   = do
       dExpr <- checkExpr expr
-      return $ DUnaryMinus dExpr (getBaseType dExpr)
-checkExpr (UnaryNot _ expr)
+      if (getBaseType dExpr) == DIntType || (getBaseType dExpr) == DFloatType
+        then return $ DUnaryMinus dExpr (getBaseType dExpr)
+        else throwSemanticErr sourcePos ("The operand of unary minus must be of type int or float")
+checkExpr (UnaryNot sourcePos expr)
   = do
       dExpr <- checkExpr expr
-      return $ DUnaryNot dExpr (getBaseType dExpr)
+      if (getBaseType dExpr) == DBoolType
+        then return $ DUnaryNot dExpr (getBaseType dExpr)
+        else throwSemanticErr sourcePos ("The operand of unary not must be of type boolean")
 
 checkBaseType :: DExpr -> DExpr -> Binop -> SourcePos -> Analyzer (DBaseType,DExpr,DExpr)
 checkBaseType e1 e2 binop sourcePos
@@ -272,13 +284,7 @@ checkBaseType e1 e2 binop sourcePos
           else
             if (getBaseType e1) == (getBaseType e1)
               then return (DBoolType, e1, e2)
-              else
-                if (getBaseType e1) == DFloatType && (getBaseType e2) == DIntType
-                  then return (DBoolType, e1, (DIntToFloat e2))
-                  else
-                    if (getBaseType e1) == DIntType && (getBaseType e2) == DFloatType
-                      then return (DBoolType, (DIntToFloat e1), e2)
-                      else throwSemanticErr sourcePos ("The two operands of = and != must be same type")
+              else throwSemanticErr sourcePos ("The two operands of = and != must be same type")
   | binop == Op_lt || binop == Op_le || binop == Op_gt || binop == Op_ge
     = do
         if (getBaseType e1) == DStringType || (getBaseType e2) == DStringType
@@ -334,9 +340,9 @@ checkProcAndExpr ((DProcProtoPara InRef dBaseType1), expr)
 
         if dBaseType1 == dBaseType2
           then return $ DCallParaRef (DVar slotNum dIdx dBaseType2)
-          else throwSemanticErr sourcePos ("Types not match, expected type: " ++ (show dBaseType1) ++ "\nactual type: " ++ (show dBaseType2))
+          else throwSemanticErr sourcePos ("Types are not match, expected type: " ++ (show dBaseType1) ++ "\nactual type: " ++ (show dBaseType2))
       _ -> 
-        throwSemanticErr (getExprSourcePos expr) ("Reference here")
+        throwSemanticErr (getExprSourcePos expr) ("Expected Reference varible here")
 checkProcAndExpr ((DProcProtoPara InVal dBaseType), expr)
   = do
       dExpr <- checkExpr expr
@@ -345,7 +351,7 @@ checkProcAndExpr ((DProcProtoPara InVal dBaseType), expr)
         else 
           if dBaseType == DFloatType && (getBaseType dExpr) == DIntType
             then return $ DCallParaVal (DIntToFloat dExpr)
-            else throwSemanticErr (getExprSourcePos expr) ("Types not match")
+            else throwSemanticErr (getExprSourcePos expr) ("Types are not match")
 
 
 getDShape :: Shape -> Indi -> DShape
