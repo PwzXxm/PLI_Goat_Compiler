@@ -1,4 +1,4 @@
--- | Pretty printing for parser checking
+-- | The formatter (printer) for Abstract Syntax Tree
 --
 -- Authors:
 --   Weizhi Xu  (752454)

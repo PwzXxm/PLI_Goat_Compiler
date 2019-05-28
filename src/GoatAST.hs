@@ -1,4 +1,4 @@
--- | Data structure for the Abstract Syntax Tree
+-- | Data structure for the (Decorated) Abstract Syntax Tree
 --
 -- Authors:
 --   Weizhi Xu  (752454)

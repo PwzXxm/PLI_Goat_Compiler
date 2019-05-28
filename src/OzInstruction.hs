@@ -1,4 +1,4 @@
--- | Main module of this code generater
+-- | Data structure for Oz instructions
 --
 -- Authors:
 --   Weizhi Xu  (752454)
