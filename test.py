@@ -76,11 +76,22 @@ def run_compiler_test_case(input_file: str) -> None:
         print("Invalid command line arguments")
         exit(1)
     
-    if cp.returncode == 2 and prefix == 'w-':
-        return
+    if prefix == 'w-':
+        if cp.returncode == 2:
+            return
+        else:
+            printError()
+            print("Expected to be syntax error with exit code 2")
+            exit(1)
     
-    if cp.returncode == 3 and prefix == 's-':
-        return
+    if prefix == 's-':
+        if cp.returncode == 3:
+            return
+        else:
+            printError()
+            print("Expected to be semantic error with exit code 3")
+            exit(1)
+
     
     if cp.returncode == 0:
         is_stdin_exist = os.path.isfile(stdin_path)
@@ -97,8 +108,15 @@ def run_compiler_test_case(input_file: str) -> None:
                 print(filename + " has no input file or it runs for too long")
 
         
-        if oz_cp.returncode != 0 and prefix == 'r-':
-            return
+        if prefix == 'r-':
+            if oz_cp.returncode != 0:
+                return
+            else:
+                printError()
+                print("File: " + file_name)
+                print("Expected to be a run-time error. However having output:")
+                print((oz_cp.stdout).decode("utf-8"))
+                exit(1)
 
         if oz_cp.returncode == 0:
             if test_single:
