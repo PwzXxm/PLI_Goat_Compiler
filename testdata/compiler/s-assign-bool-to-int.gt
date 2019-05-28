@@ -1,0 +1,6 @@
+proc main()
+bool a;
+int b;
+begin
+b:=a;
+end

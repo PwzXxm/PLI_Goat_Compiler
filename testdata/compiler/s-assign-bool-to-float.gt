@@ -1,0 +1,6 @@
+proc main()
+float f;
+bool b;
+begin
+b := f;
+end

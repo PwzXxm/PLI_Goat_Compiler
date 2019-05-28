@@ -1,0 +1,9 @@
+proc f(val int x)
+begin
+x := 1;
+end
+proc main()
+bool b;
+begin
+call f(b);
+end

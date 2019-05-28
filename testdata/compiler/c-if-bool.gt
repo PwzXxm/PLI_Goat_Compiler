@@ -1,0 +1,12 @@
+proc main()
+int a;
+begin
+a := 0;
+if a >= 0 then
+    write -a;
+else
+    write 10;
+fi
+
+write "\n";
+end

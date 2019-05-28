@@ -1,0 +1,10 @@
+
+proc f(val int x)
+begin
+x := 1;
+end
+proc main()
+float a;
+begin
+call f(a);
+end

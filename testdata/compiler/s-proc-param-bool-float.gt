@@ -1,0 +1,9 @@
+proc f(val float a)
+begin
+a := true;
+end
+proc main()
+bool b;
+begin
+call f(b);
+end

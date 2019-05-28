@@ -1,0 +1,7 @@
+proc main()
+int a;
+begin
+while a do
+    write a;
+    od
+end

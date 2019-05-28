@@ -1,0 +1,10 @@
+proc main()
+float f;
+begin
+if f then
+    write f;
+    else
+        write f;
+        fi
+
+end

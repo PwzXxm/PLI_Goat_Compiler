@@ -1,0 +1,6 @@
+proc main()
+float a;
+bool b;
+begin
+write  a < b;
+end

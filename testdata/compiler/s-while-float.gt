@@ -1,0 +1,7 @@
+proc main()
+float a;
+begin
+while a do
+    write a;
+    od
+end

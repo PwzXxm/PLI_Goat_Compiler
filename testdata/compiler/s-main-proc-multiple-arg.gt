@@ -1,0 +1,4 @@
+proc main(val int x)
+begin
+write x;
+end

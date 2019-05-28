@@ -1,0 +1,9 @@
+proc main()
+int a;
+begin
+if a then
+    write a;
+    else write -1;
+    write "\n";
+    fi
+end

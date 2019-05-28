@@ -1,0 +1,7 @@
+proc main()
+bool b;
+begin
+while b do
+    write b;
+od
+end
