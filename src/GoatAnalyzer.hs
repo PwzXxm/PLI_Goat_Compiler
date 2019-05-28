@@ -1,4 +1,4 @@
--- | Semantic analyzer: check and add info to Decorated AST
+-- | Semantic analyzer: check and convert an AST info to Decorated AST
 --
 -- Authors:
 --   Weizhi Xu  (752454)
