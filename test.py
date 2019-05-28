@@ -161,6 +161,8 @@ def run_compiler_test_case(input_file: str) -> None:
 
         printError()
         print(file_name + ": running Oz emulator failure")
+        with open(goat_output_path, 'r') as f:
+            print(f.read())
         exit(1)
 
     printError()

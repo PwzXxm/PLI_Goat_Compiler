@@ -5,7 +5,7 @@
 --   Zijun Chen (813190)
 --   Zhe Tang   (743398)
 
-module GoatAnalyzer where
+module GoatAnalyzer(runSemanticCheck) where
 
 import GoatAST
 import Data.Map (Map)

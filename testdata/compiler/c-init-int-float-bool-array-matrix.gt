@@ -1,0 +1,60 @@
+proc main()
+int a;
+int ar[2];
+int arr[2, 2];
+
+float f;
+float fr[2];
+float frr[2, 2];
+
+bool b;
+bool br[2];
+bool brr[2, 2];
+
+begin
+
+write a;
+write "\n";
+write ar[0];
+write "\n";
+write ar[1];
+write "\n";
+write arr[0, 0];
+write "\n";
+write arr[0, 1];
+write "\n";
+write arr[1, 0];
+write "\n";
+write arr[1, 1];
+write "\n";
+
+write f;
+write "\n";
+write fr[0];
+write "\n";
+write fr[1];
+write "\n";
+write frr[0, 0];
+write "\n";
+write frr[0, 1];
+write "\n";
+write frr[1, 0];
+write "\n";
+write frr[1, 1];
+write "\n";
+
+write b;
+write "\n";
+write br[0];
+write "\n";
+write br[1];
+write "\n";
+write brr[0, 0];
+write "\n";
+write brr[0, 1];
+write "\n";
+write brr[1, 0];
+write "\n";
+write brr[1, 1];
+write "\n";
+end

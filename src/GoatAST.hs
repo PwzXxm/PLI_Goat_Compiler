@@ -87,6 +87,16 @@ data GoatProgram
   = Program [Proc]
     deriving (Show, Eq)
 
+-- | get the sourcePos of a given Expr
+getExprSourcePos :: Expr -> SourcePos
+getExprSourcePos (BoolConst sourcePos _)   = sourcePos
+getExprSourcePos (IntConst sourcePos _)     = sourcePos
+getExprSourcePos (FloatConst sourcePos _)   = sourcePos
+getExprSourcePos (StrConst sourcePos _)     = sourcePos
+getExprSourcePos (Evar sourcePos _)         = sourcePos
+getExprSourcePos (UnaryMinus sourcePos _)   = sourcePos
+getExprSourcePos (UnaryNot sourcePos _)     = sourcePos
+getExprSourcePos (BinaryOp sourcePos _ _ _) = sourcePos
 
 --------------------------------------------------
 --  Decorated Asbtract Syntax Tree
@@ -154,7 +164,7 @@ data DProc
     deriving (Show, Eq)
 
 data DGoatProgram
-  = DProgram ProcId [DProc]
+  = DProgram ProcId [DProc] -- ProcId -> the procId of the main procedure
     deriving (Show, Eq)
 
 data DProcProto
@@ -164,6 +174,7 @@ data DProcProtoPara
   = DProcProtoPara Indi DBaseType
     deriving (Show, Eq)
 
+-- | get the base type of a given DExpr
 getBaseType :: DExpr -> DBaseType
 getBaseType (DBoolConst bool)            = DBoolType
 getBaseType (DIntConst int)              = DIntType
@@ -174,13 +185,3 @@ getBaseType (DBinaryOp _ _ _ dBaseType)  = dBaseType
 getBaseType (DUnaryMinus _ dBaseType)    = dBaseType
 getBaseType (DUnaryNot _ dBaseType)      = dBaseType
 getBaseType (DIntToFloat dExpr) = DFloatType
-
-getExprSourcePos :: Expr -> SourcePos
-getExprSourcePos (BoolConst sourcePos _)   = sourcePos
-getExprSourcePos (IntConst sourcePos _)     = sourcePos
-getExprSourcePos (FloatConst sourcePos _)   = sourcePos
-getExprSourcePos (StrConst sourcePos _)     = sourcePos
-getExprSourcePos (Evar sourcePos _)         = sourcePos
-getExprSourcePos (UnaryMinus sourcePos _)   = sourcePos
-getExprSourcePos (UnaryNot sourcePos _)     = sourcePos
-getExprSourcePos (BinaryOp sourcePos _ _ _) = sourcePos
