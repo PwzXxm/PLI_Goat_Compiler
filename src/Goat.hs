@@ -27,10 +27,48 @@ data Job
   = JobToken | JobAST | JobPrettier | JobDAST | JobRawIns | JobIns | JobTrimIns
   deriving (Eq)
 
+-- | Main function that handles the execution arguments
+main :: IO ()
+main
+  = do
+      progname <- getProgName
+      args <- getArgs
+
+      let usageMsg = "usage: " ++ progname ++ " [-st | -sa | -sd | -p | -d | -r | -h] file"
+
+      case args of
+
+        ["-st", source_file] -> execute JobToken source_file
+        ["-sa", source_file] -> execute JobAST source_file
+        ["-sd", source_file] -> execute JobDAST source_file
+        ["-p",  source_file] -> execute JobPrettier source_file
+        ["-d",  source_file] -> execute JobRawIns source_file
+        ["-r",  source_file] -> execute JobTrimIns source_file
+        ["-h"] ->
+          do
+            putStrLn usageMsg
+            putStrLn ("Options and arguments:")
+            putStrLn ("-st    : display secret tokens")
+            putStrLn ("-sa    : display secret Abstract Syntax Tree")
+            putStrLn ("-sd    : display secret Decorated Abstract Syntax Tree")
+            putStrLn ("-p     : pretty print the source file")
+            putStrLn ("-d     : debug build (no optimization)")
+            putStrLn ("-r     : release build (full optimization and remove comments)")
+            putStrLn ("-h     : display the help menu")
+            putStrLn ("file   : the file to be processed")
+            putStrLn ("")
+            putStrLn ("default build (full optimization and keep comments)")
+        [source_file] -> execute JobIns source_file
+        _ ->
+          do
+            putStrLn usageMsg
+            exitWith (ExitFailure 1)
+
 -- | Execute lexer, parser ... in order and output the result based on job type
 execute :: Job -> String -> IO ()
 execute = executeParser
 
+-- | Helper for execute, handles JobToken, JobAST, JobPrettier
 executeParser :: Job -> String -> IO ()
 executeParser job source_file
   = do
@@ -68,6 +106,7 @@ executeParser job source_file
                 exitWith (ExitFailure 2)
 
 
+-- | Helper for execute, handles JobDAST, JobRawIns, JobIns, JobTrimIns
 executeCompiler :: Job -> GoatProgram -> IO ()
 executeCompiler job astTree
   = do
@@ -92,40 +131,3 @@ executeCompiler job astTree
             putStrLn (show err)
             exitWith (ExitFailure 3)
       return ()
-
--- | Main function that handles the execution arguments
-main :: IO ()
-main
-  = do
-      progname <- getProgName
-      args <- getArgs
-
-      let usageMsg = "usage: " ++ progname ++ " [-st | -sa | -sd | -p | -d | -r | -h] file"
-
-      case args of
-
-        ["-st", source_file] -> execute JobToken source_file
-        ["-sa", source_file] -> execute JobAST source_file
-        ["-sd", source_file] -> execute JobDAST source_file
-        ["-p",  source_file] -> execute JobPrettier source_file
-        ["-d",  source_file] -> execute JobRawIns source_file
-        ["-r",  source_file] -> execute JobTrimIns source_file
-        ["-h"] ->
-          do
-            putStrLn usageMsg
-            putStrLn ("Options and arguments:")
-            putStrLn ("-st    : display secret tokens")
-            putStrLn ("-sa    : display secret Abstract Syntax Tree")
-            putStrLn ("-sd    : display secret Decorated Abstract Syntax Tree")
-            putStrLn ("-p     : pretty print the source file")
-            putStrLn ("-d     : debug build (no optimization)")
-            putStrLn ("-r     : release build (full optimization and remove comments)")
-            putStrLn ("-h     : display the help menu")
-            putStrLn ("file   : the file to be processed")
-            putStrLn ("")
-            putStrLn ("default build (full optimization and keep comments)")
-        [source_file] -> execute JobIns source_file
-        _ ->
-          do
-            putStrLn usageMsg
-            exitWith (ExitFailure 1)
