@@ -270,8 +270,29 @@ evalExpr tReg (DBinaryOp binop e0 e1 dBaseType)
   = do
       r0 <- getReg
       evalExpr tReg e0
-      evalExpr r0 e1
-      genBinop binop tReg r0 (getBaseType e0)
+      if isLogicalBinop binop == True
+        then do
+          l0 <- getLabel "bool_op_"
+
+          if binop == Op_and
+            then do
+              appendIns (IComment $ "logical operation AND")
+              appendIns (IBranch $ Cond False tReg l0)
+              appendIns (IOperation $ And_ tReg tReg r0)
+            else do
+              appendIns (IComment $ "logical operation OR")
+              appendIns (IBranch $ Cond True tReg l0)
+              appendIns (IOperation $ Or_ tReg tReg r0)
+
+          evalExpr r0 e1
+
+          appendIns (ILabel $ l0)
+        else do
+          evalExpr r0 e1
+          if dBaseType == DFloatType
+            then appendIns (IOperation $ Binary (getOzBinaryOp binop) REAL tReg tReg r0)
+            else appendIns (IOperation $ Binary (getOzBinaryOp binop) INT tReg tReg r0)
+
       setNextUnusedReg r0
 
 evalExpr tReg (DUnaryMinus e0 DFloatType)
@@ -295,30 +316,6 @@ genIntToFloat r e
       if (getBaseType e) == DIntType
         then appendIns (IOperation $ Int2real r r)
       else return ()
-
--- TODO: Binary op
-genBinop :: Binop -> Int -> Int -> DBaseType -> Generator()
-genBinop binop r0 r1 dBaseType
-  | isLogicalBinop binop
-    = do
-        l0 <- getLabel "bool_op_"
-
-        if binop == Op_and
-          then do
-            appendIns (IComment $ "logical operation AND")
-            appendIns (IBranch $ Cond False r0 l0)
-            appendIns (IOperation $ And_ r0 r0 r1)
-          else do
-            appendIns (IComment $ "logical operation OR")
-            appendIns (IBranch $ Cond True r0 l0)
-            appendIns (IOperation $ Or_ r0 r0 r1)
-
-        appendIns (ILabel $ l0)
-
-  | otherwise
-    = if dBaseType == DFloatType
-        then appendIns (IOperation $ Binary (getOzBinaryOp binop) REAL r0 r0 r1)
-        else appendIns (IOperation $ Binary (getOzBinaryOp binop) INT r0 r0 r1)
 
 getOzBinaryOp :: Binop -> BinaryOp
 getOzBinaryOp Op_add = Add
