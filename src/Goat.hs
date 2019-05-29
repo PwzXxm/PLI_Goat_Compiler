@@ -16,7 +16,6 @@ import           GoatFormatter
 import           GoatLexer
 import           GoatOptimizer
 import           GoatParser
-import           OzInstruction
 import           OzInstructionFormatter
 
 import           System.Environment
