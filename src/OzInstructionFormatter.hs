@@ -7,11 +7,11 @@
 
 module OzInstructionFormatter(instructionFormatter) where
 
-import OzInstruction
+import           OzInstruction
 
 -- | Print one instruction
 instructionFormatter :: Instruction -> String
-instructionFormatter x 
+instructionFormatter x
   = case x of
     -- indentation
     (IComment _) -> "  " ++ instructionFormatter_ x
@@ -90,7 +90,7 @@ unaryOpFormatter NEG = "neg"
 
 -- | Print the register type
 typeFormatter :: RegType -> String
-typeFormatter INT = "int"
+typeFormatter INT  = "int"
 typeFormatter REAL = "real"
 
 -- | Print one statement
@@ -113,7 +113,7 @@ lshow l = "label_" ++ l
 debugFormatter :: Debug -> String
 debugFormatter (DebugReg r)  = "debug_reg " ++ (rshow r)
 debugFormatter (DebugSlot i) = "debug_slot " ++ (show i)
-debugFormatter DebugStack = "debug_stack"
+debugFormatter DebugStack    = "debug_stack"
 
 -- | Print the branch
 branchFormatter :: Branch -> String

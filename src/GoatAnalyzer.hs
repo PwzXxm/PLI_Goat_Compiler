@@ -7,17 +7,17 @@
 
 module GoatAnalyzer(runSemanticCheck) where
 
-import GoatAST
-import Data.Map (Map)
-import qualified Data.Map as M
-import Control.Monad.State
-import Control.Monad.Except
-import Text.Parsec.Pos
+import           Control.Monad.Except
+import           Control.Monad.State
+import           Data.Map             (Map)
+import qualified Data.Map             as M
+import           GoatAST
+import           Text.Parsec.Pos
 
 -- | State to store information of each procedure
 data Astate = Astate
-  { procs :: M.Map String DProcProto
-  , varibles :: M.Map String DVarInfo
+  { procs       :: M.Map String DProcProto
+  , varibles    :: M.Map String DVarInfo
   , slotCounter :: Int
   , procCounter :: Int
   }
@@ -123,7 +123,7 @@ runSemanticCheck tree
           }
       r <- evalStateT (semanticCheckDGoatProgram tree) state
       return r
-      
+
 
 -----------------------------------
 
@@ -141,8 +141,8 @@ semanticCheckDGoatProgram (Program procs)
 -- | Load all procedure's prototype and check for duplicate identity
 loadProcProto :: [Proc] -> Analyzer ()
 loadProcProto procs
-    = mapM_ (\(Proc sourcePos ident paras _ _) -> 
-        do 
+    = mapM_ (\(Proc sourcePos ident paras _ _) ->
+        do
           -- do not check the parameter for now
           -- will be checked when analysing the procedure
           let dParas = map (\(Para _ _ baseType indi) -> (DProcProtoPara indi (convType baseType))) paras
@@ -168,13 +168,13 @@ checkProc (Proc sourcePos ident paras decls stmts)
       if ident == "main" && length paras > 0
         then throwSemanticErr sourcePos ("Main procedure can not have parameter")
         else do
-          mapM_ (\(Para sourcePos ident baseType indi) -> 
+          mapM_ (\(Para sourcePos ident baseType indi) ->
             do
               sc <- getSlotCounter 1
               putVar ident (DVarInfo sc (getDShape ShapeVar indi) (convType baseType)) sourcePos
             ) paras
           -- declarations
-          dVarInfos <- mapM (\(Decl sourcePos ident baseType shape) -> 
+          dVarInfos <- mapM (\(Decl sourcePos ident baseType shape) ->
             do
               sc <- getSlotCounter (getVarSizeByShape shape)
               let dVarInfo = (DVarInfo sc (getDShape shape InVal) (convType baseType))
@@ -199,10 +199,11 @@ checkStat (Assign _ (Var sourcePos ident idx) expr)
       if dBaseType == (getBaseType dExpr)
         then return $ DAssign sourcePos (DVar slotNum dIdx dBaseType) dExpr
         else
+          -- allow Float variable to be assigned by Int expression/const
           if dBaseType == DFloatType && (getBaseType dExpr) == DIntType
             then return $ DAssign sourcePos (DVar slotNum dIdx dBaseType) (DIntToFloat dExpr)
             else throwSemanticErr sourcePos ("Two sides of the expression have different types")
-      
+
 checkStat (Read _ (Var sourcePos ident idx))
   = do
       (DVarInfo slotNum shape dBaseType) <- getVarInfo ident sourcePos
@@ -217,9 +218,12 @@ checkStat (Write sourcePos expr)
 checkStat (Call sourcePos ident exprs)
   = do
       (DProcProto procId paras) <- getProcProto ident sourcePos
+      -- check the number of arguments in a procedure call matches
+      -- with the number of parameters in a procdefure defination
       if (length exprs) /= (length paras)
         then throwSemanticErr sourcePos ("The function " ++ ident ++ " need " ++ (show (length paras)) ++ " parameter, but input have " ++ (show (length exprs)))
         else do
+          -- check if types are matched
           dCallParas <- mapM checkProcAndExpr (zip paras exprs)
           return $ DCall sourcePos procId dCallParas
 
@@ -227,7 +231,7 @@ checkStat (If sourcePos expr stmts1 stmts2)
   = do
       dExpr <- checkExpr expr
       if (getBaseType dExpr) /= DBoolType
-        then throwSemanticErr sourcePos ("TODO:")
+        then throwSemanticErr sourcePos ("A boolean constant/expression is needed as a condition")
         else do
           dStmts1 <- mapM checkStat stmts1
           dStmts2 <- mapM checkStat stmts2
@@ -237,7 +241,7 @@ checkStat (While sourcePos expr stmts)
   = do
       dExpr <- checkExpr expr
       if (getBaseType dExpr) /= DBoolType
-        then throwSemanticErr sourcePos ("TODO:")
+        then throwSemanticErr sourcePos ("A boolean constant/expression is needed as a condition")
         else do
           dStmts <- mapM checkStat stmts
           return $ DWhile sourcePos dExpr dStmts
@@ -309,10 +313,10 @@ checkBaseType e1 e2 binop sourcePos
           else
             if (getBaseType e1) == (getBaseType e2)
               then return (DBoolType, e1, e2)
-              else 
+              else
                 if (getBaseType e1) == DBoolType || (getBaseType e2) == DBoolType
                   then throwSemanticErr sourcePos ("Cannot campare a Boolean type and a numeric type")
-                  else 
+                  else
                     if (getBaseType e1) == DFloatType
                       then return (DBoolType, e1, (DIntToFloat e2))
                       else return (DBoolType, (DIntToFloat e1), e2)
@@ -352,32 +356,32 @@ checkProcAndExpr :: (DProcProtoPara,Expr) -> Analyzer DCallPara
 checkProcAndExpr ((DProcProtoPara InRef dBaseType1), expr)
   = case expr of
       (Evar sourcePos _) -> do
-        dExpr <- checkExpr expr 
+        dExpr <- checkExpr expr
         let (DEvar (DVar slotNum dIdx dBaseType2)) = dExpr
 
         if dBaseType1 == dBaseType2
           then return $ DCallParaRef (DVar slotNum dIdx dBaseType2)
           else throwSemanticErr sourcePos ("Types are not match, expected type: " ++ (show dBaseType1) ++ "\nactual type: " ++ (show dBaseType2))
-      _ -> 
+      _ ->
         throwSemanticErr (getExprSourcePos expr) ("Expected Reference varible here")
 checkProcAndExpr ((DProcProtoPara InVal dBaseType), expr)
   = do
       dExpr <- checkExpr expr
       if dBaseType == (getBaseType dExpr)
         then return $ DCallParaVal dExpr
-        else 
+        else
           if dBaseType == DFloatType && (getBaseType dExpr) == DIntType
             then return $ DCallParaVal (DIntToFloat dExpr)
             else throwSemanticErr (getExprSourcePos expr) ("Types are not match")
 
 
 getDShape :: Shape -> Indi -> DShape
-getDShape ShapeVar InVal = DShapeVar False
-getDShape ShapeVar InRef = DShapeVar True
-getDShape (ShapeArr i) _ = DShapeArr i
+getDShape ShapeVar InVal     = DShapeVar False
+getDShape ShapeVar InRef     = DShapeVar True
+getDShape (ShapeArr i) _     = DShapeArr i
 getDShape (ShapeMat i1 i2) _ = DShapeMat i1 i2
 
 getVarSizeByShape :: Shape -> Int
-getVarSizeByShape (ShapeVar) = 1
-getVarSizeByShape (ShapeArr a) = a
+getVarSizeByShape (ShapeVar)     = 1
+getVarSizeByShape (ShapeArr a)   = a
 getVarSizeByShape (ShapeMat a b) = a * b
