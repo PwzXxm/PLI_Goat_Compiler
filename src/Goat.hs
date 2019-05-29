@@ -21,6 +21,7 @@ import           OzInstructionFormatter
 
 import           System.Environment
 import           System.Exit
+import           System.IO
 
 -- | Job type
 data Job
@@ -61,7 +62,7 @@ main
         [source_file] -> execute JobIns source_file
         _ ->
           do
-            putStrLn usageMsg
+            hPutStrLn stderr usageMsg
             exitWith (ExitFailure 1)
 
 -- | Execute lexer, parser ... in order and output the result based on job type
@@ -101,8 +102,8 @@ executeParser job source_file
                         executeCompiler job tree
             Left err ->
               do
-                putStr "Syntax error: "
-                putStrLn (show err)
+                hPutStr stderr "Syntax error: "
+                hPutStrLn stderr (show err)
                 exitWith (ExitFailure 2)
 
 
@@ -128,6 +129,6 @@ executeCompiler job astTree
                 return ()
         Left err ->
           do
-            putStrLn (show err)
+            hPutStrLn stderr (show err)
             exitWith (ExitFailure 3)
       return ()
