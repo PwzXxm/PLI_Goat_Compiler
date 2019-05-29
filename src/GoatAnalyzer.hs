@@ -137,7 +137,6 @@ semanticCheckDGoatProgram (Program procs)
       return $ DProgram mainId dProcs
 
 
-
 -- | Load all procedure's prototype and check for duplicate identity
 loadProcProto :: [Proc] -> Analyzer ()
 loadProcProto procs
@@ -156,6 +155,7 @@ convType :: BaseType -> DBaseType
 convType BoolType  = DBoolType
 convType IntType   = DIntType
 convType FloatType = DFloatType
+
 
 -- | Apply semantic checking on one procedure
 checkProc :: Proc -> Analyzer DProc
@@ -188,6 +188,7 @@ checkProc (Proc sourcePos ident paras decls stmts)
           dStmts <- mapM checkStat stmts
 
           return (DProc pid (length paras) dStmts dVarInfos totalSize)
+
 
 -- | Applyt semantic checking on one statement
 checkStat :: Stmt -> Analyzer DStmt
@@ -246,6 +247,7 @@ checkStat (While sourcePos expr stmts)
           dStmts <- mapM checkStat stmts
           return $ DWhile sourcePos dExpr dStmts
 
+
 -- | Applyt semantic checking on one expression
 checkExpr :: Expr -> Analyzer DExpr
 checkExpr (BoolConst _ bool)
@@ -283,6 +285,7 @@ checkExpr (UnaryNot sourcePos expr)
       if (getBaseType dExpr) == DBoolType
         then return $ DUnaryNot dExpr (getBaseType dExpr)
         else throwSemanticErr sourcePos ("The operand of unary not must be of type boolean")
+
 
 -- | Checking correctness of type of the two operands of a binary operation
 checkBaseType :: DExpr -> DExpr -> Binop -> SourcePos -> Analyzer (DBaseType,DExpr,DExpr)
@@ -329,6 +332,7 @@ checkBaseType e1 e2 binop sourcePos
               then return (DBoolType, e1, e2)
               else throwSemanticErr sourcePos ("The two operands of && and || must be Boolean type")
 
+
 -- | Check the consistency of shape and index of array and matrix
 checkShapeAndIdx :: DShape -> Idx -> SourcePos -> Analyzer DIdx
 checkShapeAndIdx (DShapeVar isAddress) IdxVar _
@@ -350,6 +354,7 @@ checkShapeAndIdx (DShapeMat _ sec) (IdxMat expr1 expr2) sourcePos
 checkShapeAndIdx _ _ sourcePos
   = do
       throwSemanticErr sourcePos ("Index type and shape type are different")
+
 
 -- | Check if the parameter is correctively passed with value or reference
 checkProcAndExpr :: (DProcProtoPara,Expr) -> Analyzer DCallPara
@@ -380,6 +385,7 @@ getDShape ShapeVar InVal     = DShapeVar False
 getDShape ShapeVar InRef     = DShapeVar True
 getDShape (ShapeArr i) _     = DShapeArr i
 getDShape (ShapeMat i1 i2) _ = DShapeMat i1 i2
+
 
 getVarSizeByShape :: Shape -> Int
 getVarSizeByShape (ShapeVar)     = 1
